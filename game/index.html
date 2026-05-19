@@ -119,6 +119,8 @@
       padding: env(safe-area-inset-top, 0) 20px calc(64px + env(safe-area-inset-bottom, 0));
       display: flex;
       flex-direction: column;
+      /* Prevents dark/light background bleed-through during screen fade transitions */
+      background: var(--cream);
     }
     @media (min-width: 640px) {
       #root { max-width: 560px; }
@@ -577,6 +579,23 @@
     :root[data-theme="dark"] .dead-end-banner .dead-end-title { color: #D4B860; }
     :root[data-theme="dark"] .dead-end-banner .dead-end-sub   { color: #A89040; }
 
+    /* ── Hidden keyboard capture input ─────────────────────── */
+    /* Focused programmatically to open the soft keyboard on mobile.
+       Invisible but fully focusable — pointer-events:none only blocks CSS hit testing,
+       not JS .focus(). font-size:16px prevents iOS viewport zoom on focus. */
+    .input-capture {
+      position: fixed;
+      bottom: 0; left: 0;
+      width: 100%; height: 1px;
+      opacity: 0;
+      font-size: 16px;
+      border: none; outline: none;
+      background: transparent;
+      pointer-events: none;
+      z-index: -1;
+      caret-color: transparent;
+    }
+
     /* ── Mobile polish ───────────────────────────────────── */
     @media (max-width: 380px) {
       .hero-wordmark { font-size: 40px; }
@@ -643,6 +662,9 @@ const MODES = {
     tutorialHints:  ['Type BOY, then press Enter', 'Now type BAY, then press Enter'],
   },
 };
+
+/* Detect touch device — used to show/hide keyboard hints */
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 /* ── Helpers ──────────────────────────────────────────── */
 function diffPos(a, b) {
@@ -851,10 +873,16 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
   const [shaking,        setShaking]        = useState(false);
   const [completedSteps, setCompletedSteps] = useState([]); // [{word, pts, changedIdx}]
   const [done,           setDone]           = useState(false);
-  const typedRef = useRef('');
-  const msgTimer = useRef(null);
+  const typedRef  = useRef('');
+  const msgTimer  = useRef(null);
+  const inputRef  = useRef(null);
 
   const fromWord = words[step];
+
+  // Open soft keyboard when user taps the tile area
+  const focusInput = useCallback(() => {
+    if (!done) inputRef.current?.focus();
+  }, [done]);
 
   const showMsg = useCallback((text, type) => {
     clearTimeout(msgTimer.current);
@@ -982,20 +1010,27 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
               color: 'var(--dark)', textAlign: 'center', marginBottom: 12,
               animation: 'fadeIn 200ms ease',
             }}>{hints[step]}</div>
-            <div className={`tile-row${shaking ? ' shake' : ''}`}>
-              {Array.from({ length: cfg.wordLen }, (_, i) => {
-                const letter   = typed[i] || '';
-                const isCursor = i === typed.length && typed.length < cfg.wordLen;
-                const isWrong  = tooMany && typedDiffs.includes(i);
-                return (
-                  <div key={i} className={`tile${isCursor ? ' cursor' : ''}${isWrong ? ' wrong' : ''}`}>
-                    {letter}
-                  </div>
-                );
-              })}
+            {/* Tappable wrapper — opens soft keyboard on mobile */}
+            <div onClick={focusInput} style={{ cursor: 'text' }}>
+              <div className={`tile-row${shaking ? ' shake' : ''}`}>
+                {Array.from({ length: cfg.wordLen }, (_, i) => {
+                  const letter   = typed[i] || '';
+                  const isCursor = i === typed.length && typed.length < cfg.wordLen;
+                  const isWrong  = tooMany && typedDiffs.includes(i);
+                  return (
+                    <div key={i} className={`tile${isCursor ? ' cursor' : ''}${isWrong ? ' wrong' : ''}`}>
+                      {letter}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
             <div className={`input-hint ${displayMsg.type}`}>{displayMsg.text || '\u00a0'}</div>
-            <div className="kbd-hint">type a word · <kbd>↵</kbd> to submit</div>
+            <div className="kbd-hint">
+              {isTouchDevice
+                ? 'tap tiles · type · Done to submit'
+                : <>type a word · <kbd>↵</kbd> to submit</>}
+            </div>
           </>
         )}
 
@@ -1020,6 +1055,22 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
         )}
 
       </div>
+
+      {/* Hidden input — programmatically focused to open soft keyboard on mobile.
+          keydown events from it bubble to window where handleKeyDown catches them. */}
+      <input
+        ref={inputRef}
+        className="input-capture"
+        type="text"
+        inputMode="text"
+        autoCapitalize="characters"
+        autoCorrect="off"
+        autoComplete="off"
+        spellCheck={false}
+        aria-hidden="true"
+        enterKeyHint="done"
+        onChange={e => { e.target.value = ''; }}
+      />
     </div>
   );
 }
@@ -1231,9 +1282,12 @@ function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
   const phaseRef     = useRef('countdown');
   const gameOverRef  = useRef(false);
   const msgTimer     = useRef(null);
+  const inputRef     = useRef(null);
 
   useEffect(() => { currentRef.current = currentWord; }, [currentWord]);
   useEffect(() => { phaseRef.current   = phase; },       [phase]);
+  // Focus the capture input when gameplay begins so the soft keyboard opens
+  useEffect(() => { if (phase === 'playing') inputRef.current?.focus(); }, [phase]);
 
   useEffect(() => {
     const start = randomStarter(modeId);
@@ -1419,7 +1473,11 @@ function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
         </div>
       )}
 
-      <div style={{ marginTop: 16, opacity: deadEnd ? 0.4 : 1, pointerEvents: deadEnd ? 'none' : 'auto' }}>
+      {/* Tap anywhere on this section to open soft keyboard on mobile */}
+      <div
+        style={{ marginTop: 16, opacity: deadEnd ? 0.4 : 1, pointerEvents: deadEnd ? 'none' : 'auto' }}
+        onClick={() => inputRef.current?.focus()}
+      >
         <div className="section-label">Your next word</div>
         <div className={`tile-row${shaking ? ' shake' : ''}`}>
           {Array.from({ length: cfg.wordLen }, (_, i) => {
@@ -1432,7 +1490,11 @@ function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
           })}
         </div>
         <div className={`input-hint ${displayMsg.type}`}>{displayMsg.text || '\u00a0'}</div>
-        <div className="kbd-hint">type · <kbd>⌫</kbd> delete · <kbd>↵</kbd> submit</div>
+        <div className="kbd-hint">
+          {isTouchDevice
+            ? 'tap tiles · type · Done to submit'
+            : <>type · <kbd>⌫</kbd> delete · <kbd>↵</kbd> submit</>}
+        </div>
       </div>
 
       {chain.length > 1 && (
@@ -1441,6 +1503,22 @@ function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
           <ChainRows chain={chain} modeId={modeId} />
         </div>
       )}
+
+      {/* Hidden input — focused programmatically to trigger the soft keyboard.
+          keydown events bubble from it to window where handleKeyDown catches them. */}
+      <input
+        ref={inputRef}
+        className="input-capture"
+        type="text"
+        inputMode="text"
+        autoCapitalize="characters"
+        autoCorrect="off"
+        autoComplete="off"
+        spellCheck={false}
+        aria-hidden="true"
+        enterKeyHint="done"
+        onChange={e => { e.target.value = ''; }}
+      />
     </div>
   );
 }
