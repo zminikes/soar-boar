@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Soar Boar</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:      #F8F7F6;
+      --orange:     #F48870;
+      --pink:       rgba(244,136,112,0.12);
+      --white:      #FFFFFF;
+      --dark:       #0A0A0A;
+      --muted:      #737373;
+      --border:     rgba(0,0,0,0.08);
+      --error:      #C0392B;
+      --ok:         #27AE60;
+      --pos1:       #F48870;
+      --pos2:       #9B59B6;
+      --pos3:       #2E86C1;
+      --pos4:       #27AE60;
+      --ff:         'DM Sans', system-ui, sans-serif;
+      --ff-serif:   'Instrument Serif', Georgia, serif;
+      --ff-sans:    'Instrument Sans', system-ui, sans-serif;
+    }
+
+    body {
+      background: var(--cream);
+      color: var(--dark);
+      font-family: var(--ff);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Animations ─────────────────────────────────────── */
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25%       { transform: rotate(-3deg); }
+      75%       { transform: rotate(3deg); }
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+    @keyframes tileAccept {
+      0%  { transform: scale(1); }
+      40% { transform: scale(1.2); }
+      70% { transform: scale(0.93); }
+      100%{ transform: scale(1); }
+    }
+    @keyframes tileSuccess {
+      0%  { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.25) rotate(-6deg); }
+      50% { transform: scale(1.25) rotate(6deg); }
+      75% { transform: scale(1.1) rotate(-3deg); }
+      100%{ transform: scale(1) rotate(0deg); }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+    @keyframes countdownPop {
+      0%  { transform: scale(0.5); opacity: 0; }
+      60% { transform: scale(1.12); opacity: 1; }
+      100%{ transform: scale(1); opacity: 1; }
+    }
+    @keyframes successBounce {
+      0%  { transform: scale(0.8) translateY(10px); opacity: 0; }
+      60% { transform: scale(1.06) translateY(-4px); opacity: 1; }
+      100%{ transform: scale(1) translateY(0); opacity: 1; }
+    }
+    @keyframes confettiFall {
+      0%  { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100%{ transform: translateY(60px) rotate(360deg); opacity: 0; }
+    }
+
+    .shake { animation: shake 240ms ease; }
+
+    /* ── Soy Boy green theme ─────────────────────────────── */
+    .soyboy { --orange: #94b190; }
+
+    /* ── Root ────────────────────────────────────────────── */
+    #root {
+      width: 100%;
+      max-width: 420px;
+      padding: 0 20px 64px;
+      display: flex;
+      flex-direction: column;
+    }
+    @media (min-width: 640px) {
+      #root { max-width: 560px; }
+    }
+
+    /* ── Header ──────────────────────────────────────────── */
+    .hdr {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 24px 0 0;
+    }
+    .wordmark {
+      font-family: var(--ff-serif);
+      font-size: 28px;
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+    .wordmark em { font-style: normal; color: var(--orange); }
+
+    /* ── Card ────────────────────────────────────────────── */
+    .card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 24px;
+    }
+
+    /* ── Buttons ─────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--ff-sans);
+      font-weight: 600;
+      font-size: 18px;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      padding: 16px 28px;
+      transition: transform 80ms, filter 80ms, opacity 80ms;
+      line-height: 1;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--orange); color: #fff; }
+    .btn-primary:hover { filter: brightness(1.06); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .btn-ghost:hover { color: var(--dark); }
+    .btn-full { width: 100%; }
+    .btn-sm { font-size: 13px; padding: 9px 16px; border-radius: 10px; }
+    .btn-copy {
+      background: var(--dark);
+      color: #fff;
+    }
+
+    /* ── Section label ───────────────────────────────────── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    /* ── Timer ───────────────────────────────────────────── */
+    .timer-wrap { margin-top: 20px; }
+    .timer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .timer-label { font-size: 12px; font-weight: 600; color: var(--muted); }
+    .timer-secs  { font-size: 13px; font-weight: 800; }
+    .timer-secs.urgent { color: var(--error); }
+    .timer-track { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+    .timer-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--orange);
+      transition: width 1s linear, background 0.3s;
+    }
+    .timer-fill.urgent { background: var(--error); }
+    .timer-fill.paused { background: var(--border); transition: none; }
+
+    /* ── Tile ────────────────────────────────────────────── */
+    .tile-row { display: flex; gap: 8px; justify-content: center; }
+    .tile {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      border: 2.5px solid var(--border);
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--dark);
+      user-select: none;
+      transition: border-color 100ms, background 100ms, color 100ms;
+    }
+    .tile.cursor { border-color: var(--dark); }
+    .tile.accept { animation: tileAccept 280ms cubic-bezier(0.34,1.56,0.64,1) both; }
+    .tile.success-anim { animation: tileSuccess 500ms cubic-bezier(0.34,1.56,0.64,1) both; }
+    /* wrong: too many letters changed */
+    .tile.wrong {
+      border-color: var(--error);
+      background: #FEF0EE;
+      color: var(--error);
+    }
+    /* success highlight on onboarding */
+    .tile.changed-ok {
+      border-color: var(--orange);
+      background: #FFF0E8;
+      color: var(--orange);
+    }
+
+    /* ── Input hint ──────────────────────────────────────── */
+    .input-hint {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 8px;
+      min-height: 18px;
+      font-weight: 500;
+    }
+    .input-hint.error { color: var(--error); font-weight: 700; }
+    .input-hint.ok    { color: var(--ok);    font-weight: 700; }
+
+    /* ── Score ───────────────────────────────────────────── */
+    .score-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+    }
+    .score-badge {
+      background: var(--orange);
+      color: #fff;
+      font-weight: 800;
+      font-size: 24px;
+      border-radius: 12px;
+      padding: 8px 16px;
+      line-height: 1;
+      min-width: 56px;
+      text-align: center;
+    }
+    .score-sub { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+    /* ── Chain ───────────────────────────────────────────── */
+    .chain-scroll {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .chain-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      animation: slideDown 180ms ease;
+    }
+    .chain-tile {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--cream);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--dark);
+      flex-shrink: 0;
+    }
+    .chain-tile.changed { background: #FFE8DC; color: var(--orange); }
+    .chain-pts { font-size: 11px; font-weight: 700; color: var(--muted); }
+
+    /* ── Countdown ───────────────────────────────────────── */
+    .countdown-overlay {
+      text-align: center;
+      padding: 32px 0 8px;
+    }
+    .countdown-num {
+      font-size: 80px;
+      font-weight: 800;
+      color: var(--orange);
+      line-height: 1;
+      animation: countdownPop 400ms cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .countdown-sub { font-size: 14px; color: var(--muted); margin-top: 8px; font-weight: 600; }
+
+    /* ── Pos legend ──────────────────────────────────────── */
+    .pos-legend { display: flex; flex-direction: column; gap: 7px; }
+    .pos-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--muted); }
+    .pos-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Start / hero ────────────────────────────────────── */
+    .start-hero {
+      background: transparent;
+      border-radius: 0;
+      padding: 20px 0 0;
+      margin-top: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .hero-wordmark {
+      font-family: var(--ff-serif);
+      font-size: 72px;
+      font-weight: 400;
+      letter-spacing: -2px;
+      line-height: 1;
+      text-align: center;
+    }
+    .hero-wordmark em { font-style: normal; color: var(--orange); }
+    .hero-tag { font-family: var(--ff-sans); font-size: 16px; font-weight: 400; color: var(--muted); margin-top: 8px; text-align: center; }
+
+    .rules-card { margin-top: 16px; }
+    .rules-title { font-family: var(--ff-sans); font-size: 13px; font-weight: 600; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .rules-list { display: flex; flex-direction: column; gap: 12px; }
+    .rule-item { display: flex; align-items: baseline; gap: 12px; }
+    .rule-num {
+      background: var(--cream);
+      border-radius: 7px;
+      width: 24px; height: 24px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800;
+      flex-shrink: 0;
+    }
+    .rule-text { font-size: 15px; line-height: 1.5; }
+    .rule-text strong { font-weight: 800; }
+
+    /* ── Onboarding ──────────────────────────────────────── */
+    .onboard-header {
+      text-align: center;
+      padding: 28px 0 20px;
+    }
+    .onboard-step {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .onboard-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+    .onboard-sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 6px;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+    .onboard-arrow {
+      font-size: 28px;
+      color: var(--border);
+      text-align: center;
+      margin: 8px 0;
+      letter-spacing: 4px;
+    }
+    .onboard-success {
+      text-align: center;
+      animation: successBounce 400ms cubic-bezier(0.34,1.56,0.64,1) both;
+      padding: 16px 0 8px;
+    }
+    .onboard-success-emoji { font-size: 48px; line-height: 1; }
+    .onboard-success-title { font-size: 22px; font-weight: 800; margin-top: 8px; }
+    .onboard-success-sub { font-size: 14px; color: var(--muted); margin-top: 4px; font-weight: 500; }
+
+    /* confetti dots */
+    .confetti-wrap {
+      position: relative;
+      height: 0;
+      overflow: visible;
+      pointer-events: none;
+    }
+    .confetti-dot {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      animation: confettiFall 800ms ease-out both;
+    }
+
+    /* ── Dead-end banner ─────────────────────────────────── */
+    .dead-end-banner {
+      margin-top: 16px;
+      background: #FFF3CD;
+      border: 1.5px solid #F0C040;
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideDown 220ms ease;
+    }
+
+    /* ── End screen ──────────────────────────────────────── */
+    .end-score { font-size: 72px; font-weight: 800; line-height: 1; text-align: center; }
+    .end-score-label { font-size: 13px; font-weight: 600; color: var(--muted); text-align: center; margin-top: 4px; }
+    .share-row { display: flex; gap: 8px; margin-top: 12px; }
+    .share-copied {
+      font-size: 12px;
+      color: var(--ok);
+      font-weight: 700;
+      text-align: center;
+      margin-top: 6px;
+      animation: fadeIn 200ms ease;
+    }
+
+    /* ── Preferences panel ───────────────────────────────── */
+    .prefs-panel {
+      margin-top: 24px;
+      padding: 16px;
+      background: var(--white);
+      border-radius: 18px;
+      border: 1.5px solid var(--border);
+    }
+    .prefs-title { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .prefs-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .prefs-row:last-child { margin-bottom: 0; }
+    .prefs-label { font-size: 13px; font-weight: 600; }
+    .prefs-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .toggle { position: relative; width: 48px; height: 24px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0;
+      background: #E5E5E5; border-radius: 999px;
+      cursor: pointer; transition: background 200ms;
+    }
+    .toggle input:checked + .toggle-track { background: var(--orange); }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 18px; height: 18px;
+      background: var(--cream); border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      transition: transform 200ms;
+    }
+    .toggle input:checked + .toggle-track::after { transform: translateX(24px); }
+
+    /* ── Keyboard hint ───────────────────────────────────── */
+    .kbd-hint { text-align: center; font-size: 12px; color: var(--muted); margin-top: 10px; }
+    kbd {
+      background: var(--cream); border: 1px solid var(--border);
+      border-radius: 5px; padding: 1px 5px;
+      font-family: var(--ff); font-size: 11px; font-weight: 700;
+    }
+    .forever-badge {
+      background: var(--dark); color: var(--pink);
+      font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 999px;
+    }
+
+    /* ── Mode picker ─────────────────────────────────────── */
+    .mode-section-label {
+      font-family: var(--ff-sans);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #525252;
+      margin-bottom: 12px;
+    }
+    .mode-picker {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    /* Interactive mode cards: 2px border (heavier — they're actionable) */
+    .mode-pill {
+      padding: 20px;
+      border-radius: 16px;
+      border: 2px solid #E5E5E5;
+      background: #FAFAFA;
+      font-family: var(--ff-sans);
+      cursor: pointer;
+      transition: background 200ms, color 200ms, border-color 200ms, box-shadow 200ms, transform 200ms;
+      color: var(--dark);
+      text-align: left;
+      line-height: 1.3;
+    }
+    .mode-pill:hover:not(.active) { background: #F5F5F5; }
+    .mode-pill:active { transform: scale(0.98); }
+    .mode-pill.active {
+      background: var(--dark);
+      color: #fff;
+      border-color: var(--dark);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+      transform: scale(1.02);
+    }
+
+    /* ── Info card (1px border — passive/informational) ──── */
+    .info-card {
+      background: #FAFAFA;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid #E5E5E5;
+    }
+    .info-card-title {
+      font-family: var(--ff-sans);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 20px;
+    }
+    .info-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: rgba(244,136,112,0.12);
+      color: #F48870;
+      font-size: 12px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── Preferences toggle button ───────────────────────── */
+    .prefs-toggle-btn {
+      background: transparent; border: none; cursor: pointer;
+      color: var(--muted); display: flex; align-items: center; gap: 6px;
+      font-family: var(--ff-sans); font-size: 14px; font-weight: 500;
+      padding: 8px 0; width: 100%; transition: color 150ms;
+    }
+    .prefs-toggle-btn:hover { color: var(--dark); }
+
+    /* ── Dark mode ───────────────────────────────────────── */
+    :root[data-theme="dark"] {
+      --cream:  #141413;
+      --white:  #1E1D1C;
+      --dark:   #F5F5F4;
+      --muted:  #737373;
+      --border: rgba(255,255,255,0.08);
+      --pink:   rgba(244,136,112,0.12);
+      --error:  #E56055;
+      --ok:     #4AC47A;
+    }
+    :root[data-theme="dark"] .soyboy { --orange: #94b190; }
+    :root[data-theme="dark"] .info-card { background: #1E1D1C; border-color: rgba(255,255,255,0.1); }
+    :root[data-theme="dark"] .info-card-title { color: var(--dark); }
+    :root[data-theme="dark"] .mode-section-label { color: #A3A3A3; }
+    :root[data-theme="dark"] .mode-pill { background: #1E1D1C; border-color: rgba(255,255,255,0.1); color: var(--dark); }
+    :root[data-theme="dark"] .mode-pill:hover:not(.active) { background: #252422; }
+    :root[data-theme="dark"] .mode-pill.active { background: #F5F5F4; color: #141413; border-color: #F5F5F4; }
+    :root[data-theme="dark"] .chain-tile.changed { background: rgba(244,136,112,0.15); }
+    :root[data-theme="dark"] .tile.wrong { background: #3A1A16; }
+    :root[data-theme="dark"] .tile.changed-ok { background: rgba(244,136,112,0.15); }
+    :root[data-theme="dark"] .dead-end-banner { background: #252010; border-color: #5A4A18; }
+
+    /* ── Mobile polish ───────────────────────────────────── */
+    @media (max-width: 380px) {
+      .hero-wordmark { font-size: 40px; }
+      .tile { width: 56px; height: 56px; font-size: 24px; }
+      .card { padding: 18px; }
+      .btn { font-size: 15px; padding: 13px 20px; }
+    }
+    @media (max-width: 320px) {
+      .tile { width: 48px; height: 48px; font-size: 20px; border-radius: 12px; }
+      .hero-wordmark { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="wordlist.js"></script>
+<script src="starters.js"></script>
+<script src="wordlist3.js"></script>
+<script src="starters3.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ── Constants ────────────────────────────────────────── */
+const TOTAL_TIME   = 60;
+const HEAD_START   = 2;
+const MSG_DURATION = 2000;
+const POS_COLORS   = ['#E8632B','#9B59B6','#2E86C1','#27AE60'];
+const POS_EMOJI    = ['🟧','🟪','🟦','🟩'];
+
+/* ── Mode configs ─────────────────────────────────────── */
+const MODES = {
+  classic: {
+    id: 'classic',
+    name: 'Soar Boar',
+    sub: '4-letter words',
+    wordLen: 4,
+    getWords:    () => WORDS,
+    getStarters: () => STARTER_WORDS,
+    posPts:      [1, 4, 3, 2],
+    posLabels:   ['1st','2nd','3rd','4th'],
+    tutorialStart:  'SOAR',
+    tutorialTarget: 'BOAR',
+    tutorialHint:   'Change the S to B, then press Enter',
+  },
+  soyboy: {
+    id: 'soyboy',
+    name: 'Soy Boy',
+    sub: '3-letter words',
+    wordLen: 3,
+    getWords:    () => WORDS3,
+    getStarters: () => STARTER_WORDS3,
+    posPts:      [1, 3, 2],
+    posLabels:   ['1st','2nd','3rd'],
+    tutorialStart:  'SOY',
+    tutorialTarget: 'BOY',
+    tutorialHint:   'Change the S to B, then press Enter',
+  },
+};
+
+/* ── Helpers ──────────────────────────────────────────── */
+function diffPos(a, b) {
+  const d = [];
+  for (let i = 0; i < 4; i++) if (a[i] !== b[i]) d.push(i);
+  return d;
+}
+
+function randomStarter(modeId = 'classic') {
+  const cfg = MODES[modeId];
+  const words = cfg.getWords();
+  const pool = cfg.getStarters().map(w => w.toUpperCase()).filter(w => words.has(w));
+  return pool.length ? pool[Math.floor(Math.random() * pool.length)] : cfg.tutorialStart;
+}
+
+function getValidMoves(word, used, streakPos, streakCount, streakRule, words) {
+  const moves = [];
+  for (let i = 0; i < word.length; i++) {
+    if (streakRule && streakPos === i && streakCount >= 2) continue;
+    for (let c = 0; c < 26; c++) {
+      const letter = String.fromCharCode(65 + c);
+      if (letter === word[i]) continue;
+      const cand = word.slice(0, i) + letter + word.slice(i + 1);
+      if (words.has(cand) && !used.has(cand)) moves.push(cand);
+    }
+  }
+  return moves;
+}
+
+function generateShareText(chain, score, modeId = 'classic') {
+  const cfg = MODES[modeId];
+  const neutral = '⬜';
+  // First row: all neutral (the starting word)
+  const rows = [neutral.repeat(cfg.wordLen)];
+  for (let i = 1; i < chain.length; i++) {
+    const diffs = diffPos(chain[i - 1].word, chain[i].word);
+    const pos   = diffs[0];
+    const row   = Array.from({ length: cfg.wordLen }, (_, j) =>
+      j === pos ? POS_EMOJI[pos] : neutral
+    ).join('');
+    rows.push(row);
+  }
+  return [
+    `${modeId === 'soyboy' ? '🫛' : '🐷'} ${cfg.name}`,
+    `⏱ 60 sec · ${score} pts · ${chain.length - 1} word${chain.length !== 2 ? 's' : ''}`,
+    '',
+    ...rows,
+  ].join('\n');
+}
+
+/* ── Shared sub-components ────────────────────────────── */
+function PigSVG({ size = 180 }) {
+  return (
+    <svg width={size} height={size * 0.7} viewBox="0 0 240 168" fill="none">
+      <ellipse cx="105" cy="108" rx="72" ry="46" fill="#F0B8C8" stroke="#1A1514" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="168" cy="94" r="34" fill="#F0B8C8" stroke="#1A1514" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <ellipse cx="197" cy="103" rx="14" ry="10" fill="#F4C8D4" stroke="#1A1514" strokeWidth="3" strokeLinecap="round"/>
+      <circle cx="193" cy="103" r="2.5" fill="#1A1514"/>
+      <circle cx="201" cy="103" r="2.5" fill="#1A1514"/>
+      <circle cx="178" cy="82" r="3.5" fill="#1A1514"/>
+      <path d="M 158 66 Q 152 50 162 44 Q 170 50 166 66" fill="#F4C8D4" stroke="#1A1514" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M 108 72 Q 98 48 118 34 Q 126 46 118 60" fill="#F0B8C8" stroke="#1A1514" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M 118 68 Q 112 40 138 28 Q 142 44 130 60" fill="#F0B8C8" stroke="#1A1514" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M 130 66 Q 130 36 154 28 Q 154 46 142 62" fill="#F0B8C8" stroke="#1A1514" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M 68 148 Q 64 158 60 162" stroke="#1A1514" strokeWidth="3.5" strokeLinecap="round"/>
+      <path d="M 76 150 Q 74 161 72 165" stroke="#1A1514" strokeWidth="3.5" strokeLinecap="round"/>
+      <path d="M 128 148 Q 126 158 124 162" stroke="#1A1514" strokeWidth="3.5" strokeLinecap="round"/>
+      <path d="M 140 146 Q 140 157 140 162" stroke="#1A1514" strokeWidth="3.5" strokeLinecap="round"/>
+      <path d="M 36 108 Q 24 96 30 84 Q 38 78 44 88 Q 46 96 38 100" fill="none" stroke="#1A1514" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function PeaPodSVG({ size = 180 }) {
+  return (
+    <svg width={size} height={size * 0.7} viewBox="0 0 240 168" fill="none">
+      {/* Pod body — fat curved banana shape */}
+      <path d="M 44 100 Q 40 56 88 38 Q 148 18 190 52 Q 210 68 202 90 Q 196 108 172 114 Q 120 130 72 118 Q 46 112 44 100 Z"
+        fill="#8DC87A" stroke="#1A1514" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Pod highlight ridge along top */}
+      <path d="M 60 80 Q 100 58 156 62 Q 184 66 196 80"
+        fill="none" stroke="#A8D896" strokeWidth="4" strokeLinecap="round" opacity="0.7"/>
+      {/* Pea 1 */}
+      <circle cx="90" cy="82" r="18" fill="#5BA548" stroke="#1A1514" strokeWidth="3" strokeLinecap="round"/>
+      <circle cx="85" cy="77" r="5" fill="#7DD06A" opacity="0.55"/>
+      {/* Pea 2 */}
+      <circle cx="132" cy="76" r="18" fill="#5BA548" stroke="#1A1514" strokeWidth="3" strokeLinecap="round"/>
+      <circle cx="127" cy="71" r="5" fill="#7DD06A" opacity="0.55"/>
+      {/* Pea 3 */}
+      <circle cx="170" cy="82" r="16" fill="#5BA548" stroke="#1A1514" strokeWidth="3" strokeLinecap="round"/>
+      <circle cx="165" cy="77" r="4.5" fill="#7DD06A" opacity="0.55"/>
+      {/* Stem */}
+      <path d="M 50 98 Q 42 90 38 76 Q 36 64 44 58"
+        fill="none" stroke="#1A1514" strokeWidth="3.5" strokeLinecap="round"/>
+      {/* Leaf */}
+      <path d="M 44 72 Q 22 58 24 36 Q 46 42 48 66"
+        fill="#8DC87A" stroke="#1A1514" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Leaf vein */}
+      <path d="M 44 72 Q 34 54 26 40"
+        fill="none" stroke="#5BA548" strokeWidth="2" strokeLinecap="round" opacity="0.8"/>
+      {/* Curly vine tip */}
+      <path d="M 44 58 Q 50 44 62 46 Q 70 48 66 56 Q 62 62 56 58 Q 54 54 58 52"
+        fill="none" stroke="#1A1514" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function MascotIcon({ size = 48, modeId = 'classic' }) {
+  if (modeId === 'soyboy') {
+    if (size >= 100) return <PeaPodSVG size={size} />;
+    return (
+      <span style={{ fontSize: size * 0.8, lineHeight: 1, display: 'inline-block' }}>🫛</span>
+    );
+  }
+  return <PigSVG size={size} />;
+}
+
+function Toggle({ checked, onChange }) {
+  return (
+    <label className="toggle">
+      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} />
+      <span className="toggle-track" />
+    </label>
+  );
+}
+
+function PosLegend({ modeId = 'classic' }) {
+  const cfg = MODES[modeId];
+  const labels = cfg.posPts.map((pts, i) => `${cfg.posLabels[i]} letter — ${pts} pt${pts !== 1 ? 's' : ''}`);
+  return (
+    <div className="pos-legend">
+      {labels.map((label, i) => (
+        <div key={i} className="pos-item">
+          <div className="pos-dot" style={{ background: POS_COLORS[i] }} />
+          {label}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ChainRows({ chain, maxHeight = 200, modeId = 'classic' }) {
+  const cfg = MODES[modeId];
+  return (
+    <div className="chain-scroll" style={{ maxHeight }}>
+      {chain.slice().reverse().map((entry, i) => {
+        const idx   = chain.length - 1 - i;
+        const prev  = idx > 0 ? chain[idx - 1].word : null;
+        const diffs = prev ? diffPos(prev, entry.word) : [];
+        return (
+          <div key={idx} className="chain-row">
+            {entry.word.split('').map((l, j) => (
+              <div key={j} className={`chain-tile${diffs.includes(j) ? ' changed' : ''}`}>{l}</div>
+            ))}
+            {entry.pts != null && (
+              <span className="chain-pts">+{entry.pts} · {prev && diffs.length === 1 && cfg.posLabels[diffs[0]]} letter</span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Confetti burst ───────────────────────────────────── */
+function Confetti() {
+  const dots = Array.from({ length: 12 }, (_, i) => ({
+    color: POS_COLORS[i % 4],
+    left: `${(i / 11) * 100}%`,
+    delay: `${(i * 60) % 400}ms`,
+    size: 6 + (i % 3) * 3,
+  }));
+  return (
+    <div className="confetti-wrap">
+      {dots.map((d, i) => (
+        <div
+          key={i}
+          className="confetti-dot"
+          style={{
+            background: d.color,
+            left: d.left,
+            width: d.size, height: d.size,
+            animationDelay: d.delay,
+            top: -10,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ── OnboardingScreen ─────────────────────────────────── */
+function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
+  const cfg = MODES[modeId];
+  const START_WORD = cfg.tutorialStart;
+  const [typed,     setTyped]     = useState('');
+  const [succeeded, setSucceeded] = useState(false);
+  const [acceptedWord, setAcceptedWord] = useState('');
+  const [msg,       setMsg]       = useState({ text: '', type: '' });
+  const [shaking,   setShaking]   = useState(false);
+  const typedRef = useRef('');
+  const msgTimer = useRef(null);
+
+  const showMsg = useCallback((text, type) => {
+    clearTimeout(msgTimer.current);
+    setMsg({ text, type });
+    msgTimer.current = setTimeout(() => setMsg({ text:'', type:'' }), MSG_DURATION);
+  }, []);
+
+  const handleKeyDown = useCallback((e) => {
+    if (succeeded) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'Enter') {
+      const word = typedRef.current;
+      if (word.length !== cfg.wordLen) return;
+      if (!cfg.getWords().has(word)) { showMsg('Not a word', 'error'); setShaking(true); setTimeout(() => setShaking(false), 280); return; }
+      const diffs = diffPos(START_WORD, word);
+      if (diffs.length === 0) { showMsg('Same word — change one letter!', 'error'); setShaking(true); setTimeout(() => setShaking(false), 280); return; }
+      if (diffs.length > 1)  { showMsg('Change exactly one letter', 'error'); setShaking(true); setTimeout(() => setShaking(false), 280); return; }
+      // Success!
+      setSucceeded(true);
+      setAcceptedWord(word);
+    } else if (e.key === 'Backspace') {
+      const next = typedRef.current.slice(0, -1);
+      typedRef.current = next; setTyped(next);
+      setMsg({ text:'', type:'' });
+    } else if (/^[a-zA-Z]$/.test(e.key) && typedRef.current.length < cfg.wordLen) {
+      const next = typedRef.current + e.key.toUpperCase();
+      typedRef.current = next; setTyped(next);
+    }
+  }, [succeeded, showMsg, cfg]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  // real-time diff for red highlighting
+  const typedDiffs = typed.length === cfg.wordLen ? diffPos(START_WORD, typed) : [];
+  const tooMany    = typedDiffs.length > 1;
+
+  const persistentError = tooMany ? `Changed ${typedDiffs.length} letters — change just 1` : '';
+  const displayMsg = persistentError ? { text: persistentError, type: 'error' } : msg;
+
+  const acceptedDiffs = acceptedWord ? diffPos(START_WORD, acceptedWord) : [];
+
+  return (
+    <div style={{ animation: 'fadeIn 280ms ease' }}>
+
+      {/* Back nav */}
+      <div style={{ paddingTop: 20, paddingBottom: 4 }}>
+        <button
+          onClick={onBack}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            fontFamily: 'var(--ff-sans)', fontSize: 14, fontWeight: 500,
+            color: 'var(--muted)', padding: '4px 0',
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Back
+        </button>
+      </div>
+
+      {/* Hero */}
+      <div className="start-hero" style={{ paddingTop: 12 }}>
+        <AnimatedMascot size={80} modeId={modeId} />
+        <div style={{
+          fontFamily: 'var(--ff-sans)', fontSize: 11, fontWeight: 700,
+          letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
+          marginTop: 14,
+        }}>Tutorial · {cfg.name}</div>
+        <div className="hero-wordmark" style={{ fontSize: 36, marginTop: 4 }}>
+          Change one letter
+        </div>
+        <div className="hero-tag" style={{ marginTop: 6 }}>{cfg.tutorialHint}</div>
+      </div>
+
+      {/* Game board */}
+      <div className="info-card" style={{ marginTop: 20 }}>
+        <div className="section-label" style={{ marginBottom: 12 }}>Starting word</div>
+        <div className="tile-row">
+          {START_WORD.split('').map((l, i) => (
+            <div key={i} className={`tile${succeeded && acceptedDiffs.includes(i) ? ' changed-ok' : ''}`}
+              style={{ animationDelay: `${i * 40}ms` }}>
+              {l}
+            </div>
+          ))}
+        </div>
+
+        {!succeeded ? (
+          <>
+            <div className="onboard-arrow">↓</div>
+            <div className="section-label" style={{ marginBottom: 12 }}>Your word</div>
+            <div className={`tile-row${shaking ? ' shake' : ''}`}>
+              {Array.from({ length: cfg.wordLen }, (_, i) => {
+                const letter   = typed[i] || '';
+                const isCursor = i === typed.length && typed.length < cfg.wordLen;
+                const isWrong  = tooMany && typedDiffs.includes(i);
+                return (
+                  <div key={i} className={`tile${isCursor ? ' cursor' : ''}${isWrong ? ' wrong' : ''}`}>
+                    {letter}
+                  </div>
+                );
+              })}
+            </div>
+            <div className={`input-hint ${displayMsg.type}`}>{displayMsg.text || '\u00a0'}</div>
+            <div className="kbd-hint">type a word · <kbd>↵</kbd> to submit</div>
+          </>
+        ) : (
+          <>
+            <div className="onboard-arrow" style={{ color: 'var(--orange)' }}>↓</div>
+            <div className="tile-row">
+              {acceptedWord.split('').map((l, i) => (
+                <div key={i}
+                  className={`tile${acceptedDiffs.includes(i) ? ' changed-ok success-anim' : ' accept'}`}
+                  style={{ animationDelay: `${i * 50}ms` }}>
+                  {l}
+                </div>
+              ))}
+            </div>
+            <Confetti />
+            <div className="onboard-success">
+              <div className="onboard-success-emoji">🎉</div>
+              <div className="onboard-success-title">
+                {acceptedWord === cfg.tutorialTarget ? `Nice! ${cfg.tutorialStart[0]} → ${cfg.tutorialTarget[0]}.` : 'Nice! You got it.'}
+              </div>
+              <div className="onboard-success-sub">
+                You changed the <strong>{cfg.posLabels[acceptedDiffs[0]]} letter</strong> — that's worth{' '}
+                <strong>{cfg.posPts[acceptedDiffs[0]]} pt{cfg.posPts[acceptedDiffs[0]] !== 1 ? 's' : ''}</strong>.
+                Now do it as many times as you can in 60 seconds!
+              </div>
+            </div>
+            <div style={{ marginTop: 20 }}>
+              <button className="btn btn-primary btn-full" onClick={onDone}>
+                Let's play! →
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+    </div>
+  );
+}
+/* ── AnimatedMascot ───────────────────────────────────── */
+function AnimatedMascot({ size = 120, modeId = 'classic' }) {
+  const [isBlinking,  setIsBlinking]  = useState(false);
+  const [isWiggling,  setIsWiggling]  = useState(false);
+  const [isDark,      setIsDark]      = useState(false);
+
+  // Track dark mode changes
+  useEffect(() => {
+    const check = () => setIsDark(document.documentElement.dataset.theme === 'dark');
+    check();
+    const obs = new MutationObserver(check);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isClassic = modeId !== 'soyboy';
+  const dm = isDark ? '-dark' : '';
+  const openSrc   = isClassic ? `pig-open${dm}.svg`   : `bean-open${dm}.svg`;
+  const closedSrc = isClassic ? `pig-closed${dm}.svg` : `bean-closed${dm}.svg`;
+
+  useEffect(() => {
+    const blinkId = setInterval(() => {
+      if (Math.random() < 0.15) { setIsBlinking(true); setTimeout(() => setIsBlinking(false), 150); }
+    }, 2000);
+    const wiggleId = setInterval(() => {
+      if (Math.random() < 0.20) { setIsWiggling(true); setTimeout(() => setIsWiggling(false), 600); }
+    }, 3000);
+    return () => { clearInterval(blinkId); clearInterval(wiggleId); };
+  }, []);
+
+  return (
+    <img
+      src={isBlinking ? closedSrc : openSrc}
+      width={size}
+      height={size}
+      style={{ display: 'block', animation: isWiggling ? 'wiggle 600ms ease' : 'none' }}
+      alt=""
+    />
+  );
+}
+
+/* ── StartScreen ──────────────────────────────────────── */
+function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }) {
+  const cfg = MODES[modeId];
+  const [showPrefs, setShowPrefs] = useState(false);
+
+  const subtitles = {
+    classic: 'The word-chaining game that rewards strategy',
+    soyboy:  'The easier word-chaining challenge',
+  };
+
+  const howItWorks = [
+    'Change exactly one letter to make a new word',
+    'Harder positions = more points (2nd letter = 4 pts!)',
+    'Race the clock and build your chain',
+  ];
+
+  return (
+    <div style={{ animation: 'fadeIn 280ms ease' }}>
+
+      {/* Hero */}
+      <div className="start-hero">
+        <AnimatedMascot size={120} modeId={modeId} />
+        <div className="hero-wordmark" style={{ marginTop: 16 }}>
+          {modeId === 'classic' ? <>Soar <em>Boar</em></> : <>Soy <em>Boy</em></>}
+        </div>
+        <div className="hero-tag" style={{ marginTop: 12 }}>{subtitles[modeId]}</div>
+      </div>
+
+      {/* Mode picker */}
+      <div style={{ marginTop: 24 }}>
+        <div className="mode-section-label">Choose your challenge</div>
+        <div className="mode-picker">
+          {Object.values(MODES).map(m => (
+            <button
+              key={m.id}
+              className={`mode-pill${modeId === m.id ? ' active' : ''}`}
+              onClick={() => setModeId(m.id)}
+            >
+              <div style={{ fontWeight: 600, fontSize: 20 }}>{m.name}</div>
+              <div style={{ fontSize: 13, marginTop: 10, opacity: modeId === m.id ? 0.7 : 0.55 }}>{m.sub}</div>
+              <div style={{ fontSize: 12, marginTop: 4, opacity: modeId === m.id ? 0.55 : 0.45 }}>
+                {m.id === 'soyboy' ? '45 seconds' : '60 seconds'}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* How it works */}
+      <div style={{ marginTop: 12 }}>
+        <div className="info-card">
+          <div className="info-card-title">How it works</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {howItWorks.map((text, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                <div className="info-num">{i + 1}</div>
+                <div style={{ fontFamily: 'var(--ff-sans)', fontSize: 14, lineHeight: 1.55, paddingTop: 3, color: 'var(--muted)' }}>{text}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* CTA buttons */}
+      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <button className="btn btn-primary btn-full" onClick={onStart}
+          style={{ background: modeId === 'soyboy' ? '#94b190' : 'var(--orange)' }}>
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="white" style={{ flexShrink: 0 }}>
+            <polygon points="3,2 14,8 3,14"/>
+          </svg>
+          Start playing
+        </button>
+        <button
+          className="prefs-toggle-btn"
+          style={{ justifyContent: 'center', paddingTop: 10, paddingBottom: 10 }}
+          onClick={() => setShowPrefs(p => !p)}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          {showPrefs ? 'Hide' : 'Show'} preferences
+        </button>
+      </div>
+
+      {/* Show me how link */}
+      <div style={{ textAlign: 'center', marginTop: 4 }}>
+        <button className="btn btn-ghost btn-sm" onClick={onTutorial}
+          style={{ fontSize: 13, color: 'var(--muted)' }}>
+          Show me how to play
+        </button>
+      </div>
+
+      {/* Preferences panel */}
+      {showPrefs && (
+        <div className="info-card" style={{ animation: 'slideDown 200ms ease', marginTop: 12 }}>
+          <div className="info-card-title">Preferences</div>
+          {[
+            { key: 'streakRule',  label: 'Position streak rule', sub: 'Prevents changing same position 3x in a row' },
+            { key: 'foreverMode', label: 'Practice mode',        sub: 'No timer, play at your own pace' },
+            { key: 'darkMode',    label: 'Dark mode',            sub: 'Easy on the eyes' },
+          ].map(({ key, label, sub }) => (
+            <div key={key} className="prefs-row">
+              <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
+              <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} />
+            </div>
+          ))}
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+/* ── PlayScreen ───────────────────────────────────────── */
+function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
+  const cfg = MODES[modeId];
+  const [phase,       setPhase]       = useState('countdown');
+  const [countdown,   setCountdown]   = useState(HEAD_START);
+  const [currentWord, setCurrentWord] = useState('');
+  const [typed,       setTyped]       = useState('');
+  const [usedWords,   setUsedWords]   = useState(() => new Set());
+  const [chain,       setChain]       = useState([]);
+  const [score,       setScore]       = useState(0);
+  const [timeLeft,    setTimeLeft]    = useState(TOTAL_TIME);
+  const [msg,         setMsg]         = useState({ text: '', type: '' });
+  const [shaking,     setShaking]     = useState(false);
+  const [acceptKey,   setAcceptKey]   = useState(0);
+  const [deadEnd,     setDeadEnd]     = useState(false);
+
+  const typedRef     = useRef('');
+  const currentRef   = useRef('');
+  const usedRef      = useRef(new Set());
+  const streakPosRef = useRef(null);
+  const streakCntRef = useRef(0);
+  const scoreRef     = useRef(0);
+  const chainRef     = useRef([]);
+  const phaseRef     = useRef('countdown');
+  const gameOverRef  = useRef(false);
+  const msgTimer     = useRef(null);
+
+  useEffect(() => { currentRef.current = currentWord; }, [currentWord]);
+  useEffect(() => { phaseRef.current   = phase; },       [phase]);
+
+  useEffect(() => {
+    const start = randomStarter(modeId);
+    const s = new Set([start]);
+    currentRef.current = start;
+    usedRef.current    = s;
+    chainRef.current   = [{ word: start, pts: null }];
+    setCurrentWord(start);
+    setUsedWords(s);
+    setChain([{ word: start, pts: null }]);
+  }, []);
+
+  // Countdown
+  useEffect(() => {
+    if (phase !== 'countdown') return;
+    const id = setInterval(() => {
+      setCountdown(c => {
+        if (c <= 1) { clearInterval(id); setPhase('playing'); phaseRef.current = 'playing'; return 0; }
+        return c - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [phase]);
+
+  // Timer
+  useEffect(() => {
+    if (phase !== 'playing' || debug.foreverMode) return;
+    const id = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 1) {
+          clearInterval(id);
+          gameOverRef.current = true;
+          setTimeout(() => onEnd({ score: scoreRef.current, chain: chainRef.current, deadEnd: false }), 300);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [phase, debug.foreverMode, onEnd]);
+
+  const showMsg = useCallback((text, type) => {
+    clearTimeout(msgTimer.current);
+    setMsg({ text, type });
+    msgTimer.current = setTimeout(() => setMsg({ text:'', type:'' }), MSG_DURATION);
+  }, []);
+
+  const triggerShake = useCallback(() => {
+    setShaking(true);
+    setTimeout(() => setShaking(false), 320);
+  }, []);
+
+  const submitWord = useCallback((word) => {
+    if (gameOverRef.current) return;
+    const upper = word.toUpperCase();
+    const cur   = currentRef.current;
+    if (!cfg.getWords().has(upper)) { showMsg('Not a word', 'error'); triggerShake(); return; }
+    const diffs = diffPos(cur, upper);
+    if (diffs.length !== 1) {
+      showMsg(diffs.length === 0 ? 'Same as current word' : 'Change exactly one letter', 'error');
+      triggerShake(); return;
+    }
+    if (usedRef.current.has(upper)) { showMsg('Already used', 'error'); triggerShake(); return; }
+    const pos = diffs[0];
+    let newStreakCnt = (streakPosRef.current === pos) ? streakCntRef.current + 1 : 1;
+    if (debug.streakRule && newStreakCnt >= 3) {
+      showMsg(`Can't change position ${pos + 1} three times in a row`, 'error');
+      triggerShake(); return;
+    }
+    const pts      = cfg.posPts[pos];
+    const newScore = scoreRef.current + pts;
+    const newUsed  = new Set([...usedRef.current, upper]);
+    const newChain = [...chainRef.current, { word: upper, pts }];
+    scoreRef.current    = newScore;
+    usedRef.current     = newUsed;
+    chainRef.current    = newChain;
+    streakPosRef.current = pos;
+    streakCntRef.current = newStreakCnt;
+    typedRef.current = '';
+    setTyped('');
+    setCurrentWord(upper);
+    setUsedWords(newUsed);
+    setChain(newChain);
+    setScore(newScore);
+    setAcceptKey(k => k + 1);
+    showMsg(`+${pts} pt${pts !== 1 ? 's' : ''}`, 'ok');
+    const moves = getValidMoves(upper, newUsed, pos, newStreakCnt, debug.streakRule, cfg.getWords());
+    if (moves.length === 0) {
+      setDeadEnd(true);
+      if (debug.foreverMode) {
+        gameOverRef.current = true;
+        setTimeout(() => onEnd({ score: newScore, chain: newChain, deadEnd: true }), 1800);
+      }
+    }
+  }, [debug.streakRule, debug.foreverMode, showMsg, triggerShake, onEnd]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (gameOverRef.current) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (phaseRef.current === 'countdown' && /^[a-zA-Z]$/.test(e.key)) {
+      setPhase('playing'); phaseRef.current = 'playing';
+    }
+    if (phaseRef.current !== 'playing') return;
+    if (e.key === 'Enter') {
+      if (typedRef.current.length === cfg.wordLen) submitWord(typedRef.current);
+    } else if (e.key === 'Backspace') {
+      const next = typedRef.current.slice(0, -1);
+      typedRef.current = next; setTyped(next);
+      setMsg({ text:'', type:'' });
+    } else if (/^[a-zA-Z]$/.test(e.key) && typedRef.current.length < cfg.wordLen) {
+      const next = typedRef.current + e.key.toUpperCase();
+      typedRef.current = next; setTyped(next);
+    }
+  }, [submitWord, cfg]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  // Real-time validation
+  const typedDiffs      = typed.length === cfg.wordLen ? diffPos(currentWord, typed) : [];
+  const tooMany         = typedDiffs.length > 1;
+  const noChange        = typedDiffs.length === 0 && typed.length === cfg.wordLen;
+  const persistentError = tooMany
+    ? `Changed ${typedDiffs.length} letters — change just 1`
+    : noChange ? 'Same as current word' : '';
+  const displayMsg = persistentError ? { text: persistentError, type: 'error' } : msg;
+
+  const urgent      = timeLeft <= 10 && !debug.foreverMode;
+  const pct         = debug.foreverMode ? 100 : (timeLeft / TOTAL_TIME) * 100;
+  const wordsPlayed = chain.length - 1;
+
+  return (
+    <div style={{ animation: 'fadeIn 250ms ease' }}>
+      <div className="hdr">
+        <MascotIcon size={48} modeId={cfg.id} />
+        <div className="wordmark">{cfg.name.split(' ')[0]} <em>{cfg.name.split(' ')[1]}</em></div>
+        {debug.foreverMode && <span className="forever-badge">∞</span>}
+      </div>
+
+      {phase === 'countdown' && (
+        <div className="countdown-overlay">
+          <div className="countdown-num" key={countdown}>{countdown}</div>
+          <div className="countdown-sub">Get ready… or start typing!</div>
+        </div>
+      )}
+
+      {!debug.foreverMode && (
+        <div className="timer-wrap">
+          <div className="timer-row">
+            <span className="timer-label">Time left</span>
+            <span className={`timer-secs${urgent ? ' urgent' : ''}`}>{timeLeft}s</span>
+          </div>
+          <div className="timer-track">
+            <div className={`timer-fill${urgent ? ' urgent' : ''}${phase === 'countdown' ? ' paused' : ''}`}
+              style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+      )}
+
+      <div className="score-row">
+        <div className="score-badge">{score}</div>
+        <div className="score-sub">{wordsPlayed} word{wordsPlayed !== 1 ? 's' : ''} played</div>
+      </div>
+
+      <div style={{ marginTop: 20 }}>
+        <div className="section-label">Current word</div>
+        <div className="tile-row">
+          {currentWord.split('').map((l, i) => (
+            <div key={`${acceptKey}-${i}`} className="tile accept" style={{ animationDelay: `${i * 40}ms` }}>{l}</div>
+          ))}
+        </div>
+      </div>
+
+      {deadEnd && (
+        <div className="dead-end-banner">
+          <span style={{ fontSize: 20 }}>🐷</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: '#7A5800' }}>Dead end!</div>
+            <div style={{ fontSize: 12, color: '#9A7010', marginTop: 2 }}>
+              No valid moves left from <strong>{currentWord}</strong>.
+              {debug.foreverMode ? ' Ending game…' : ' Wait for the timer.'}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ marginTop: 16, opacity: deadEnd ? 0.4 : 1, pointerEvents: deadEnd ? 'none' : 'auto' }}>
+        <div className="section-label">Your next word</div>
+        <div className={`tile-row${shaking ? ' shake' : ''}`}>
+          {Array.from({ length: cfg.wordLen }, (_, i) => {
+            const letter   = typed[i] || '';
+            const isCursor = i === typed.length && typed.length < cfg.wordLen;
+            const isWrong  = (tooMany || noChange) && typedDiffs.includes(i);
+            return (
+              <div key={i} className={`tile${isCursor ? ' cursor' : ''}${isWrong ? ' wrong' : ''}`}>{letter}</div>
+            );
+          })}
+        </div>
+        <div className={`input-hint ${displayMsg.type}`}>{displayMsg.text || '\u00a0'}</div>
+        <div className="kbd-hint">type · <kbd>⌫</kbd> delete · <kbd>↵</kbd> submit</div>
+      </div>
+
+      {chain.length > 1 && (
+        <div style={{ marginTop: 20 }}>
+          <div className="section-label">Word chain</div>
+          <ChainRows chain={chain} modeId={modeId} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── EndScreen ────────────────────────────────────────── */
+function EndScreen({ score, chain, deadEnd, onRestart, debug, modeId = 'classic' }) {
+  const cfg = MODES[modeId];
+  const [copied, setCopied] = useState(false);
+  const wordsPlayed = chain.length - 1;
+
+  const handleShare = useCallback(async () => {
+    const text = generateShareText(chain, score, modeId);
+    try {
+      if (navigator.share) {
+        await navigator.share({ text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      }
+    } catch (_) {
+      // fallback: show text in alert
+      try {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      } catch (_) {}
+    }
+  }, [chain, score]);
+
+  return (
+    <div style={{ animation: 'fadeIn 300ms ease' }}>
+      <div className="hdr">
+        <MascotIcon size={48} modeId={cfg.id} />
+        <div className="wordmark">{cfg.name.split(' ')[0]} <em>{cfg.name.split(' ')[1]}</em></div>
+      </div>
+
+      <div className="card" style={{ marginTop: 20 }}>
+        <div className="end-score">{debug.foreverMode ? wordsPlayed : score}</div>
+        <div className="end-score-label">
+          {debug.foreverMode
+            ? `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} in chain`
+            : `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} · ${score} point${score !== 1 ? 's' : ''}`}
+        </div>
+        {deadEnd && <div style={{ fontSize: 12, color: '#9A7010', textAlign: 'center', marginTop: 4 }}>Ended on a dead end 🐷</div>}
+
+        <div style={{ margin: '20px 0 8px' }}>
+          <div className="section-label" style={{ marginBottom: 10 }}>Your chain</div>
+          <ChainRows chain={chain} maxHeight={260} modeId={modeId} />
+        </div>
+
+        <div style={{ marginBottom: 20 }}><PosLegend modeId={modeId} /></div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <button className="btn btn-primary btn-full" onClick={onRestart}>Play again</button>
+          {!debug.foreverMode && (
+            <button className="btn btn-copy btn-full" onClick={handleShare}>
+              {navigator.share ? '🔗 Share chain' : '📋 Copy chain'}
+            </button>
+          )}
+        </div>
+        {copied && <div className="share-copied">Copied to clipboard! ✓</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ── App ──────────────────────────────────────────────── */
+function App() {
+  // screen: 'start' | 'tutorial' | 'playing' | 'end'
+  const [screen,  setScreen]  = useState('start');
+  const [result,  setResult]  = useState(null);
+  const [debug,   setDebug]   = useState(() => ({
+    streakRule:  true,
+    foreverMode: false,
+    darkMode:    localStorage.getItem('darkMode') === 'true',
+  }));
+  const [modeId,  setModeId]  = useState('classic');
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = debug.darkMode ? 'dark' : '';
+    localStorage.setItem('darkMode', debug.darkMode);
+  }, [debug.darkMode]);
+
+  return (
+    <div id="root" className={modeId === 'soyboy' ? 'soyboy' : ''}>
+      {screen === 'start' && (
+        <StartScreen
+          onStart={() => setScreen('playing')}
+          onTutorial={() => setScreen('tutorial')}
+          debug={debug}
+          setDebug={setDebug}
+          modeId={modeId}
+          setModeId={setModeId}
+        />
+      )}
+      {screen === 'tutorial' && (
+        <OnboardingScreen
+          modeId={modeId}
+          onDone={() => setScreen('playing')}
+          onBack={() => setScreen('start')}
+        />
+      )}
+      {screen === 'playing' && (
+        <PlayScreen
+          key={Date.now()}
+          onEnd={res => { setResult(res); setScreen('end'); }}
+          debug={debug}
+          modeId={modeId}
+        />
+      )}
+      {screen === 'end' && (
+        <EndScreen
+          score={result.score}
+          chain={result.chain}
+          deadEnd={result.deadEnd}
+          debug={debug}
+          modeId={modeId}
+          onRestart={() => setScreen('playing')}
+        />
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

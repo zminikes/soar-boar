@@ -1,0 +1,118 @@
+/*
+  Soar Boar — CSS Custom Properties
+  Generated from tokens/tokens.json
+  ─────────────────────────────────
+  Font: Inter
+  Modes: Light (default) + Dark
+*/
+
+/* ── Light mode (default) ───────────────────────────────── */
+:root {
+  /* ── Color / Background ─────────────────────────────── */
+  --sb-color-bg-base:    #F5EDE0;
+  --sb-color-bg-surface: #FFFFFF;
+
+  /* ── Color / Brand ──────────────────────────────────── */
+  --sb-color-brand-primary:   #E8632B;
+  --sb-color-brand-secondary: #1A1514;
+  --sb-color-brand-accent:    #F0B8C8;
+  --sb-color-brand-green:     #3EAD6E;
+
+  /* ── Color / Position indicators ────────────────────── */
+  --sb-color-pos-1: #E8632B;
+  --sb-color-pos-2: #9B59B6;
+  --sb-color-pos-3: #2E86C1;
+  --sb-color-pos-4: #27AE60;
+
+  /* ── Color / Text ───────────────────────────────────── */
+  --sb-color-text-primary:   #1A1514;
+  --sb-color-text-secondary: #8A7A72;
+  --sb-color-text-inverse:   #FFFFFF;
+
+  /* ── Color / Border ─────────────────────────────────── */
+  --sb-color-border-default: #E0D0C0;
+
+  /* ── Color / State ──────────────────────────────────── */
+  --sb-color-state-error:   #C0392B;
+  --sb-color-state-success: #27AE60;
+
+  /* ── Typography / Family ─────────────────────────────── */
+  --sb-font-display: 'Inter', system-ui, sans-serif;
+  --sb-font-ui:      'Inter', system-ui, sans-serif;
+  --sb-font-tile:    'Inter', system-ui, sans-serif;
+
+  /* ── Typography / Size ───────────────────────────────── */
+  --sb-text-xs:   11px;
+  --sb-text-sm:   13px;
+  --sb-text-md:   15px;
+  --sb-text-lg:   20px;
+  --sb-text-xl:   28px;
+  --sb-text-2xl:  48px;
+  --sb-text-tile: 28px;
+
+  /* ── Typography / Weight ─────────────────────────────── */
+  --sb-weight-regular:  400;
+  --sb-weight-medium:   500;
+  --sb-weight-semibold: 600;
+  --sb-weight-bold:     700;
+  --sb-weight-xbold:    800;
+  --sb-weight-black:    900;
+
+  /* ── Typography / Line Height ────────────────────────── */
+  --sb-leading-tight:  1.1;
+  --sb-leading-normal: 1.5;
+
+  /* ── Spacing ─────────────────────────────────────────── */
+  --sb-space-1:  4px;
+  --sb-space-2:  8px;
+  --sb-space-3:  12px;
+  --sb-space-4:  16px;
+  --sb-space-5:  20px;
+  --sb-space-6:  24px;
+  --sb-space-8:  32px;
+  --sb-space-10: 40px;
+  --sb-space-12: 48px;
+
+  /* ── Size ────────────────────────────────────────────── */
+  --sb-size-tile:      64px;
+  --sb-size-tile-sm:   40px;
+  --sb-size-timer-bar: 6px;
+
+  /* ── Radius ──────────────────────────────────────────── */
+  --sb-radius-sm:   8px;
+  --sb-radius-md:   16px;
+  --sb-radius-lg:   24px;
+  --sb-radius-btn:  14px;
+  --sb-radius-pill: 9999px;
+
+  /* ── Shadow ──────────────────────────────────────────── */
+  --sb-shadow-card:  0 4px 20px rgba(26,21,20,0.06);
+  --sb-shadow-focus: 0 0 0 3px rgba(232,99,43,0.25);
+
+  /* ── Motion ──────────────────────────────────────────── */
+  --sb-duration-fast:   120ms;
+  --sb-duration-normal: 220ms;
+  --sb-duration-slow:   400ms;
+  --sb-ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --sb-ease-bounce:  cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Dark mode ───────────────────────────────────────────── */
+:root[data-theme="dark"] {
+  --sb-color-bg-base:    #1C1917;
+  --sb-color-bg-surface: #252220;
+
+  --sb-color-brand-primary:   #E8632B;
+  --sb-color-brand-secondary: #EFE7DD;
+  --sb-color-brand-accent:    #3D1E2A;
+  --sb-color-brand-green:     #4DC87E;
+
+  --sb-color-text-primary:   #EFE7DD;
+  --sb-color-text-secondary: #8A7A6E;
+  --sb-color-text-inverse:   #1C1917;
+
+  --sb-color-border-default: #3A3028;
+
+  --sb-color-state-error:   #E56055;
+  --sb-color-state-success: #4AC47A;
+}
