@@ -584,11 +584,13 @@
        Invisible but fully focusable — pointer-events:none only blocks CSS hit testing,
        not JS .focus(). font-size:16px prevents iOS viewport zoom on focus. */
     .input-capture {
-      position: fixed;
-      bottom: 0; left: 0;
-      width: 100%; height: 1px;
+      /* position: absolute so iOS scrolls the PARENT tile area into view
+         when this input is focused, pushing content above the keyboard */
+      position: absolute;
+      top: 0; left: 0;
+      width: 1px; height: 1px;
       opacity: 0;
-      font-size: 16px;
+      font-size: 16px;  /* prevent iOS viewport zoom on focus */
       border: none; outline: none;
       background: transparent;
       pointer-events: none;
@@ -644,7 +646,7 @@ const MODES = {
     tutorialStart:  'SOAR',
     tutorialTarget: 'BOAR',
     tutorialWords:  ['SOAR', 'BOAR', 'BEAR'],
-    tutorialHints:  ['Type BOAR, then press Enter', 'Now type BEAR, then press Enter'],
+    tutorialHints:  ['Type BOAR, then press enter', 'Now type BEAR, then press enter'],
   },
   soyboy: {
     id: 'soyboy',
@@ -659,7 +661,7 @@ const MODES = {
     tutorialStart:  'SOY',
     tutorialTarget: 'BOY',
     tutorialWords:  ['SOY', 'BOY', 'BAY'],
-    tutorialHints:  ['Type BOY, then press Enter', 'Now type BAY, then press Enter'],
+    tutorialHints:  ['Type BOY, then press enter', 'Now type BAY, then press enter'],
   },
 };
 
@@ -865,7 +867,9 @@ function Confetti() {
 function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
   const cfg   = MODES[modeId];
   const words = cfg.tutorialWords;   // e.g. ['SOAR','BOAR','BEAR']
-  const hints = cfg.tutorialHints;   // e.g. ['Type BOAR…','Now type BEAR…']
+  // On mobile the submit action is 'tap Done'; on desktop 'press enter'
+  const submitLabel = isTouchDevice ? 'tap Done' : 'press enter';
+  const hints = cfg.tutorialHints.map(h => h.replace('press enter', submitLabel));
 
   const [step,           setStep]           = useState(0);
   const [typed,          setTyped]          = useState('');
@@ -1010,8 +1014,10 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
               color: 'var(--dark)', textAlign: 'center', marginBottom: 12,
               animation: 'fadeIn 200ms ease',
             }}>{hints[step]}</div>
-            {/* Tappable wrapper — opens soft keyboard on mobile */}
-            <div onClick={focusInput} style={{ cursor: 'text' }}>
+            {/* Tappable wrapper — opens soft keyboard on mobile.
+               position:relative so the hidden input is anchored here;
+               iOS will scroll THIS area into view when the input is focused. */}
+            <div onClick={focusInput} style={{ cursor: 'text', position: 'relative' }}>
               <div className={`tile-row${shaking ? ' shake' : ''}`}>
                 {Array.from({ length: cfg.wordLen }, (_, i) => {
                   const letter   = typed[i] || '';
@@ -1024,6 +1030,20 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
                   );
                 })}
               </div>
+              {/* Hidden input lives here so iOS knows to scroll tile area into view */}
+              <input
+                ref={inputRef}
+                className="input-capture"
+                type="text"
+                inputMode="text"
+                autoCapitalize="characters"
+                autoCorrect="off"
+                autoComplete="new-password"
+                spellCheck={false}
+                aria-hidden="true"
+                enterKeyHint="done"
+                onChange={e => { e.target.value = ''; }}
+              />
             </div>
             <div className={`input-hint ${displayMsg.type}`}>{displayMsg.text || '\u00a0'}</div>
             <div className="kbd-hint">
@@ -1056,21 +1076,6 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
 
       </div>
 
-      {/* Hidden input — programmatically focused to open soft keyboard on mobile.
-          keydown events from it bubble to window where handleKeyDown catches them. */}
-      <input
-        ref={inputRef}
-        className="input-capture"
-        type="text"
-        inputMode="text"
-        autoCapitalize="characters"
-        autoCorrect="off"
-        autoComplete="off"
-        spellCheck={false}
-        aria-hidden="true"
-        enterKeyHint="done"
-        onChange={e => { e.target.value = ''; }}
-      />
     </div>
   );
 }
@@ -1257,7 +1262,7 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }
 }
 
 /* ── PlayScreen ───────────────────────────────────────── */
-function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
+function PlayScreen({ onEnd, onHome, debug, modeId = 'classic' }) {
   const cfg = MODES[modeId];
   const [phase,       setPhase]       = useState('countdown');
   const [countdown,   setCountdown]   = useState(HEAD_START);
@@ -1423,7 +1428,7 @@ function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
 
   return (
     <div style={{ animation: 'fadeIn 250ms ease' }}>
-      <div className="hdr">
+      <div className="hdr" onClick={onHome} style={{ cursor: 'pointer' }} role="button" aria-label="Back to home">
         <MascotIcon size={72} modeId={cfg.id} />
         <div className="wordmark">{cfg.name.split(' ')[0]} <em>{cfg.name.split(' ')[1]}</em></div>
         {debug.foreverMode && <span className="forever-badge">∞</span>}
@@ -1473,9 +1478,10 @@ function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
         </div>
       )}
 
-      {/* Tap anywhere on this section to open soft keyboard on mobile */}
+      {/* Tap anywhere on this section to open soft keyboard on mobile.
+         position:relative anchors the hidden input so iOS scrolls THIS area into view. */}
       <div
-        style={{ marginTop: 16, opacity: deadEnd ? 0.4 : 1, pointerEvents: deadEnd ? 'none' : 'auto' }}
+        style={{ marginTop: 16, opacity: deadEnd ? 0.4 : 1, pointerEvents: deadEnd ? 'none' : 'auto', position: 'relative' }}
         onClick={() => inputRef.current?.focus()}
       >
         <div className="section-label">Your next word</div>
@@ -1495,6 +1501,20 @@ function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
             ? 'tap tiles · type · Done to submit'
             : <>type · <kbd>⌫</kbd> delete · <kbd>↵</kbd> submit</>}
         </div>
+        {/* Hidden input anchored here — iOS scrolls this tile area into view on focus */}
+        <input
+          ref={inputRef}
+          className="input-capture"
+          type="text"
+          inputMode="text"
+          autoCapitalize="characters"
+          autoCorrect="off"
+          autoComplete="new-password"
+          spellCheck={false}
+          aria-hidden="true"
+          enterKeyHint="done"
+          onChange={e => { e.target.value = ''; }}
+        />
       </div>
 
       {chain.length > 1 && (
@@ -1504,27 +1524,12 @@ function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
         </div>
       )}
 
-      {/* Hidden input — focused programmatically to trigger the soft keyboard.
-          keydown events bubble from it to window where handleKeyDown catches them. */}
-      <input
-        ref={inputRef}
-        className="input-capture"
-        type="text"
-        inputMode="text"
-        autoCapitalize="characters"
-        autoCorrect="off"
-        autoComplete="off"
-        spellCheck={false}
-        aria-hidden="true"
-        enterKeyHint="done"
-        onChange={e => { e.target.value = ''; }}
-      />
     </div>
   );
 }
 
 /* ── EndScreen ────────────────────────────────────────── */
-function EndScreen({ score, chain, deadEnd, onRestart, debug, modeId = 'classic' }) {
+function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = 'classic' }) {
   const cfg = MODES[modeId];
   const [copied, setCopied] = useState(false);
   const wordsPlayed = chain.length - 1;
@@ -1551,7 +1556,7 @@ function EndScreen({ score, chain, deadEnd, onRestart, debug, modeId = 'classic'
 
   return (
     <div style={{ animation: 'fadeIn 300ms ease' }}>
-      <div className="hdr">
+      <div className="hdr" onClick={onHome} style={{ cursor: 'pointer' }} role="button" aria-label="Back to home">
         <MascotIcon size={72} modeId={cfg.id} />
         <div className="wordmark">{cfg.name.split(' ')[0]} <em>{cfg.name.split(' ')[1]}</em></div>
       </div>
@@ -1633,6 +1638,7 @@ function App() {
         <PlayScreen
           key={Date.now()}
           onEnd={res => { setResult(res); setScreen('end'); }}
+          onHome={() => setScreen('start')}
           debug={debug}
           modeId={modeId}
         />
@@ -1645,6 +1651,7 @@ function App() {
           debug={debug}
           modeId={modeId}
           onRestart={() => setScreen('playing')}
+          onHome={() => setScreen('start')}
         />
       )}
     </div>
