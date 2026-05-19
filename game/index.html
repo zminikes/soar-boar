@@ -584,11 +584,10 @@
        Invisible but fully focusable — pointer-events:none only blocks CSS hit testing,
        not JS .focus(). font-size:16px prevents iOS viewport zoom on focus. */
     .input-capture {
-      /* position: absolute so iOS scrolls the PARENT tile area into view
-         when this input is focused, pushing content above the keyboard */
+      /* Cover the parent so iOS scrolls the whole tile area into view
+         when this input is focused, not just a 1px sliver at the top */
       position: absolute;
-      top: 0; left: 0;
-      width: 1px; height: 1px;
+      inset: 0;
       opacity: 0;
       font-size: 16px;  /* prevent iOS viewport zoom on focus */
       border: none; outline: none;
@@ -885,7 +884,12 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
 
   // Open soft keyboard when user taps the tile area
   const focusInput = useCallback(() => {
-    if (!done) inputRef.current?.focus();
+    if (done) return;
+    const el = inputRef.current;
+    if (!el) return;
+    el.focus();
+    // After the keyboard animates in, make sure the tile area is visible
+    setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
   }, [done]);
 
   const showMsg = useCallback((text, type) => {
@@ -1036,12 +1040,16 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
                 className="input-capture"
                 type="text"
                 inputMode="text"
+                name="guess"
                 autoCapitalize="characters"
                 autoCorrect="off"
-                autoComplete="new-password"
+                autoComplete="off"
                 spellCheck={false}
                 aria-hidden="true"
                 enterKeyHint="done"
+                data-form-type="other"
+                data-1p-ignore=""
+                data-lpignore="true"
                 onChange={e => { e.target.value = ''; }}
               />
             </div>
@@ -1292,7 +1300,13 @@ function PlayScreen({ onEnd, onHome, debug, modeId = 'classic' }) {
   useEffect(() => { currentRef.current = currentWord; }, [currentWord]);
   useEffect(() => { phaseRef.current   = phase; },       [phase]);
   // Focus the capture input when gameplay begins so the soft keyboard opens
-  useEffect(() => { if (phase === 'playing') inputRef.current?.focus(); }, [phase]);
+  useEffect(() => {
+    if (phase !== 'playing') return;
+    const el = inputRef.current;
+    if (!el) return;
+    el.focus();
+    setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+  }, [phase]);
 
   useEffect(() => {
     const start = randomStarter(modeId);
@@ -1482,7 +1496,12 @@ function PlayScreen({ onEnd, onHome, debug, modeId = 'classic' }) {
          position:relative anchors the hidden input so iOS scrolls THIS area into view. */}
       <div
         style={{ marginTop: 16, opacity: deadEnd ? 0.4 : 1, pointerEvents: deadEnd ? 'none' : 'auto', position: 'relative' }}
-        onClick={() => inputRef.current?.focus()}
+        onClick={() => {
+          const el = inputRef.current;
+          if (!el) return;
+          el.focus();
+          setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+        }}
       >
         <div className="section-label">Your next word</div>
         <div className={`tile-row${shaking ? ' shake' : ''}`}>
@@ -1507,12 +1526,16 @@ function PlayScreen({ onEnd, onHome, debug, modeId = 'classic' }) {
           className="input-capture"
           type="text"
           inputMode="text"
+          name="guess"
           autoCapitalize="characters"
           autoCorrect="off"
-          autoComplete="new-password"
+          autoComplete="off"
           spellCheck={false}
           aria-hidden="true"
           enterKeyHint="done"
+          data-form-type="other"
+          data-1p-ignore=""
+          data-lpignore="true"
           onChange={e => { e.target.value = ''; }}
         />
       </div>
