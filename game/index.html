@@ -217,8 +217,13 @@
       background: var(--orange);
       transition: width 1s linear, background 0.3s;
     }
-    .timer-fill.urgent { background: var(--error); }
+    .timer-fill.urgent { background: var(--error); animation: timerPulse 800ms ease-in-out infinite; }
     .timer-fill.paused { background: var(--border); transition: none; }
+    @keyframes timerPulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.5; }
+    }
+    .timer-track.urgent { box-shadow: 0 0 0 2px rgba(192,57,43,0.18); }
 
     /* ── Tile ────────────────────────────────────────────── */
     .tile-row { display: flex; gap: 8px; justify-content: center; }
@@ -284,6 +289,45 @@
       text-align: center;
     }
     .score-sub { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .score-meta { display: flex; align-items: center; gap: 12px; }
+    .restart-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: background 120ms ease, color 120ms ease, transform 80ms ease;
+    }
+    .restart-btn:hover { color: var(--dark); background: var(--pink); }
+    .restart-btn:active { transform: scale(0.92); }
+    .best-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--ff-sans);
+      font-size: 12px; font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .best-chip strong { color: var(--dark); font-weight: 800; letter-spacing: 0; text-transform: none; font-size: 13px; }
+    .new-best-banner {
+      background: linear-gradient(135deg, var(--orange), #F9B68A);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-family: var(--ff-sans);
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      text-align: center;
+      margin-top: 12px;
+      animation: fadeIn 400ms ease;
+    }
 
     /* ── Chain ───────────────────────────────────────────── */
     .chain-scroll {
@@ -608,13 +652,13 @@
     .kb-key {
       flex: 1 1 0;
       min-width: 0;
-      height: 48px;
+      height: 58px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       background: var(--white);
       color: var(--dark);
       font-family: var(--ff-sans);
-      font-size: 17px;
+      font-size: 19px;
       font-weight: 700;
       cursor: pointer;
       touch-action: manipulation;
@@ -627,15 +671,15 @@
       transform: scale(0.94);
     }
     .kb-key.wide {
-      flex: 1.5 1 0;
-      font-size: 12px;
-      letter-spacing: 0.04em;
+      flex: 1.6 1 0;
+      font-size: 13px;
+      letter-spacing: 0.05em;
     }
     :root[data-theme="dark"] .kb { background: #141413; border-top-color: rgba(255,255,255,0.1); }
     :root[data-theme="dark"] .kb-key { background: #2A2826; color: #F5F5F4; box-shadow: none; }
     /* Reserve space below content so the fixed keyboard doesn't cover it */
     @media (hover: none) and (pointer: coarse) {
-      body { padding-bottom: 200px; }
+      body { padding-bottom: 230px; }
     }
 
     /* ── Mobile polish ───────────────────────────────────── */
@@ -708,6 +752,15 @@ const MODES = {
 /* Detect touch device — used to show/hide keyboard hints */
 const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
+const BEST_KEY = (modeId) => `bestScore:${modeId}`;
+const getBestScore = (modeId) => {
+  const n = parseInt(localStorage.getItem(BEST_KEY(modeId)) || '0', 10);
+  return Number.isFinite(n) ? n : 0;
+};
+const setBestScore = (modeId, score) => localStorage.setItem(BEST_KEY(modeId), String(score));
+
+const SHARE_URL = 'soar-boar.vercel.app';
+
 /* ── Helpers ──────────────────────────────────────────── */
 function diffPos(a, b) {
   const d = [];
@@ -754,6 +807,8 @@ function generateShareText(chain, score, modeId = 'classic') {
     `⏱ ${cfg.duration} sec · ${score} pts · ${chain.length - 1} word${chain.length !== 2 ? 's' : ''}`,
     '',
     ...rows,
+    '',
+    SHARE_URL,
   ].join('\n');
 }
 
@@ -963,13 +1018,13 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
   const handleKeyDown = useCallback((e) => {
     if (done) return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
-    if (e.key === 'Enter') {
-      const word = typedRef.current;
+    const tryShake = () => { setShaking(true); setTimeout(() => setShaking(false), 280); };
+    const attemptSubmit = (word) => {
       if (word.length !== cfg.wordLen) return;
-      if (!cfg.getWords().has(word)) { showMsg('Not a word', 'error'); setShaking(true); setTimeout(() => setShaking(false), 280); return; }
+      if (!cfg.getWords().has(word)) { showMsg('Not a word', 'error'); tryShake(); return; }
       const diffs = diffPos(fromWord, word);
-      if (diffs.length === 0) { showMsg('Same word — change one letter!', 'error'); setShaking(true); setTimeout(() => setShaking(false), 280); return; }
-      if (diffs.length > 1)  { showMsg('Change exactly one letter', 'error'); setShaking(true); setTimeout(() => setShaking(false), 280); return; }
+      if (diffs.length === 0) { showMsg('Same word — change one letter!', 'error'); tryShake(); return; }
+      if (diffs.length > 1)  { showMsg('Change exactly one letter', 'error'); tryShake(); return; }
       const changedIdx = diffs[0];
       const pts = cfg.posPts[changedIdx];
       const newCompleted = [...completedSteps, { word, pts, changedIdx }];
@@ -982,6 +1037,9 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
         typedRef.current = ''; setTyped('');
         setMsg({ text: '', type: '' });
       }
+    };
+    if (e.key === 'Enter') {
+      attemptSubmit(typedRef.current);
     } else if (e.key === 'Backspace') {
       const next = typedRef.current.slice(0, -1);
       typedRef.current = next; setTyped(next);
@@ -989,6 +1047,7 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
     } else if (/^[a-zA-Z]$/.test(e.key) && typedRef.current.length < cfg.wordLen) {
       const next = typedRef.current + e.key.toUpperCase();
       typedRef.current = next; setTyped(next);
+      if (next.length === cfg.wordLen) attemptSubmit(next);
     }
   }, [done, step, fromWord, completedSteps, showMsg, cfg, words.length]);
 
@@ -1196,6 +1255,7 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
 function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }) {
   const cfg = MODES[modeId];
   const [showPrefs, setShowPrefs] = useState(false);
+  const bestScore = getBestScore(modeId);
 
   const subtitles = {
     classic: 'Build a word chain, one letter at a time',
@@ -1240,6 +1300,11 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }
             </button>
           ))}
         </div>
+        {bestScore > 0 && (
+          <div style={{ textAlign: 'center', marginTop: 14 }}>
+            <span className="best-chip">Personal best · <strong>{bestScore} pts</strong></span>
+          </div>
+        )}
       </div>
 
       {/* How it works */}
@@ -1308,7 +1373,7 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }
 }
 
 /* ── PlayScreen ───────────────────────────────────────── */
-function PlayScreen({ onEnd, onHome, debug, modeId = 'classic' }) {
+function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
   const cfg = MODES[modeId];
   const [phase,       setPhase]       = useState('countdown');
   const [countdown,   setCountdown]   = useState(HEAD_START);
@@ -1448,6 +1513,7 @@ function PlayScreen({ onEnd, onHome, debug, modeId = 'classic' }) {
     } else if (/^[a-zA-Z]$/.test(e.key) && typedRef.current.length < cfg.wordLen) {
       const next = typedRef.current + e.key.toUpperCase();
       typedRef.current = next; setTyped(next);
+      if (next.length === cfg.wordLen) submitWord(next);
     }
   }, [submitWord, cfg]);
 
@@ -1487,7 +1553,7 @@ function PlayScreen({ onEnd, onHome, debug, modeId = 'classic' }) {
               {phase === 'countdown' ? countdown : timeLeft}s
             </span>
           </div>
-          <div className="timer-track">
+          <div className={`timer-track${urgent ? ' urgent' : ''}`}>
             <div className={`timer-fill${urgent ? ' urgent' : ''}${phase === 'countdown' ? ' paused' : ''}`}
               style={{ width: `${pct}%` }} />
           </div>
@@ -1496,7 +1562,21 @@ function PlayScreen({ onEnd, onHome, debug, modeId = 'classic' }) {
 
       <div className="score-row">
         <div className="score-badge">{score}</div>
-        <div className="score-sub">{wordsPlayed} word{wordsPlayed !== 1 ? 's' : ''} played</div>
+        <div className="score-meta">
+          <div className="score-sub">{wordsPlayed} word{wordsPlayed !== 1 ? 's' : ''} played</div>
+          <button
+            type="button"
+            className="restart-btn"
+            onClick={onRestart}
+            aria-label="Restart game"
+            title="Restart"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div style={{ marginTop: 20 }}>
@@ -1546,7 +1626,7 @@ function PlayScreen({ onEnd, onHome, debug, modeId = 'classic' }) {
         </div>
       )}
 
-      <Keyboard onKey={k => handleKeyDown({ key: k })} visible={phase === 'playing' && !deadEnd} />
+      <Keyboard onKey={k => handleKeyDown({ key: k })} visible={!deadEnd} />
     </div>
   );
 }
@@ -1556,6 +1636,14 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
   const cfg = MODES[modeId];
   const [copied, setCopied] = useState(false);
   const wordsPlayed = chain.length - 1;
+
+  // Best score: only tracked for timed runs (foreverMode is endless / different scoring)
+  const previousBest = useRef(getBestScore(modeId)).current;
+  const isNewBest = !debug.foreverMode && score > 0 && score > previousBest;
+  useEffect(() => {
+    if (isNewBest) setBestScore(modeId, score);
+  }, [isNewBest, modeId, score]);
+  const currentBest = isNewBest ? score : previousBest;
 
   const handleShare = useCallback(async () => {
     const text = generateShareText(chain, score, modeId);
@@ -1592,6 +1680,14 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
             : `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} · ${score} point${score !== 1 ? 's' : ''}`}
         </div>
         {deadEnd && <div className="dead-end-sub" style={{ fontSize: 12, textAlign: 'center', marginTop: 4 }}>{`Ended on a dead end ${modeId === 'soyboy' ? '🫛' : '🐷'}`}</div>}
+        {!debug.foreverMode && isNewBest && (
+          <div className="new-best-banner">🏆 New personal best!</div>
+        )}
+        {!debug.foreverMode && !isNewBest && currentBest > 0 && (
+          <div style={{ textAlign: 'center', marginTop: 10 }}>
+            <span className="best-chip">Personal best · <strong>{currentBest} pts</strong></span>
+          </div>
+        )}
 
         <div style={{ margin: '20px 0 8px' }}>
           <div className="section-label" style={{ marginBottom: 10 }}>Your chain</div>
@@ -1623,6 +1719,8 @@ function App() {
   // screen: 'start' | 'tutorial' | 'playing' | 'end'
   const [screen,  setScreen]  = useState('start');
   const [result,  setResult]  = useState(null);
+  const [playKey, setPlayKey] = useState(0);
+  const restart = () => { setPlayKey(k => k + 1); setScreen('playing'); };
   const [debug,   setDebug]   = useState(() => ({
     streakRule:  true,
     foreverMode: false,
@@ -1642,7 +1740,7 @@ function App() {
     <div id="root" className={modeId === 'soyboy' ? 'soyboy' : ''}>
       {screen === 'start' && (
         <StartScreen
-          onStart={() => setScreen('playing')}
+          onStart={restart}
           onTutorial={() => setScreen('tutorial')}
           debug={debug}
           setDebug={setDebug}
@@ -1653,15 +1751,16 @@ function App() {
       {screen === 'tutorial' && (
         <OnboardingScreen
           modeId={modeId}
-          onDone={() => setScreen('playing')}
+          onDone={restart}
           onBack={() => setScreen('start')}
         />
       )}
       {screen === 'playing' && (
         <PlayScreen
-          key={Date.now()}
+          key={playKey}
           onEnd={res => { setResult(res); setScreen('end'); }}
           onHome={() => setScreen('start')}
+          onRestart={restart}
           debug={debug}
           modeId={modeId}
         />
@@ -1673,7 +1772,7 @@ function App() {
           deadEnd={result.deadEnd}
           debug={debug}
           modeId={modeId}
-          onRestart={() => setScreen('playing')}
+          onRestart={restart}
           onHome={() => setScreen('start')}
         />
       )}
