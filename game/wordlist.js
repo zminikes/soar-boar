@@ -913,6 +913,7 @@ const WORDS = new Set([
   "DIGI",
   "DIGS",
   "DIJK",
+  "DIKE",
   "DILL",
   "DIME",
   "DINA",

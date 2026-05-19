@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Soar Boar</title>
+  <meta name="description" content="Change one letter at a time to build the longest word chain you can. Race the clock — 60 seconds to score big." />
+  <title>Soar Boar — the word-chaining game</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐷</text></svg>" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +19,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --cream:      #F8F7F6;
+      --cream:      #F7F4F0;
       --orange:     #F48870;
       --pink:       rgba(244,136,112,0.12);
       --white:      #FFFFFF;
@@ -50,6 +52,14 @@
       0%, 100% { transform: rotate(0deg); }
       25%       { transform: rotate(-3deg); }
       75%       { transform: rotate(3deg); }
+    }
+    @keyframes earFlap {
+      0%   { transform: translateY(0)    scaleY(1);    }
+      18%  { transform: translateY(-5px) scaleY(0.93); }
+      38%  { transform: translateY(2px)  scaleY(1.04); }
+      58%  { transform: translateY(-3px) scaleY(0.97); }
+      78%  { transform: translateY(1px)  scaleY(1.01); }
+      100% { transform: translateY(0)    scaleY(1);    }
     }
 
     @keyframes shake {
@@ -117,13 +127,12 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      padding: 24px 0 0;
+      padding: 16px 0 0;
     }
     .wordmark {
       font-family: var(--ff-serif);
-      font-size: 28px;
+      font-size: 39px;
       font-weight: 400;
-      font-style: italic;
       letter-spacing: -0.5px;
       line-height: 1;
     }
@@ -162,12 +171,16 @@
       font-size: 14px;
       font-weight: 500;
     }
-    .btn-ghost:hover { color: var(--dark); }
+    .btn-ghost:hover { color: var(--dark); text-decoration: underline; text-underline-offset: 3px; }
     .btn-full { width: 100%; }
     .btn-sm { font-size: 13px; padding: 9px 16px; border-radius: 10px; }
     .btn-copy {
-      background: var(--dark);
-      color: #fff;
+      background: #1A1918;
+      color: #F5F3F0;
+    }
+    :root[data-theme="dark"] .btn-copy {
+      background: #2E2B28;
+      color: #F5F3F0;
     }
 
     /* ── Section label ───────────────────────────────────── */
@@ -229,9 +242,9 @@
     }
     /* success highlight on onboarding */
     .tile.changed-ok {
-      border-color: var(--orange);
-      background: #FFF0E8;
-      color: var(--orange);
+      border-color: #86bbef;
+      background: #EEF5FD;
+      color: #4a90d9;
     }
 
     /* ── Input hint ──────────────────────────────────────── */
@@ -296,19 +309,7 @@
     .chain-tile.changed { background: #FFE8DC; color: var(--orange); }
     .chain-pts { font-size: 11px; font-weight: 700; color: var(--muted); }
 
-    /* ── Countdown ───────────────────────────────────────── */
-    .countdown-overlay {
-      text-align: center;
-      padding: 32px 0 8px;
-    }
-    .countdown-num {
-      font-size: 80px;
-      font-weight: 800;
-      color: var(--orange);
-      line-height: 1;
-      animation: countdownPop 400ms cubic-bezier(0.34,1.56,0.64,1) both;
-    }
-    .countdown-sub { font-size: 14px; color: var(--muted); margin-top: 8px; font-weight: 600; }
+    /* countdown integrated into timer row — no separate overlay */
 
     /* ── Pos legend ──────────────────────────────────────── */
     .pos-legend { display: flex; flex-direction: column; gap: 7px; }
@@ -336,47 +337,7 @@
     .hero-wordmark em { font-style: normal; color: var(--orange); }
     .hero-tag { font-family: var(--ff-sans); font-size: 16px; font-weight: 400; color: var(--muted); margin-top: 8px; text-align: center; }
 
-    .rules-card { margin-top: 16px; }
-    .rules-title { font-family: var(--ff-sans); font-size: 13px; font-weight: 600; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-    .rules-list { display: flex; flex-direction: column; gap: 12px; }
-    .rule-item { display: flex; align-items: baseline; gap: 12px; }
-    .rule-num {
-      background: var(--cream);
-      border-radius: 7px;
-      width: 24px; height: 24px;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 800;
-      flex-shrink: 0;
-    }
-    .rule-text { font-size: 15px; line-height: 1.5; }
-    .rule-text strong { font-weight: 800; }
-
     /* ── Onboarding ──────────────────────────────────────── */
-    .onboard-header {
-      text-align: center;
-      padding: 28px 0 20px;
-    }
-    .onboard-step {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .onboard-title {
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      line-height: 1.2;
-    }
-    .onboard-sub {
-      font-size: 14px;
-      color: var(--muted);
-      margin-top: 6px;
-      font-weight: 500;
-      line-height: 1.4;
-    }
     .onboard-arrow {
       font-size: 28px;
       color: var(--border);
@@ -419,11 +380,12 @@
       gap: 10px;
       animation: slideDown 220ms ease;
     }
+    .dead-end-title { color: #7A5800; }
+    .dead-end-sub   { color: #9A7010; }
 
     /* ── End screen ──────────────────────────────────────── */
     .end-score { font-size: 72px; font-weight: 800; line-height: 1; text-align: center; }
     .end-score-label { font-size: 13px; font-weight: 600; color: var(--muted); text-align: center; margin-top: 4px; }
-    .share-row { display: flex; gap: 8px; margin-top: 12px; }
     .share-copied {
       font-size: 12px;
       color: var(--ok);
@@ -433,15 +395,7 @@
       animation: fadeIn 200ms ease;
     }
 
-    /* ── Preferences panel ───────────────────────────────── */
-    .prefs-panel {
-      margin-top: 24px;
-      padding: 16px;
-      background: var(--white);
-      border-radius: 18px;
-      border: 1.5px solid var(--border);
-    }
-    .prefs-title { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    /* ── Preferences rows ────────────────────────────────── */
     .prefs-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
     .prefs-row:last-child { margin-bottom: 0; }
     .prefs-label { font-size: 13px; font-weight: 600; }
@@ -485,7 +439,7 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: #525252;
+      color: var(--muted);
       margin-bottom: 12px;
     }
     .mode-picker {
@@ -493,11 +447,10 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
-    /* Interactive mode cards: 2px border (heavier — they're actionable) */
     .mode-pill {
-      padding: 20px;
+      padding: 16px 18px;
       border-radius: 16px;
-      border: 2px solid #E5E5E5;
+      border: 1px solid #E5E5E5;
       background: #FAFAFA;
       font-family: var(--ff-sans);
       cursor: pointer;
@@ -549,12 +502,48 @@
     }
     .prefs-toggle-btn:hover { color: var(--dark); }
 
+    /* ── Focus styles ────────────────────────────────────── */
+    :focus { outline: none; }
+    :focus-visible {
+      outline: 3px solid var(--orange);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    .btn:focus-visible      { outline-offset: 3px; border-radius: 16px; }
+    .btn-sm:focus-visible   { border-radius: 10px; }
+    .mode-pill:focus-visible { outline-offset: 3px; border-radius: 16px; }
+    .toggle input:focus-visible + .toggle-track {
+      outline: 3px solid var(--orange);
+      outline-offset: 2px;
+      border-radius: 999px;
+    }
+    .prefs-toggle-btn:focus-visible { outline-offset: 4px; border-radius: 8px; }
+
+    /* ── Reduced motion ──────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ── Theme transitions ───────────────────────────────── */
+    body,
+    .card, .info-card, .dead-end-banner, kbd,
+    .chain-tile, .chain-tile.changed,
+    .score-badge, .timer-track {
+      transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease;
+    }
+    /* tile already has its own transition — extend it for dark mode */
+    .tile { transition: border-color 200ms ease, background-color 200ms ease, color 200ms ease; }
+
     /* ── Dark mode ───────────────────────────────────────── */
     :root[data-theme="dark"] {
       --cream:  #141413;
       --white:  #1E1D1C;
       --dark:   #F5F5F4;
-      --muted:  #737373;
+      --muted:  #A3A3A3;
       --border: rgba(255,255,255,0.08);
       --pink:   rgba(244,136,112,0.12);
       --error:  #E56055;
@@ -563,14 +552,15 @@
     :root[data-theme="dark"] .soyboy { --orange: #94b190; }
     :root[data-theme="dark"] .info-card { background: #1E1D1C; border-color: rgba(255,255,255,0.1); }
     :root[data-theme="dark"] .info-card-title { color: var(--dark); }
-    :root[data-theme="dark"] .mode-section-label { color: #A3A3A3; }
     :root[data-theme="dark"] .mode-pill { background: #1E1D1C; border-color: rgba(255,255,255,0.1); color: var(--dark); }
     :root[data-theme="dark"] .mode-pill:hover:not(.active) { background: #252422; }
     :root[data-theme="dark"] .mode-pill.active { background: #F5F5F4; color: #141413; border-color: #F5F5F4; }
     :root[data-theme="dark"] .chain-tile.changed { background: rgba(244,136,112,0.15); }
     :root[data-theme="dark"] .tile.wrong { background: #3A1A16; }
-    :root[data-theme="dark"] .tile.changed-ok { background: rgba(244,136,112,0.15); }
-    :root[data-theme="dark"] .dead-end-banner { background: #252010; border-color: #5A4A18; }
+    :root[data-theme="dark"] .tile.changed-ok { background: rgba(134,187,239,0.15); border-color: #86bbef; color: #86bbef; }
+    :root[data-theme="dark"] .dead-end-banner { background: #252010; border-color: #5A4A18; color: #D4B860; }
+    :root[data-theme="dark"] .dead-end-banner .dead-end-title { color: #D4B860; }
+    :root[data-theme="dark"] .dead-end-banner .dead-end-sub   { color: #A89040; }
 
     /* ── Mobile polish ───────────────────────────────────── */
     @media (max-width: 380px) {
@@ -598,7 +588,7 @@ const { useState, useEffect, useRef, useCallback } = React;
 
 /* ── Constants ────────────────────────────────────────── */
 const TOTAL_TIME   = 60;
-const HEAD_START   = 2;
+const HEAD_START   = 4;
 const MSG_DURATION = 2000;
 const POS_COLORS   = ['#E8632B','#9B59B6','#2E86C1','#27AE60'];
 const POS_EMOJI    = ['🟧','🟪','🟦','🟩'];
@@ -610,33 +600,37 @@ const MODES = {
     name: 'Soar Boar',
     sub: '4-letter words',
     wordLen: 4,
+    duration: 60,
     getWords:    () => WORDS,
     getStarters: () => STARTER_WORDS,
     posPts:      [1, 4, 3, 2],
     posLabels:   ['1st','2nd','3rd','4th'],
     tutorialStart:  'SOAR',
     tutorialTarget: 'BOAR',
-    tutorialHint:   'Change the S to B, then press Enter',
+    tutorialWords:  ['SOAR', 'BOAR', 'BEAR'],
+    tutorialHints:  ['Type BOAR, then press Enter', 'Now type BEAR, then press Enter'],
   },
   soyboy: {
     id: 'soyboy',
     name: 'Soy Boy',
     sub: '3-letter words',
     wordLen: 3,
+    duration: 45,
     getWords:    () => WORDS3,
     getStarters: () => STARTER_WORDS3,
     posPts:      [1, 3, 2],
     posLabels:   ['1st','2nd','3rd'],
     tutorialStart:  'SOY',
     tutorialTarget: 'BOY',
-    tutorialHint:   'Change the S to B, then press Enter',
+    tutorialWords:  ['SOY', 'BOY', 'BAY'],
+    tutorialHints:  ['Type BOY, then press Enter', 'Now type BAY, then press Enter'],
   },
 };
 
 /* ── Helpers ──────────────────────────────────────────── */
 function diffPos(a, b) {
   const d = [];
-  for (let i = 0; i < 4; i++) if (a[i] !== b[i]) d.push(i);
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d.push(i);
   return d;
 }
 
@@ -676,7 +670,7 @@ function generateShareText(chain, score, modeId = 'classic') {
   }
   return [
     `${modeId === 'soyboy' ? '🫛' : '🐷'} ${cfg.name}`,
-    `⏱ 60 sec · ${score} pts · ${chain.length - 1} word${chain.length !== 2 ? 's' : ''}`,
+    `⏱ ${cfg.duration} sec · ${score} pts · ${chain.length - 1} word${chain.length !== 2 ? 's' : ''}`,
     '',
     ...rows,
   ].join('\n');
@@ -740,19 +734,24 @@ function PeaPodSVG({ size = 180 }) {
 }
 
 function MascotIcon({ size = 48, modeId = 'classic' }) {
-  if (modeId === 'soyboy') {
-    if (size >= 100) return <PeaPodSVG size={size} />;
-    return (
-      <span style={{ fontSize: size * 0.8, lineHeight: 1, display: 'inline-block' }}>🫛</span>
-    );
-  }
-  return <PigSVG size={size} />;
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.dataset.theme === 'dark'
+  );
+  useEffect(() => {
+    const check = () => setIsDark(document.documentElement.dataset.theme === 'dark');
+    const obs = new MutationObserver(check);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => obs.disconnect();
+  }, []);
+  const dm  = isDark ? '-dark' : '';
+  const src = modeId === 'soyboy' ? `bean-open${dm}.svg` : `pig-open${dm}.svg`;
+  return <img src={src} width={size} height={size} alt="" style={{ display: 'block' }} />;
 }
 
-function Toggle({ checked, onChange }) {
+function Toggle({ checked, onChange, label }) {
   return (
-    <label className="toggle">
-      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} />
+    <label className="toggle" aria-label={label}>
+      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} aria-label={label} />
       <span className="toggle-track" />
     </label>
   );
@@ -825,15 +824,20 @@ function Confetti() {
 
 /* ── OnboardingScreen ─────────────────────────────────── */
 function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
-  const cfg = MODES[modeId];
-  const START_WORD = cfg.tutorialStart;
-  const [typed,     setTyped]     = useState('');
-  const [succeeded, setSucceeded] = useState(false);
-  const [acceptedWord, setAcceptedWord] = useState('');
-  const [msg,       setMsg]       = useState({ text: '', type: '' });
-  const [shaking,   setShaking]   = useState(false);
+  const cfg   = MODES[modeId];
+  const words = cfg.tutorialWords;   // e.g. ['SOAR','BOAR','BEAR']
+  const hints = cfg.tutorialHints;   // e.g. ['Type BOAR…','Now type BEAR…']
+
+  const [step,           setStep]           = useState(0);
+  const [typed,          setTyped]          = useState('');
+  const [msg,            setMsg]            = useState({ text: '', type: '' });
+  const [shaking,        setShaking]        = useState(false);
+  const [completedSteps, setCompletedSteps] = useState([]); // [{word, pts, changedIdx}]
+  const [done,           setDone]           = useState(false);
   const typedRef = useRef('');
   const msgTimer = useRef(null);
+
+  const fromWord = words[step];
 
   const showMsg = useCallback((text, type) => {
     clearTimeout(msgTimer.current);
@@ -842,18 +846,27 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
   }, []);
 
   const handleKeyDown = useCallback((e) => {
-    if (succeeded) return;
+    if (done) return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.key === 'Enter') {
       const word = typedRef.current;
       if (word.length !== cfg.wordLen) return;
       if (!cfg.getWords().has(word)) { showMsg('Not a word', 'error'); setShaking(true); setTimeout(() => setShaking(false), 280); return; }
-      const diffs = diffPos(START_WORD, word);
+      const diffs = diffPos(fromWord, word);
       if (diffs.length === 0) { showMsg('Same word — change one letter!', 'error'); setShaking(true); setTimeout(() => setShaking(false), 280); return; }
       if (diffs.length > 1)  { showMsg('Change exactly one letter', 'error'); setShaking(true); setTimeout(() => setShaking(false), 280); return; }
-      // Success!
-      setSucceeded(true);
-      setAcceptedWord(word);
+      const changedIdx = diffs[0];
+      const pts = cfg.posPts[changedIdx];
+      const newCompleted = [...completedSteps, { word, pts, changedIdx }];
+      setCompletedSteps(newCompleted);
+      const nextStep = step + 1;
+      if (nextStep >= words.length - 1) {
+        setDone(true);
+      } else {
+        setStep(nextStep);
+        typedRef.current = ''; setTyped('');
+        setMsg({ text: '', type: '' });
+      }
     } else if (e.key === 'Backspace') {
       const next = typedRef.current.slice(0, -1);
       typedRef.current = next; setTyped(next);
@@ -862,21 +875,18 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
       const next = typedRef.current + e.key.toUpperCase();
       typedRef.current = next; setTyped(next);
     }
-  }, [succeeded, showMsg, cfg]);
+  }, [done, step, fromWord, completedSteps, showMsg, cfg, words.length]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  // real-time diff for red highlighting
-  const typedDiffs = typed.length === cfg.wordLen ? diffPos(START_WORD, typed) : [];
-  const tooMany    = typedDiffs.length > 1;
-
+  const typedDiffs      = typed.length === cfg.wordLen ? diffPos(fromWord, typed) : [];
+  const tooMany         = typedDiffs.length > 1;
   const persistentError = tooMany ? `Changed ${typedDiffs.length} letters — change just 1` : '';
-  const displayMsg = persistentError ? { text: persistentError, type: 'error' } : msg;
-
-  const acceptedDiffs = acceptedWord ? diffPos(START_WORD, acceptedWord) : [];
+  const displayMsg      = persistentError ? { text: persistentError, type: 'error' } : msg;
+  const totalPts        = completedSteps.reduce((s, x) => s + x.pts, 0);
 
   return (
     <div style={{ animation: 'fadeIn 280ms ease' }}>
@@ -901,34 +911,59 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
 
       {/* Hero */}
       <div className="start-hero" style={{ paddingTop: 12 }}>
-        <AnimatedMascot size={80} modeId={modeId} />
         <div style={{
           fontFamily: 'var(--ff-sans)', fontSize: 11, fontWeight: 700,
           letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
-          marginTop: 14,
         }}>Tutorial · {cfg.name}</div>
-        <div className="hero-wordmark" style={{ fontSize: 36, marginTop: 4 }}>
+        <div className="hero-wordmark" style={{ fontSize: 36, marginTop: 6, letterSpacing: '0.03em' }}>
           Change one letter
         </div>
-        <div className="hero-tag" style={{ marginTop: 6 }}>{cfg.tutorialHint}</div>
+
       </div>
 
       {/* Game board */}
       <div className="info-card" style={{ marginTop: 20 }}>
+
+        {/* Starting word — always visible */}
         <div className="section-label" style={{ marginBottom: 12 }}>Starting word</div>
         <div className="tile-row">
-          {START_WORD.split('').map((l, i) => (
-            <div key={i} className={`tile${succeeded && acceptedDiffs.includes(i) ? ' changed-ok' : ''}`}
-              style={{ animationDelay: `${i * 40}ms` }}>
-              {l}
-            </div>
+          {words[0].split('').map((l, i) => (
+            <div key={i} className="tile">{l}</div>
           ))}
         </div>
 
-        {!succeeded ? (
+        {/* Completed steps — chain builds up */}
+        {completedSteps.map((s, i) => (
+          <React.Fragment key={i}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, margin: '8px 0' }}>
+              <span style={{ fontSize: 22, color: '#86bbef' }}>↓</span>
+              <span style={{
+                fontSize: 12, fontWeight: 700, color: '#86bbef',
+                fontFamily: 'var(--ff-sans)', animation: 'fadeIn 300ms ease',
+                background: 'rgba(134,187,239,0.14)', borderRadius: 6,
+                padding: '2px 8px', letterSpacing: '0.02em',
+              }}>+{s.pts} pt{s.pts !== 1 ? 's' : ''}</span>
+            </div>
+            <div className="tile-row" style={{ animation: 'fadeIn 240ms ease' }}>
+              {s.word.split('').map((l, j) => (
+                <div key={j} className={`tile${j === s.changedIdx ? ' changed-ok' : ''}`}
+                  style={{ animationDelay: `${j * 40}ms` }}>
+                  {l}
+                </div>
+              ))}
+            </div>
+          </React.Fragment>
+        ))}
+
+        {/* Active input row */}
+        {!done && (
           <>
             <div className="onboard-arrow">↓</div>
-            <div className="section-label" style={{ marginBottom: 12 }}>Your word</div>
+            <div style={{
+              fontFamily: 'var(--ff-sans)', fontSize: 14, fontWeight: 600,
+              color: 'var(--dark)', textAlign: 'center', marginBottom: 12,
+              animation: 'fadeIn 200ms ease',
+            }}>{hints[step]}</div>
             <div className={`tile-row${shaking ? ' shake' : ''}`}>
               {Array.from({ length: cfg.wordLen }, (_, i) => {
                 const letter   = typed[i] || '';
@@ -944,28 +979,18 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
             <div className={`input-hint ${displayMsg.type}`}>{displayMsg.text || '\u00a0'}</div>
             <div className="kbd-hint">type a word · <kbd>↵</kbd> to submit</div>
           </>
-        ) : (
+        )}
+
+        {/* All done — confetti + summary */}
+        {done && (
           <>
-            <div className="onboard-arrow" style={{ color: 'var(--orange)' }}>↓</div>
-            <div className="tile-row">
-              {acceptedWord.split('').map((l, i) => (
-                <div key={i}
-                  className={`tile${acceptedDiffs.includes(i) ? ' changed-ok success-anim' : ' accept'}`}
-                  style={{ animationDelay: `${i * 50}ms` }}>
-                  {l}
-                </div>
-              ))}
-            </div>
             <Confetti />
             <div className="onboard-success">
               <div className="onboard-success-emoji">🎉</div>
-              <div className="onboard-success-title">
-                {acceptedWord === cfg.tutorialTarget ? `Nice! ${cfg.tutorialStart[0]} → ${cfg.tutorialTarget[0]}.` : 'Nice! You got it.'}
-              </div>
+              <div className="onboard-success-title">You've got it!</div>
               <div className="onboard-success-sub">
-                You changed the <strong>{cfg.posLabels[acceptedDiffs[0]]} letter</strong> — that's worth{' '}
-                <strong>{cfg.posPts[acceptedDiffs[0]]} pt{cfg.posPts[acceptedDiffs[0]] !== 1 ? 's' : ''}</strong>.
-                Now do it as many times as you can in 60 seconds!
+                {totalPts} point{totalPts !== 1 ? 's' : ''} in {completedSteps.length} moves.
+                Now do that as fast as you can — {cfg.duration} seconds on the clock.
               </div>
             </div>
             <div style={{ marginTop: 20 }}>
@@ -975,16 +1000,19 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
             </div>
           </>
         )}
-      </div>
 
+      </div>
     </div>
   );
 }
 /* ── AnimatedMascot ───────────────────────────────────── */
 function AnimatedMascot({ size = 120, modeId = 'classic' }) {
-  const [isBlinking,  setIsBlinking]  = useState(false);
-  const [isWiggling,  setIsWiggling]  = useState(false);
-  const [isDark,      setIsDark]      = useState(false);
+  const [isBlinking,    setIsBlinking]    = useState(false);
+  const [isFlapping,    setIsFlapping]    = useState(false);
+  const [isDark,        setIsDark]        = useState(false);
+  const [renderDark,    setRenderDark]    = useState(false);
+  const [mascotOpacity, setMascotOpacity] = useState(1);
+  const prevDarkRef = useRef(false);
 
   // Track dark mode changes
   useEffect(() => {
@@ -995,27 +1023,50 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
     return () => obs.disconnect();
   }, []);
 
+  // Crossfade when dark mode toggles
+  useEffect(() => {
+    if (prevDarkRef.current === isDark) return;
+    prevDarkRef.current = isDark;
+    setMascotOpacity(0);
+    const t = setTimeout(() => { setRenderDark(isDark); setMascotOpacity(1); }, 180);
+    return () => clearTimeout(t);
+  }, [isDark]);
+
   const isClassic = modeId !== 'soyboy';
-  const dm = isDark ? '-dark' : '';
+  const dm = renderDark ? '-dark' : '';
   const openSrc   = isClassic ? `pig-open${dm}.svg`   : `bean-open${dm}.svg`;
   const closedSrc = isClassic ? `pig-closed${dm}.svg` : `bean-closed${dm}.svg`;
 
   useEffect(() => {
+    // Blink: ~25% chance every 2s
     const blinkId = setInterval(() => {
-      if (Math.random() < 0.15) { setIsBlinking(true); setTimeout(() => setIsBlinking(false), 150); }
+      if (Math.random() < 0.25) {
+        setIsBlinking(true);
+        setTimeout(() => setIsBlinking(false), 150);
+      }
     }, 2000);
-    const wiggleId = setInterval(() => {
-      if (Math.random() < 0.20) { setIsWiggling(true); setTimeout(() => setIsWiggling(false), 600); }
+    // Flap: ~20% chance every 3s, single play
+    const flapId = setInterval(() => {
+      if (Math.random() < 0.20) {
+        setIsFlapping(true);
+        setTimeout(() => setIsFlapping(false), 500);
+      }
     }, 3000);
-    return () => { clearInterval(blinkId); clearInterval(wiggleId); };
-  }, []);
+    return () => { clearInterval(blinkId); clearInterval(flapId); };
+  }, [modeId]);
 
   return (
     <img
       src={isBlinking ? closedSrc : openSrc}
       width={size}
       height={size}
-      style={{ display: 'block', animation: isWiggling ? 'wiggle 600ms ease' : 'none' }}
+      style={{
+        display: 'block',
+        animation: isFlapping ? 'earFlap 500ms ease' : 'none',
+        opacity: mascotOpacity,
+        transition: 'opacity 180ms ease',
+        transformOrigin: 'center bottom',
+      }}
       alt=""
     />
   );
@@ -1027,13 +1078,15 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }
   const [showPrefs, setShowPrefs] = useState(false);
 
   const subtitles = {
-    classic: 'The word-chaining game that rewards strategy',
-    soyboy:  'The easier word-chaining challenge',
+    classic: 'Build a word chain, one letter at a time',
+    soyboy:  'Same game. Shorter words.',
   };
 
   const howItWorks = [
     'Change exactly one letter to make a new word',
-    'Harder positions = more points (2nd letter = 4 pts!)',
+    modeId === 'soyboy'
+      ? 'Harder positions = more points (2nd letter = 3 pts!)'
+      : 'Harder positions = more points (2nd letter = 4 pts!)',
     'Race the clock and build your chain',
   ];
 
@@ -1043,14 +1096,14 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }
       {/* Hero */}
       <div className="start-hero">
         <AnimatedMascot size={120} modeId={modeId} />
-        <div className="hero-wordmark" style={{ marginTop: 16 }}>
+        <div className="hero-wordmark" style={{ marginTop: 8 }}>
           {modeId === 'classic' ? <>Soar <em>Boar</em></> : <>Soy <em>Boy</em></>}
         </div>
-        <div className="hero-tag" style={{ marginTop: 12 }}>{subtitles[modeId]}</div>
+        <div className="hero-tag" style={{ marginTop: 10 }}>{subtitles[modeId]}</div>
       </div>
 
       {/* Mode picker */}
-      <div style={{ marginTop: 24 }}>
+      <div style={{ marginTop: 36 }}>
         <div className="mode-section-label">Choose your challenge</div>
         <div className="mode-picker">
           {Object.values(MODES).map(m => (
@@ -1058,11 +1111,11 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }
               key={m.id}
               className={`mode-pill${modeId === m.id ? ' active' : ''}`}
               onClick={() => setModeId(m.id)}
+              aria-pressed={modeId === m.id}
             >
-              <div style={{ fontWeight: 600, fontSize: 20 }}>{m.name}</div>
-              <div style={{ fontSize: 13, marginTop: 10, opacity: modeId === m.id ? 0.7 : 0.55 }}>{m.sub}</div>
-              <div style={{ fontSize: 12, marginTop: 4, opacity: modeId === m.id ? 0.55 : 0.45 }}>
-                {m.id === 'soyboy' ? '45 seconds' : '60 seconds'}
+              <div style={{ fontWeight: 600, fontSize: 22 }}>{m.name}</div>
+              <div style={{ fontSize: 13, marginTop: 6, opacity: modeId === m.id ? 0.7 : 0.55, fontFamily: 'var(--ff-sans)' }}>
+                {m.sub} · {m.duration} sec
               </div>
             </button>
           ))}
@@ -1086,8 +1139,7 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }
 
       {/* CTA buttons */}
       <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <button className="btn btn-primary btn-full" onClick={onStart}
-          style={{ background: modeId === 'soyboy' ? '#94b190' : 'var(--orange)' }}>
+        <button className="btn btn-primary btn-full" onClick={onStart}>
           <svg width="20" height="20" viewBox="0 0 16 16" fill="white" style={{ flexShrink: 0 }}>
             <polygon points="3,2 14,8 3,14"/>
           </svg>
@@ -1125,7 +1177,7 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }
           ].map(({ key, label, sub }) => (
             <div key={key} className="prefs-row">
               <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
-              <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} />
+              <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
             </div>
           ))}
         </div>
@@ -1145,7 +1197,7 @@ function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
   const [usedWords,   setUsedWords]   = useState(() => new Set());
   const [chain,       setChain]       = useState([]);
   const [score,       setScore]       = useState(0);
-  const [timeLeft,    setTimeLeft]    = useState(TOTAL_TIME);
+  const [timeLeft,    setTimeLeft]    = useState(cfg.duration);
   const [msg,         setMsg]         = useState({ text: '', type: '' });
   const [shaking,     setShaking]     = useState(false);
   const [acceptKey,   setAcceptKey]   = useState(0);
@@ -1294,29 +1346,26 @@ function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
   const displayMsg = persistentError ? { text: persistentError, type: 'error' } : msg;
 
   const urgent      = timeLeft <= 10 && !debug.foreverMode;
-  const pct         = debug.foreverMode ? 100 : (timeLeft / TOTAL_TIME) * 100;
+  const pct         = debug.foreverMode ? 100 : (timeLeft / cfg.duration) * 100;
   const wordsPlayed = chain.length - 1;
 
   return (
     <div style={{ animation: 'fadeIn 250ms ease' }}>
       <div className="hdr">
-        <MascotIcon size={48} modeId={cfg.id} />
+        <MascotIcon size={72} modeId={cfg.id} />
         <div className="wordmark">{cfg.name.split(' ')[0]} <em>{cfg.name.split(' ')[1]}</em></div>
         {debug.foreverMode && <span className="forever-badge">∞</span>}
       </div>
 
-      {phase === 'countdown' && (
-        <div className="countdown-overlay">
-          <div className="countdown-num" key={countdown}>{countdown}</div>
-          <div className="countdown-sub">Get ready… or start typing!</div>
-        </div>
-      )}
-
       {!debug.foreverMode && (
         <div className="timer-wrap">
           <div className="timer-row">
-            <span className="timer-label">Time left</span>
-            <span className={`timer-secs${urgent ? ' urgent' : ''}`}>{timeLeft}s</span>
+            <span className="timer-label">
+              {phase === 'countdown' ? 'Starting in' : 'Time left'}
+            </span>
+            <span className={`timer-secs${urgent ? ' urgent' : ''}`}>
+              {phase === 'countdown' ? countdown : timeLeft}s
+            </span>
           </div>
           <div className="timer-track">
             <div className={`timer-fill${urgent ? ' urgent' : ''}${phase === 'countdown' ? ' paused' : ''}`}
@@ -1341,10 +1390,10 @@ function PlayScreen({ onEnd, debug, modeId = 'classic' }) {
 
       {deadEnd && (
         <div className="dead-end-banner">
-          <span style={{ fontSize: 20 }}>🐷</span>
+          <span style={{ fontSize: 20 }}>{modeId === 'soyboy' ? '🫛' : '🐷'}</span>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: '#7A5800' }}>Dead end!</div>
-            <div style={{ fontSize: 12, color: '#9A7010', marginTop: 2 }}>
+            <div className="dead-end-title" style={{ fontSize: 13, fontWeight: 800 }}>Dead end!</div>
+            <div className="dead-end-sub" style={{ fontSize: 12, marginTop: 2 }}>
               No valid moves left from <strong>{currentWord}</strong>.
               {debug.foreverMode ? ' Ending game…' : ' Wait for the timer.'}
             </div>
@@ -1407,7 +1456,7 @@ function EndScreen({ score, chain, deadEnd, onRestart, debug, modeId = 'classic'
   return (
     <div style={{ animation: 'fadeIn 300ms ease' }}>
       <div className="hdr">
-        <MascotIcon size={48} modeId={cfg.id} />
+        <MascotIcon size={72} modeId={cfg.id} />
         <div className="wordmark">{cfg.name.split(' ')[0]} <em>{cfg.name.split(' ')[1]}</em></div>
       </div>
 
@@ -1418,7 +1467,7 @@ function EndScreen({ score, chain, deadEnd, onRestart, debug, modeId = 'classic'
             ? `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} in chain`
             : `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} · ${score} point${score !== 1 ? 's' : ''}`}
         </div>
-        {deadEnd && <div style={{ fontSize: 12, color: '#9A7010', textAlign: 'center', marginTop: 4 }}>Ended on a dead end 🐷</div>}
+        {deadEnd && <div className="dead-end-sub" style={{ fontSize: 12, textAlign: 'center', marginTop: 4 }}>{`Ended on a dead end ${modeId === 'soyboy' ? '🫛' : '🐷'}`}</div>}
 
         <div style={{ margin: '20px 0 8px' }}>
           <div className="section-label" style={{ marginBottom: 10 }}>Your chain</div>
@@ -1431,7 +1480,11 @@ function EndScreen({ score, chain, deadEnd, onRestart, debug, modeId = 'classic'
           <button className="btn btn-primary btn-full" onClick={onRestart}>Play again</button>
           {!debug.foreverMode && (
             <button className="btn btn-copy btn-full" onClick={handleShare}>
-              {navigator.share ? '🔗 Share chain' : '📋 Copy chain'}
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+              {navigator.share ? 'Share chain' : 'Copy chain'}
             </button>
           )}
         </div>
