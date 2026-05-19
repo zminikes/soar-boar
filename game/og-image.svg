@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Source SVG is rendered to PNG via:
+       qlmanage -t -s 1200 -o /tmp og-image.svg
+       sips -c 630 1200 /tmp/og-image.svg.png --out og-image.png
+     qlmanage forces a square thumbnail, so the source is 1200x1200 with
+     the pig vertically centered; the middle 1200x630 is the final OG image. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+  <rect width="1200" height="1200" fill="#F7F4F0"/>
+  <image href="pig-open.svg" x="300" y="300" width="600" height="600"/>
+</svg>

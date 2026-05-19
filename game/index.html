@@ -3,10 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#F7F4F0" />
+  <meta name="theme-color" content="#F8F1E5" />
   <meta name="description" content="Change one letter at a time to build the longest word chain you can. Race the clock — 60 seconds to score big." />
   <title>Soar Boar — the word-chaining game</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐷</text></svg>" />
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Soar Boar — the word-chaining game" />
+  <meta property="og:description" content="Change one letter at a time to build the longest word chain you can. Race the clock — 60 seconds to score big." />
+  <meta property="og:url" content="https://soarboar.com" />
+  <meta property="og:image" content="https://soarboar.com/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="1200" />
+  <meta property="og:image:alt" content="Soar Boar — a flying pig" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Soar Boar — the word-chaining game" />
+  <meta name="twitter:description" content="Change one letter at a time to build the longest word chain you can." />
+  <meta name="twitter:image" content="https://soarboar.com/og-image.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,9 +34,9 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --cream:      #F7F4F0;
-      --orange:     #F48870;
-      --pink:       rgba(244,136,112,0.12);
+      --cream:      #F8F1E5;
+      --orange:     #EC694A;
+      --pink:       rgba(236,105,74,0.12);
       --white:      #FFFFFF;
       --dark:       #0A0A0A;
       --muted:      #737373;
@@ -36,6 +50,25 @@
       --ff:         'DM Sans', system-ui, sans-serif;
       --ff-serif:   'Instrument Serif', Georgia, serif;
       --ff-sans:    'Instrument Sans', system-ui, sans-serif;
+      /* Brand "deep" colors — pig SVG fill, bean SVG fill, and the
+         wordmark accent are all driven by these tokens so they
+         can't drift apart. */
+      --deep-peach: #EC694A;
+      --deep-sage:  #27885E;
+      --accent:     var(--deep-peach);
+      /* Tutorial uses a separate "guidance" color so the arrow / changed-ok
+         pills don't clash with the mode accent. Default cream bg → blue.
+         When coloredBg is on, falls through to --accent for visual cohesion. */
+      --tutorial-accent:      #4a90d9;
+      --tutorial-accent-soft: rgba(134,187,239,0.18);
+      --tutorial-accent-bg:   #EEF5FD;
+      /* Motion */
+      --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);
+      --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --dur-fast:    150ms;
+      --dur-base:    220ms;
+      --dur-slow:    320ms;
     }
 
     body {
@@ -105,18 +138,481 @@
       0%  { transform: translateY(-20px) rotate(0deg); opacity: 1; }
       100%{ transform: translateY(60px) rotate(360deg); opacity: 0; }
     }
+    /* Gentle staggered entrance — each direct child of .stagger
+       rises 8px and fades in, ~60ms apart. Respects reduced-motion. */
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .stagger > * {
+      animation: riseIn 380ms var(--ease-out) both;
+    }
+    .stagger > *:nth-child(1) { animation-delay: 0ms;   }
+    .stagger > *:nth-child(2) { animation-delay: 60ms;  }
+    .stagger > *:nth-child(3) { animation-delay: 110ms; }
+    .stagger > *:nth-child(4) { animation-delay: 160ms; }
+    .stagger > *:nth-child(5) { animation-delay: 210ms; }
+    .stagger > *:nth-child(6) { animation-delay: 250ms; }
+    .stagger > *:nth-child(7) { animation-delay: 290ms; }
+    .stagger > *:nth-child(n+8) { animation-delay: 320ms; }
+
+    /* Emoji burst from new-personal-best banner */
+    @keyframes emojiBurst {
+      0%   { transform: translate(-50%, -50%) rotate(0deg) scale(0.4); opacity: 0; }
+      18%  { opacity: 1; }
+      100% {
+        transform:
+          translate(calc(-50% + var(--burst-dx)), calc(-50% + var(--burst-dy)))
+          rotate(var(--burst-rot))
+          scale(0.85);
+        opacity: 0;
+      }
+    }
 
     .shake { animation: shake 240ms ease; }
 
     /* ── Soy Boy green theme ─────────────────────────────── */
-    .soyboy { --orange: #94b190; }
+    .soyboy { --orange: #27885E; --accent: var(--deep-sage); }
+
+    /* ── Design experiments — driven by data attrs on <html> ── */
+
+    /* Colored backgrounds per mode (debug toggle).
+       data-exp-colored-bg is only set when the start screen is active —
+       game/end screens always render on cream. */
+    :root[data-exp-colored-bg="1"][data-exp-mode="classic"] {
+      --cream: #FFD1A8;             /* picked peach */
+      --muted: rgba(0,0,0,0.62);
+      --border: rgba(0,0,0,0.16);
+      --accent: var(--deep-peach);
+      --accent-soft: rgba(236,105,74,0.14);
+    }
+    :root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]  {
+      --cream: #B7D197;             /* picked sage */
+      --muted: rgba(0,0,0,0.62);
+      --border: rgba(0,0,0,0.16);
+      --accent: var(--deep-sage);
+      --accent-soft: rgba(39,136,94,0.14);
+    }
+    /* Dark mode variants — deep saturated bgs with lighter accents for contrast */
+    :root[data-theme="dark"][data-exp-colored-bg="1"][data-exp-mode="classic"] {
+      --cream: #3A1F18;
+      --muted: rgba(255,255,255,0.72);
+      --border: rgba(255,255,255,0.16);
+      --accent: #F49780;
+      --accent-soft: rgba(244,151,128,0.18);
+    }
+    :root[data-theme="dark"][data-exp-colored-bg="1"][data-exp-mode="soyboy"]  {
+      --cream: #1C2823;
+      --muted: rgba(255,255,255,0.72);
+      --border: rgba(255,255,255,0.16);
+      --accent: #58BB8B;
+      --accent-soft: rgba(88,187,139,0.18);
+    }
+    /* Dark cream (regular dark mode, no coloredBg) gets lighter accents
+       so the wordmark accent stays readable on dark cream. */
+    :root[data-theme="dark"] { --accent: #F49780; }
+    :root[data-theme="dark"] .soyboy { --accent: #58BB8B; }
+
+    /* Surfaces on colored bg — translucent cream tint reads cleanly on saturated bgs.
+       Higher opacity = cleaner cream-on-color, less muddy mix. */
+    :root[data-exp-colored-bg="1"] .info-card,
+    :root[data-exp-colored-bg="1"] .mode-pill {
+      background: rgba(255,251,246,0.74);
+      border-color: rgba(0,0,0,0.10);
+      color: var(--dark);
+    }
+    :root[data-theme="dark"][data-exp-colored-bg="1"] .info-card,
+    :root[data-theme="dark"][data-exp-colored-bg="1"] .mode-pill {
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.14);
+    }
+    :root[data-exp-colored-bg="1"] .info-card-title,
+    :root[data-exp-colored-bg="1"] .info-list-text { color: var(--dark); }
+    :root[data-exp-colored-bg="1"] .info-num { background: var(--accent-soft); color: var(--accent); }
+    :root[data-exp-colored-bg="1"] .mode-pill:hover:not(.active) { background: rgba(255,251,246,0.92); }
+    :root[data-exp-colored-bg="1"] .mode-pill.active {
+      background: #1A1918;
+      color: #fff;
+      border-color: #1A1918;
+    }
+    :root[data-theme="dark"][data-exp-colored-bg="1"] .mode-pill.active {
+      background: #F5F3F0;
+      color: #1A1918;
+      border-color: #F5F3F0;
+    }
+
+    /* Primary CTA → dark pill on colored bg (orange clashes with warm bg) */
+    :root[data-exp-colored-bg="1"] .btn-primary { background: #1A1918; color: #fff; }
+    :root[data-exp-colored-bg="1"] .btn-primary:hover { filter: brightness(1.18); }
+    :root[data-theme="dark"][data-exp-colored-bg="1"] .btn-primary { background: #F5F3F0; color: #1A1918; }
+    :root[data-theme="dark"][data-exp-colored-bg="1"] .btn-primary:hover { filter: brightness(0.92); }
+    /* Ghost button on colored bg — cream tint, dark readable text */
+    :root[data-exp-colored-bg="1"] .btn-ghost {
+      color: var(--dark);
+      background: rgba(255,251,246,0.62);
+      border-color: rgba(0,0,0,0.16);
+    }
+    :root[data-exp-colored-bg="1"] .btn-ghost:hover {
+      background: rgba(255,251,246,0.88);
+      border-color: rgba(0,0,0,0.22);
+      color: var(--dark);
+    }
+    :root[data-theme="dark"][data-exp-colored-bg="1"] .btn-ghost {
+      color: var(--dark);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.16);
+    }
+    :root[data-theme="dark"][data-exp-colored-bg="1"] .btn-ghost:hover {
+      background: rgba(255,255,255,0.14);
+    }
+    /* Best-chip on colored bg */
+    :root[data-exp-colored-bg="1"] .best-chip { color: var(--dark); }
+    :root[data-exp-colored-bg="1"] .best-chip strong { color: var(--accent); }
+
+    /* Mascot fills now live in the SVG itself (deep peach / deep sage),
+       so no CSS filter needed on coloredBg. */
+
+    :root[data-exp-colored-bg="1"] .simple-tag { color: var(--muted); }
+
+    /* Simplified Tiles-style landing */
+    .simple-start { padding-top: 4vh; }
+    .simple-segmented-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 8vh;
+    }
+    .mode-segmented {
+      display: inline-flex;
+      background: rgba(0,0,0,0.05);
+      border-radius: 999px;
+      padding: 4px;
+      gap: 2px;
+    }
+    .seg-tab {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      border-radius: 999px;
+      font-family: var(--ff-sans);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--muted);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition:
+        background var(--dur-base) var(--ease-out),
+        color var(--dur-base) var(--ease-out),
+        transform 100ms var(--ease-out);
+      min-height: 40px;
+    }
+    .seg-tab:active { transform: scale(0.96); }
+    .seg-tab.active {
+      background: var(--dark);
+      color: var(--cream);
+    }
+    :root[data-exp-colored-bg="1"] .mode-segmented { background: rgba(255,251,246,0.68); }
+    :root[data-exp-colored-bg="1"] .seg-tab.active { background: #1A1918; color: #fff; }
+    :root[data-exp-colored-bg="1"] .seg-tab:not(.active) { color: rgba(0,0,0,0.62); }
+    :root[data-theme="dark"][data-exp-colored-bg="1"] .mode-segmented { background: rgba(0,0,0,0.32); }
+    :root[data-theme="dark"][data-exp-colored-bg="1"] .seg-tab.active { background: #F5F3F0; color: #1A1918; }
+    :root[data-theme="dark"][data-exp-colored-bg="1"] .seg-tab:not(.active) { color: rgba(255,255,255,0.72); }
+
+    .simple-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .simple-wordmark {
+      font-family: var(--ff-serif);
+      font-size: 56px;
+      font-weight: 600;
+      letter-spacing: 0;
+      line-height: 1;
+      text-align: center;
+      margin-top: 4px;
+    }
+    .simple-wordmark .accent {
+      color: var(--accent);
+      font-family: inherit;
+      font-weight: inherit;
+      font-style: inherit;
+    }
+    .simple-tag {
+      font-family: var(--ff-sans);
+      font-size: 17px;
+      color: var(--muted);
+      text-align: center;
+      max-width: 22ch;
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+    :root[data-exp-colored-bg="1"] .simple-tag { color: rgba(0,0,0,0.66); }
+    /* Smaller meta sub-line under the tagline — same family, lighter */
+    .simple-tag-meta {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      opacity: 0.78;
+    }
+    .simple-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 36px;
+    }
+    .simple-footer {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 22px;
+    }
+    .simple-link {
+      background: none; border: none; padding: 10px 4px;
+      font-family: var(--ff-sans);
+      font-size: 13px; font-weight: 600;
+      color: var(--muted); cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: color var(--dur-fast) var(--ease-out);
+    }
+    .simple-link:hover { color: var(--dark); }
+    :root[data-exp-colored-bg="1"] .simple-link { color: rgba(0,0,0,0.55); }
+    :root[data-exp-colored-bg="1"] .simple-link:hover { color: #1A1918; }
+    .simple-credit {
+      margin-top: 36px;
+      text-align: center;
+      font-family: var(--ff-sans);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      opacity: 0.7;
+    }
+    @media (min-width: 640px) {
+      .simple-wordmark { font-size: 80px; }
+      .simple-tag { font-size: 20px; }
+    }
+
+    /* ── Debug badge — visible only when debug mode is on ── */
+    .debug-badge {
+      position: fixed;
+      top: max(12px, env(safe-area-inset-top, 0px));
+      right: 12px;
+      background: rgba(0,0,0,0.78);
+      color: #FFA86F;
+      font-family: var(--ff-sans);
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      z-index: 1001;
+      opacity: 0.5;
+      transition: opacity 150ms var(--ease-out), transform 100ms var(--ease-out);
+      touch-action: manipulation;
+    }
+    .debug-badge:hover  { opacity: 1; }
+    .debug-badge:active { transform: scale(0.94); }
+
+    /* ── Floating Color Picker ─────────────────────────── */
+    .cp-fab {
+      position: fixed;
+      right: 16px; bottom: 16px;
+      width: 52px; height: 52px;
+      border-radius: 999px;
+      border: none;
+      background: #1A1918;
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+      transition: transform 120ms var(--ease-out);
+      touch-action: manipulation;
+    }
+    .cp-fab:hover  { transform: scale(1.06); }
+    .cp-fab:active { transform: scale(0.95); }
+    .cp-floating {
+      position: fixed;
+      right: 16px; bottom: 16px;
+      width: 296px;
+      background: #fff;
+      color: #1A1918;
+      border-radius: 18px;
+      padding: 16px;
+      z-index: 1000;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+      font-family: var(--ff-sans);
+    }
+    :root[data-theme="dark"] .cp-floating { background: #2A2826; color: #F5F3F0; }
+    .cp-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .cp-title {
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      opacity: 0.6;
+    }
+    .cp-close {
+      width: 30px; height: 30px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(0,0,0,0.06);
+      cursor: pointer;
+      font-size: 18px; line-height: 1;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: inherit;
+    }
+    :root[data-theme="dark"] .cp-close { background: rgba(255,255,255,0.1); }
+    .cp-close:hover { background: rgba(0,0,0,0.10); }
+    .cp-swatches {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .cp-swatch {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px;
+      border: 1.5px solid transparent;
+      background: rgba(0,0,0,0.04);
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 150ms var(--ease-out), background 150ms var(--ease-out);
+      text-align: left;
+    }
+    :root[data-theme="dark"] .cp-swatch { background: rgba(255,255,255,0.06); }
+    .cp-swatch.active { border-color: currentColor; }
+    .cp-swatch-color {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      border: 1px solid rgba(0,0,0,0.18);
+      flex-shrink: 0;
+    }
+    .cp-swatch-text {
+      display: flex; flex-direction: column;
+      line-height: 1.2;
+      min-width: 0;
+    }
+    .cp-swatch-label { font-size: 11px; font-weight: 600; opacity: 0.62; }
+    .cp-swatch-hex {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    /* HSV picker — drag-to-pick SL pad + hue slider + hex input */
+    .hsv-pad {
+      position: relative;
+      width: 100%; height: 132px;
+      border-radius: 10px;
+      cursor: crosshair;
+      touch-action: none;
+      user-select: none;
+    }
+    .hsv-pad-marker {
+      position: absolute;
+      width: 14px; height: 14px;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.45), 0 1px 4px rgba(0,0,0,0.25);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .hsv-hue {
+      position: relative;
+      width: 100%; height: 14px;
+      margin-top: 12px;
+      border-radius: 999px;
+      cursor: ew-resize;
+      touch-action: none;
+      user-select: none;
+      background: linear-gradient(to right,
+        hsl(0,100%,50%), hsl(60,100%,50%), hsl(120,100%,50%),
+        hsl(180,100%,50%), hsl(240,100%,50%), hsl(300,100%,50%), hsl(360,100%,50%));
+    }
+    .hsv-hue-marker {
+      position: absolute;
+      top: 50%;
+      width: 14px; height: 18px;
+      margin-left: -7px;
+      margin-top: -9px;
+      border: 2px solid #fff;
+      border-radius: 4px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.45), 0 1px 4px rgba(0,0,0,0.25);
+      pointer-events: none;
+      background: transparent;
+    }
+    .hsv-hex-row {
+      display: flex; gap: 8px; align-items: center;
+      margin-top: 12px;
+    }
+    .hsv-hex {
+      flex: 1;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 13px;
+      padding: 8px 10px;
+      border: 1px solid rgba(0,0,0,0.14);
+      border-radius: 8px;
+      background: rgba(0,0,0,0.02);
+      color: inherit;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    :root[data-theme="dark"] .hsv-hex {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.14);
+    }
+    .hsv-hex:focus { outline: 2px solid currentColor; outline-offset: 1px; }
+    .cp-actions {
+      display: flex; gap: 8px; margin-top: 12px;
+    }
+    .cp-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid rgba(0,0,0,0.12);
+      background: rgba(0,0,0,0.04);
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      color: inherit;
+    }
+    :root[data-theme="dark"] .cp-btn {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.14);
+    }
+    .cp-btn:hover { background: rgba(0,0,0,0.08); }
+    .cp-btn.primary {
+      background: #1A1918; color: #fff;
+      border-color: #1A1918;
+    }
+    :root[data-theme="dark"] .cp-btn.primary {
+      background: #F5F3F0; color: #1A1918; border-color: #F5F3F0;
+    }
+    .cp-btn.primary:hover { filter: brightness(1.2); }
+
+    /* Dark pill primary used in simple landing */
+    .btn-dark { background: #1A1918; color: #fff; }
+    .btn-dark:hover { filter: brightness(1.18); }
+    .btn-dark:active { filter: brightness(0.95); }
+    :root[data-theme="dark"] .btn-dark { background: #F5F3F0; color: #1A1918; }
+    :root[data-theme="dark"] .btn-dark:hover { filter: brightness(0.94); }
 
     /* ── Root ────────────────────────────────────────────── */
     #root {
       width: 100%;
       max-width: 420px;
       /* safe-area-inset-top handles notch/Dynamic Island; bottom handles home indicator */
-      padding: env(safe-area-inset-top, 0) 20px calc(64px + env(safe-area-inset-bottom, 0));
+      padding: env(safe-area-inset-top, 0) 20px calc(24px + env(safe-area-inset-bottom, 0));
       display: flex;
       flex-direction: column;
       /* Prevents dark/light background bleed-through during screen fade transitions */
@@ -131,17 +627,32 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 4px; /* mascot SVGs include transparent padding — keep tight */
       padding: 16px 0 0;
+      cursor: pointer;
+      transition: opacity var(--dur-fast) var(--ease-out);
+      border-radius: 12px;
     }
+    @media (min-width: 640px) { .hdr { gap: 10px; } }
+    .hdr:hover { opacity: 0.85; }
+    .hdr:focus-visible { outline-offset: 4px; }
     .wordmark {
       font-family: var(--ff-serif);
-      font-size: 39px;
-      font-weight: 400;
-      letter-spacing: -0.5px;
+      font-size: 40px;
+      font-weight: 600;
+      letter-spacing: 0;
       line-height: 1;
+      margin-top: 2px; /* optical alignment with mascot SVG */
     }
-    .wordmark em { font-style: normal; color: var(--orange); }
+    /* Use spans + .accent for the colored word so both halves render with
+       identical font metrics (em was producing weight asymmetries via
+       browser bold-synthesis on the italic glyph forms). */
+    .wordmark .accent {
+      color: var(--accent);
+      font-family: inherit;
+      font-weight: inherit;
+      font-style: inherit;
+    }
 
     /* ── Card ────────────────────────────────────────────── */
     .card {
@@ -158,32 +669,41 @@
       gap: 8px;
       font-family: var(--ff-sans);
       font-weight: 600;
-      font-size: 18px;
+      font-size: 17px;
       border: none;
-      border-radius: 16px;
+      border-radius: 999px;
       cursor: pointer;
-      padding: 16px 28px;
-      transition: transform 80ms, filter 80ms, opacity 80ms;
+      padding: 15px 24px;
+      transition:
+        transform 100ms var(--ease-out),
+        filter var(--dur-fast) var(--ease-out),
+        background-color var(--dur-fast) var(--ease-out),
+        opacity var(--dur-fast) var(--ease-out);
       line-height: 1;
       touch-action: manipulation; /* prevent double-tap zoom delay */
+      min-height: 48px;
     }
     .btn:active { transform: scale(0.97); }
     .btn-primary { background: var(--orange); color: #fff; }
-    .btn-primary:hover { filter: brightness(1.06); }
+    .btn-primary:hover { filter: brightness(1.05); }
+    .btn-primary:active { filter: brightness(0.96); }
     .btn-ghost {
       background: transparent;
       color: var(--muted);
-      border: none;
-      font-size: 14px;
-      font-weight: 500;
+      border: 1px solid var(--border);
+      font-weight: 600;
     }
-    .btn-ghost:hover { color: var(--dark); text-decoration: underline; text-underline-offset: 3px; }
+    .btn-ghost:hover { color: var(--dark); background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.14); }
+    .btn-ghost:active { background: rgba(0,0,0,0.05); }
+    :root[data-theme="dark"] .btn-ghost:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.18); }
+    :root[data-theme="dark"] .btn-ghost:active { background: rgba(255,255,255,0.07); }
     .btn-full { width: 100%; }
-    .btn-sm { font-size: 13px; padding: 9px 16px; border-radius: 10px; min-height: 44px; }
+    .btn-sm { font-size: 13px; padding: 10px 18px; border-radius: 999px; min-height: 44px; }
     .btn-copy {
       background: #1A1918;
       color: #F5F3F0;
     }
+    .btn-copy:hover { filter: brightness(1.18); }
     :root[data-theme="dark"] .btn-copy {
       background: #2E2B28;
       color: #F5F3F0;
@@ -191,12 +711,12 @@
 
     /* ── Section label ───────────────────────────────────── */
     .section-label {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     /* ── Timer ───────────────────────────────────────────── */
@@ -207,8 +727,8 @@
       align-items: baseline;
       margin-bottom: 6px;
     }
-    .timer-label { font-size: 12px; font-weight: 600; color: var(--muted); }
-    .timer-secs  { font-size: 13px; font-weight: 800; }
+    .timer-label { font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: 0.01em; }
+    .timer-secs  { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
     .timer-secs.urgent { color: var(--error); }
     .timer-track { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
     .timer-fill {
@@ -231,7 +751,7 @@
       width: 64px;
       height: 64px;
       border-radius: 16px;
-      border: 2.5px solid var(--border);
+      border: 1.5px solid rgba(0,0,0,0.18); /* thinner + higher contrast for a contemporary feel */
       background: var(--white);
       display: flex;
       align-items: center;
@@ -243,8 +763,8 @@
       transition: border-color 100ms, background 100ms, color 100ms;
     }
     .tile.cursor { border-color: var(--dark); }
-    .tile.accept { animation: tileAccept 280ms cubic-bezier(0.34,1.56,0.64,1) both; }
-    .tile.success-anim { animation: tileSuccess 500ms cubic-bezier(0.34,1.56,0.64,1) both; }
+    .tile.accept { animation: tileAccept 280ms var(--ease-spring) both; }
+    .tile.success-anim { animation: tileSuccess 500ms var(--ease-spring) both; }
     /* wrong: too many letters changed */
     .tile.wrong {
       border-color: var(--error);
@@ -253,19 +773,26 @@
     }
     /* success highlight on onboarding */
     .tile.changed-ok {
-      border-color: #86bbef;
-      background: #EEF5FD;
-      color: #4a90d9;
+      border-color: var(--tutorial-accent);
+      background: var(--tutorial-accent-bg);
+      color: var(--tutorial-accent);
+    }
+    /* On colored bg, use the mode accent so tutorial highlights stay readable */
+    :root[data-exp-colored-bg="1"] {
+      --tutorial-accent:      var(--accent);
+      --tutorial-accent-soft: var(--accent-soft);
+      --tutorial-accent-bg:   var(--accent-soft);
     }
 
     /* ── Input hint ──────────────────────────────────────── */
     .input-hint {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--muted);
       text-align: center;
-      margin-top: 8px;
-      min-height: 18px;
+      margin-top: 10px;
+      min-height: 19px;
       font-weight: 500;
+      line-height: 1.4;
     }
     .input-hint.error { color: var(--error); font-weight: 700; }
     .input-hint.ok    { color: var(--ok);    font-weight: 700; }
@@ -282,29 +809,34 @@
       color: #fff;
       font-weight: 800;
       font-size: 24px;
-      border-radius: 12px;
-      padding: 8px 16px;
+      border-radius: 999px;
+      padding: 10px 18px;
       line-height: 1;
-      min-width: 56px;
+      min-width: 60px;
       text-align: center;
+      font-variant-numeric: tabular-nums;
     }
-    .score-sub { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .score-sub { font-size: 13px; color: var(--muted); font-weight: 600; }
     .score-meta { display: flex; align-items: center; gap: 12px; }
     .restart-btn {
       background: none;
       border: 1px solid var(--border);
       color: var(--muted);
-      border-radius: 10px;
-      width: 40px;
-      height: 40px;
+      border-radius: 999px;
+      width: 44px;
+      height: 44px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       touch-action: manipulation;
-      transition: background 120ms ease, color 120ms ease, transform 80ms ease;
+      transition:
+        background var(--dur-fast) var(--ease-out),
+        color var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out),
+        transform 100ms var(--ease-out);
     }
-    .restart-btn:hover { color: var(--dark); background: var(--pink); }
+    .restart-btn:hover { color: var(--dark); background: var(--pink); border-color: transparent; }
     .restart-btn:active { transform: scale(0.92); }
     .best-chip {
       display: inline-flex; align-items: center; gap: 6px;
@@ -316,17 +848,37 @@
     }
     .best-chip strong { color: var(--dark); font-weight: 800; letter-spacing: 0; text-transform: none; font-size: 13px; }
     .new-best-banner {
+      position: relative;
+      display: block;
+      width: 100%;
       background: linear-gradient(135deg, var(--orange), #F9B68A);
       color: #fff;
-      padding: 10px 14px;
-      border-radius: 12px;
+      padding: 14px 20px;
+      border-radius: 999px;
+      border: none;
       font-family: var(--ff-sans);
       font-weight: 800;
       font-size: 14px;
       letter-spacing: 0.04em;
       text-align: center;
-      margin-top: 12px;
-      animation: fadeIn 400ms ease;
+      margin-top: 14px;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform 120ms var(--ease-out), filter 150ms var(--ease-out), box-shadow 200ms var(--ease-out);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+      animation: fadeIn 400ms var(--ease-out);
+    }
+    .new-best-banner:hover  { filter: brightness(1.05); box-shadow: 0 6px 18px -8px rgba(244,136,112,0.55); }
+    .new-best-banner:active { transform: scale(0.98); }
+    .burst-emoji {
+      position: absolute;
+      top: 50%; left: 50%;
+      font-size: 40px;
+      line-height: 1;
+      pointer-events: none;
+      animation: emojiBurst var(--burst-dur, 900ms) var(--ease-out) both;
+      will-change: transform, opacity;
+      z-index: 2;
     }
 
     /* ── Chain ───────────────────────────────────────────── */
@@ -357,36 +909,74 @@
       color: var(--dark);
       flex-shrink: 0;
     }
-    .chain-tile.changed { background: #FFE8DC; color: var(--orange); }
-    .chain-pts { font-size: 11px; font-weight: 700; color: var(--muted); }
+    .chain-tile.changed { background: #FFE8DC; color: #B85540; }
+    .chain-pts { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.01em; }
 
     /* countdown integrated into timer row — no separate overlay */
 
     /* ── Pos legend ──────────────────────────────────────── */
-    .pos-legend { display: flex; flex-direction: column; gap: 7px; }
-    .pos-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--muted); }
-    .pos-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .pos-legend { display: flex; flex-direction: column; gap: 8px; }
+    .pos-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; color: var(--muted); }
+    .pos-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
     /* ── Start / hero ────────────────────────────────────── */
     .start-hero {
       background: transparent;
       border-radius: 0;
-      padding: 20px 0 0;
+      padding: 24px 0 0;
       margin-top: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
+    /* Horizontal logo lockup on mobile.
+       SVG mascots have ~10–18% transparent padding around the visual,
+       so gap is intentionally tight — pulls the wordmark close to the
+       actual mascot silhouette, not the SVG bounding box. */
+    .hero-mark {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hero-mark .hero-wordmark { margin-top: 2px; } /* optical alignment vs mascot */
     .hero-wordmark {
       font-family: var(--ff-serif);
-      font-size: 72px;
-      font-weight: 400;
-      letter-spacing: -2px;
-      line-height: 1;
+      font-size: 52px;
+      font-weight: 600;
+      letter-spacing: 0;
+      line-height: 0.95;
       text-align: center;
     }
-    .hero-wordmark em { font-style: normal; color: var(--orange); }
-    .hero-tag { font-family: var(--ff-sans); font-size: 16px; font-weight: 400; color: var(--muted); margin-top: 8px; text-align: center; }
+    .hero-wordmark .accent {
+      color: var(--accent);
+      font-family: inherit;
+      font-weight: inherit;
+      font-style: inherit;
+    }
+    .hero-tag {
+      font-family: var(--ff-sans);
+      font-size: 17px;
+      font-weight: 400;
+      color: var(--muted);
+      margin-top: 14px;
+      text-align: center;
+      line-height: 1.4;
+      max-width: 32ch; /* prevents a lonely orphan word on wide screens */
+    }
+
+    /* Desktop: stacked hero, larger mascot — reverts to the original
+       vertical lockup that reads better with the extra real estate. */
+    @media (min-width: 640px) {
+      .start-hero { padding: 28px 0 0; }
+      .hero-mark {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .hero-mark .hero-wordmark { margin-top: 0; }
+      .hero-mark img { width: 120px !important; height: 120px !important; }
+      .hero-wordmark { font-size: 72px; letter-spacing: 0; line-height: 1; }
+      .hero-tag { font-size: 18px; margin-top: 12px; }
+    }
 
     /* ── Onboarding ──────────────────────────────────────── */
     .onboard-arrow {
@@ -424,8 +1014,8 @@
       margin-top: 16px;
       background: #FFF3CD;
       border: 1.5px solid #F0C040;
-      border-radius: 14px;
-      padding: 12px 16px;
+      border-radius: 999px;
+      padding: 12px 20px;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -435,8 +1025,15 @@
     .dead-end-sub   { color: #9A7010; }
 
     /* ── End screen ──────────────────────────────────────── */
-    .end-score { font-size: 72px; font-weight: 800; line-height: 1; text-align: center; }
-    .end-score-label { font-size: 13px; font-weight: 600; color: var(--muted); text-align: center; margin-top: 4px; }
+    .end-score {
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1;
+      text-align: center;
+      letter-spacing: -2px;
+      font-variant-numeric: tabular-nums;
+    }
+    .end-score-label { font-size: 14px; font-weight: 600; color: var(--muted); text-align: center; margin-top: 6px; }
     .share-copied {
       font-size: 12px;
       color: var(--ok);
@@ -447,11 +1044,13 @@
     }
 
     /* ── Preferences rows ────────────────────────────────── */
-    .prefs-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .prefs-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
     .prefs-row:last-child { margin-bottom: 0; }
-    .prefs-label { font-size: 13px; font-weight: 600; }
-    .prefs-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
-    /* Toggle — 44px tall label for touch target, track centred within */
+    .prefs-label { font-size: 14px; font-weight: 600; }
+    .prefs-sub { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+    /* Toggle — 44px tall label for touch target, track centred within.
+       Knob is hardcoded white (not --cream) so it doesn't blend into the
+       colored-bg landing where --cream is overridden. */
     .toggle { position: relative; width: 48px; height: 44px; flex-shrink: 0; display: flex; align-items: center; }
     .toggle input { opacity: 0; position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
     .toggle-track {
@@ -459,21 +1058,27 @@
       top: 50%; left: 0;
       transform: translateY(-50%);
       width: 48px; height: 24px;
-      background: #E5E5E5; border-radius: 999px;
+      background: rgba(0,0,0,0.18); border-radius: 999px;
       pointer-events: none; /* input overlay handles clicks */
       transition: background 200ms;
     }
-    .toggle input:checked + .toggle-track { background: var(--orange); }
+    .toggle input:checked + .toggle-track { background: var(--accent); }
     .toggle-track::after {
       content: '';
       position: absolute;
       top: 3px; left: 3px;
       width: 18px; height: 18px;
-      background: var(--cream); border-radius: 50%;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      background: #fff; border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.22);
       transition: transform 200ms;
     }
     .toggle input:checked + .toggle-track::after { transform: translateX(24px); }
+    /* Dark mode — track + knob both adapt so they don't disappear */
+    :root[data-theme="dark"] .toggle-track { background: rgba(255,255,255,0.18); }
+    :root[data-theme="dark"] .toggle-track::after { background: #2A2826; box-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+    :root[data-theme="dark"] .toggle input:checked + .toggle-track::after { background: #fff; }
+    /* On colored bg, bump the off-track darkness so it stays visible */
+    :root[data-exp-colored-bg="1"] .toggle-track { background: rgba(0,0,0,0.22); }
 
     /* ── Keyboard hint ───────────────────────────────────── */
     .kbd-hint { text-align: center; font-size: 12px; color: var(--muted); margin-top: 10px; }
@@ -483,7 +1088,7 @@
       font-family: var(--ff); font-size: 11px; font-weight: 700;
     }
     .forever-badge {
-      background: var(--dark); color: var(--pink);
+      background: var(--dark); color: var(--cream);
       font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
       padding: 4px 10px; border-radius: 999px;
     }
@@ -507,13 +1112,17 @@
       gap: 12px;
     }
     .mode-pill {
-      padding: 16px 18px;
+      padding: 18px;
       border-radius: 16px;
       border: 1px solid #E5E5E5;
       background: #FAFAFA;
       font-family: var(--ff-sans);
       cursor: pointer;
-      transition: background 200ms, color 200ms, border-color 200ms, box-shadow 200ms, transform 200ms;
+      transition:
+        background var(--dur-base) var(--ease-out),
+        color var(--dur-base) var(--ease-out),
+        border-color var(--dur-base) var(--ease-out),
+        box-shadow var(--dur-base) var(--ease-out);
       color: var(--dark);
       text-align: left;
       line-height: 1.3;
@@ -526,29 +1135,47 @@
       color: #fff;
       border-color: var(--dark);
       box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
-      transform: scale(1.02);
+      /* removed scale to avoid 1px nudges in adjacent UI */
     }
+    .mode-pill-title { font-weight: 600; font-size: 22px; }
+    .mode-pill-sub   {
+      font-size: 14px;
+      margin-top: 6px;
+      color: var(--muted);
+      font-family: var(--ff-sans);
+    }
+    .mode-pill.active .mode-pill-sub { color: rgba(255,255,255,0.78); }
 
     /* ── Info card (1px border — passive/informational) ──── */
     .info-card {
       background: #FAFAFA;
       border-radius: 16px;
-      padding: 24px;
+      padding: 22px 22px 24px;
       border: 1px solid #E5E5E5;
     }
     .info-card-title {
       font-family: var(--ff-sans);
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--dark);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
+      letter-spacing: -0.01em;
+    }
+    .info-list { display: flex; flex-direction: column; gap: 14px; }
+    .info-list-row { display: flex; align-items: flex-start; gap: 14px; }
+    .info-list-text {
+      font-family: var(--ff-sans);
+      font-size: 15px;
+      line-height: 1.5;
+      padding-top: 2px;
+      color: var(--dark);
     }
     .info-num {
-      width: 24px; height: 24px;
+      width: 26px; height: 26px;
       border-radius: 50%;
-      background: rgba(244,136,112,0.12);
+      background: rgba(244,136,112,0.14);
       color: #F48870;
-      font-size: 12px; font-weight: 700;
+      font-size: 13px; font-weight: 700;
       display: inline-flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
@@ -601,24 +1228,27 @@
 
     /* ── Dark mode ───────────────────────────────────────── */
     :root[data-theme="dark"] {
-      --cream:  #141413;
-      --white:  #1E1D1C;
-      --dark:   #F5F5F4;
-      --muted:  #A3A3A3;
-      --border: rgba(255,255,255,0.08);
-      --pink:   rgba(244,136,112,0.12);
+      --cream:  #16140F;
+      --white:  #1F1D17;
+      --dark:   #F6F2EB;
+      --muted:  #A8A29A;
+      --border: rgba(255,255,255,0.10);
+      --orange: #F49780;
+      --pink:   rgba(244,151,128,0.14);
       --error:  #E56055;
       --ok:     #4AC47A;
     }
-    :root[data-theme="dark"] .soyboy { --orange: #94b190; }
+    :root[data-theme="dark"] .soyboy { --orange: #58BB8B; }
     :root[data-theme="dark"] .info-card { background: #1E1D1C; border-color: rgba(255,255,255,0.1); }
     :root[data-theme="dark"] .info-card-title { color: var(--dark); }
     :root[data-theme="dark"] .mode-pill { background: #1E1D1C; border-color: rgba(255,255,255,0.1); color: var(--dark); }
     :root[data-theme="dark"] .mode-pill:hover:not(.active) { background: #252422; }
     :root[data-theme="dark"] .mode-pill.active { background: #F5F5F4; color: #141413; border-color: #F5F5F4; }
-    :root[data-theme="dark"] .chain-tile.changed { background: rgba(244,136,112,0.15); }
+    :root[data-theme="dark"] .chain-tile.changed { background: rgba(236,105,74,0.20); color: #F4A88E; }
+    :root[data-theme="dark"] .tile { border-color: rgba(255,255,255,0.18); }
     :root[data-theme="dark"] .tile.wrong { background: #3A1A16; }
-    :root[data-theme="dark"] .tile.changed-ok { background: rgba(134,187,239,0.15); border-color: #86bbef; color: #86bbef; }
+    :root[data-theme="dark"] { --tutorial-accent: #8FB6E0; --tutorial-accent-bg: rgba(134,187,239,0.15); }
+    :root[data-theme="dark"] .tile.changed-ok { background: var(--tutorial-accent-bg); border-color: var(--tutorial-accent); color: var(--tutorial-accent); }
     :root[data-theme="dark"] .dead-end-banner { background: #252010; border-color: #5A4A18; color: #D4B860; }
     :root[data-theme="dark"] .dead-end-banner .dead-end-title { color: #D4B860; }
     :root[data-theme="dark"] .dead-end-banner .dead-end-sub   { color: #A89040; }
@@ -677,22 +1307,30 @@
     }
     :root[data-theme="dark"] .kb { background: #141413; border-top-color: rgba(255,255,255,0.1); }
     :root[data-theme="dark"] .kb-key { background: #2A2826; color: #F5F5F4; box-shadow: none; }
-    /* Reserve space below content so the fixed keyboard doesn't cover it */
+    /* Reserve space below content ONLY when the on-screen keyboard is mounted.
+       Using :has() so the start/end screens don't get a phantom 230px gap. */
     @media (hover: none) and (pointer: coarse) {
-      body { padding-bottom: 230px; }
+      body:has(.kb) { padding-bottom: 230px; }
     }
 
     /* ── Mobile polish ───────────────────────────────────── */
     @media (max-width: 380px) {
-      .hero-wordmark { font-size: 40px; }
+      .hero-wordmark { font-size: 44px; letter-spacing: 0; }
+      .hero-mark { gap: 4px; }
+      .hero-mark img { width: 68px !important; height: 68px !important; }
       .tile { width: 56px; height: 56px; font-size: 24px; }
-      .card { padding: 18px; }
-      .btn { font-size: 15px; padding: 13px 20px; }
+      .card { padding: 22px 20px; }
+      .btn { font-size: 16px; padding: 14px 22px; }
+      .info-card { padding: 20px; }
+    }
+    @media (max-width: 340px) {
+      .hero-wordmark { font-size: 38px; }
+      .hero-mark img { width: 58px !important; height: 58px !important; }
     }
     @media (max-width: 320px) {
       .tile { width: 48px; height: 48px; font-size: 20px; border-radius: 12px; }
       .hero-wordmark { font-size: 34px; }
-      .wordmark { font-size: 28px; } /* game/end screen header — prevents overflow next to 72px mascot */
+      .wordmark { font-size: 30px; } /* game/end screen header — prevents overflow next to 72px mascot */
       .info-card { padding: 16px; } /* reclaim horizontal space for tiles */
     }
   </style>
@@ -704,9 +1342,39 @@
 <script src="starters.js"></script>
 <script src="wordlist3.js"></script>
 <script src="starters3.js"></script>
+<script src="svg-data.js"></script>
 
 <script type="text/babel">
-const { useState, useEffect, useRef, useCallback } = React;
+const { useState, useEffect, useRef, useCallback, useContext, createContext, useMemo } = React;
+
+/* ── Color overrides context ──────────────────────────── */
+/* Provided by App, consumed by AnimatedMascot so the pig/bean
+   SVG body can be re-colored live from the floating color picker. */
+const ColorOverrideContext = createContext({});
+
+/* useColoredSvg — synchronously generates a data: URI with the body
+   fill substituted, using the inline SVG_DATA loaded from svg-data.js.
+   Returns the original path if no override is requested.
+
+   Why inline instead of fetch / <object>:
+   - Chrome blocks fetch() on file:// pages
+   - Chrome's file:// origin policy treats every file as a unique origin,
+     so <object>.contentDocument is also blocked
+   Embedding SVG text directly in JS sidesteps both. */
+function useColoredSvg(path, defaultColor, accent) {
+  return useMemo(() => {
+    if (!accent || accent.toLowerCase() === defaultColor.toLowerCase()) {
+      return path;
+    }
+    const source = (typeof SVG_DATA !== 'undefined') && SVG_DATA[path];
+    if (!source) return path; // safety fallback
+    const recolored = source.replace(
+      new RegExp(`fill\\s*:\\s*${defaultColor}`, 'gi'),
+      `fill: ${accent}`
+    );
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(recolored);
+  }, [path, defaultColor, accent]);
+}
 
 /* ── Constants ────────────────────────────────────────── */
 const TOTAL_TIME   = 60;
@@ -808,7 +1476,7 @@ function generateShareText(chain, score, modeId = 'classic') {
     '',
     ...rows,
     '',
-    SHARE_URL,
+    `▶ Beat my score → ${SHARE_URL}`,
   ].join('\n');
 }
 
@@ -1063,7 +1731,7 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
   const totalPts        = completedSteps.reduce((s, x) => s + x.pts, 0);
 
   return (
-    <div style={{ animation: 'fadeIn 280ms ease' }}>
+    <div className="stagger">
 
       {/* Back nav */}
       <div style={{ paddingTop: 20, paddingBottom: 4 }}>
@@ -1111,12 +1779,12 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
         {completedSteps.map((s, i) => (
           <React.Fragment key={i}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, margin: '8px 0' }}>
-              <span style={{ fontSize: 22, color: '#86bbef' }}>↓</span>
+              <span style={{ fontSize: 22, color: 'var(--tutorial-accent)' }}>↓</span>
               <span style={{
-                fontSize: 12, fontWeight: 700, color: '#86bbef',
+                fontSize: 12, fontWeight: 700, color: 'var(--tutorial-accent)',
                 fontFamily: 'var(--ff-sans)', animation: 'fadeIn 300ms ease',
-                background: 'rgba(134,187,239,0.14)', borderRadius: 6,
-                padding: '2px 8px', letterSpacing: '0.02em',
+                background: 'var(--tutorial-accent-bg)', borderRadius: 999,
+                padding: '2px 10px', letterSpacing: '0.02em',
               }}>+{s.pts} pt{s.pts !== 1 ? 's' : ''}</span>
             </div>
             <div className="tile-row" style={{ animation: 'fadeIn 240ms ease' }}>
@@ -1191,14 +1859,24 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
   const [isDark,        setIsDark]        = useState(false);
   const [renderDark,    setRenderDark]    = useState(false);
   const [mascotOpacity, setMascotOpacity] = useState(1);
+  const [coloredBgActive, setColoredBgActive] = useState(
+    () => document.documentElement.dataset.expColoredBg === '1'
+  );
   const prevDarkRef = useRef(false);
+  const overrides = useContext(ColorOverrideContext);
 
-  // Track dark mode changes
+  // Track dark mode + colored-bg changes
   useEffect(() => {
-    const check = () => setIsDark(document.documentElement.dataset.theme === 'dark');
+    const check = () => {
+      setIsDark(document.documentElement.dataset.theme === 'dark');
+      setColoredBgActive(document.documentElement.dataset.expColoredBg === '1');
+    };
     check();
     const obs = new MutationObserver(check);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'data-exp-colored-bg'],
+    });
     return () => obs.disconnect();
   }, []);
 
@@ -1213,8 +1891,16 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
 
   const isClassic = modeId !== 'soyboy';
   const dm = renderDark ? '-dark' : '';
-  const openSrc   = isClassic ? `pig-open${dm}.svg`   : `bean-open${dm}.svg`;
-  const closedSrc = isClassic ? `pig-closed${dm}.svg` : `bean-closed${dm}.svg`;
+  const openPath   = isClassic ? `pig-open${dm}.svg`   : `bean-open${dm}.svg`;
+  const closedPath = isClassic ? `pig-closed${dm}.svg` : `bean-closed${dm}.svg`;
+
+  // Re-color from picker — only when coloredBg is active for the screen.
+  // defaultColor MUST match the fill currently in the SVG file.
+  const defaultColor = isClassic ? '#EC694A' : '#27885E';
+  const modeKey = isClassic ? 'classic' : 'soyboy';
+  const accent = coloredBgActive ? (overrides[modeKey] || {}).accent : null;
+  const openSrc   = useColoredSvg(openPath,   defaultColor, accent);
+  const closedSrc = useColoredSvg(closedPath, defaultColor, accent);
 
   useEffect(() => {
     // Blink: ~25% chance every 2s
@@ -1251,8 +1937,431 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
   );
 }
 
+/* ── SimplifiedStartScreen ───────────────────────────── */
+/* Tiles-style minimal landing — used when debug.simpleLanding is on.
+   Mode switcher is a pill-shaped segmented control with both mascots
+   visible at once — you "peek" into each mode just by seeing the tabs. */
+function SimplifiedStartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId, debugMode }) {
+  const cfg = MODES[modeId];
+  const [showPrefs, setShowPrefs] = useState(false);
+  const bestScore = getBestScore(modeId);
+
+  // Hero crossfade key — re-keys on mode change so the mascot+wordmark
+  // gently fade rather than swap abruptly.
+  return (
+    <div className="stagger simple-start">
+
+      {/* Segmented pill — both modes always visible, text-only */}
+      <div className="simple-segmented-wrap">
+        <div className="mode-segmented" role="tablist" aria-label="Choose mode">
+          {Object.values(MODES).map(m => (
+            <button
+              key={m.id}
+              role="tab"
+              aria-selected={modeId === m.id}
+              className={`seg-tab${modeId === m.id ? ' active' : ''}`}
+              onClick={() => setModeId(m.id)}
+            >
+              {m.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Hero — inner div is re-keyed to crossfade on mode change,
+          outer participates in the stagger entrance */}
+      <div className="simple-hero">
+        <div key={modeId} style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+          animation: 'fadeIn 280ms var(--ease-out)',
+        }}>
+          <AnimatedMascot size={120} modeId={modeId} />
+          <div className="simple-wordmark">
+            {cfg.name.split(' ')[0]} <span className="accent">{cfg.name.split(' ')[1]}</span>
+          </div>
+          <div className="simple-tag">
+            Change one letter at a time.<br />
+            <span className="simple-tag-meta">
+              {cfg.wordLen}-letter words · {cfg.duration} seconds
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="simple-actions">
+        <button className="btn btn-dark btn-full" onClick={onStart}>
+          Play
+        </button>
+      </div>
+
+      <div className="simple-footer">
+        <button className="simple-link" onClick={onTutorial}>Show me how</button>
+        <button className="simple-link" onClick={() => setShowPrefs(p => !p)} aria-expanded={showPrefs}>
+          {showPrefs ? 'Hide' : 'Preferences'}
+        </button>
+      </div>
+
+      {bestScore > 0 && (
+        <div style={{ textAlign: 'center', marginTop: 28 }}>
+          <span className="best-chip">Personal best · <strong>{bestScore} pts</strong></span>
+        </div>
+      )}
+
+      {showPrefs && (
+        <div className="info-card" style={{ animation: 'slideDown 200ms ease', marginTop: 16 }}>
+          <div className="info-card-title">Preferences</div>
+          {[
+            { key: 'streakRule',  label: 'Position streak rule', sub: 'Prevents changing same position 3x in a row' },
+            { key: 'foreverMode', label: 'Practice mode',        sub: 'No timer, play at your own pace' },
+            { key: 'darkMode',    label: 'Dark mode',            sub: 'Easy on the eyes' },
+          ].map(({ key, label, sub }) => (
+            <div key={key} className="prefs-row">
+              <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
+              <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
+            </div>
+          ))}
+          {debugMode && <ExperimentsPanel debug={debug} setDebug={setDebug} />}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Default colors used by the floating color picker. */
+const DEFAULT_COLORS = {
+  classic: { bg: '#FFD1A8', accent: '#EC694A' },
+  soyboy:  { bg: '#B7D197', accent: '#27885E' },
+};
+
+/* ── Color math ───────────────────────────────────────── */
+function hexToRgb(hex) {
+  const h = hex.replace('#','');
+  if (h.length !== 6) return { r: 0, g: 0, b: 0 };
+  return {
+    r: parseInt(h.slice(0,2), 16),
+    g: parseInt(h.slice(2,4), 16),
+    b: parseInt(h.slice(4,6), 16),
+  };
+}
+function rgbToHex({ r, g, b }) {
+  const c = (n) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2,'0');
+  return '#' + c(r) + c(g) + c(b);
+}
+function rgbToHsv({ r, g, b }) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  const d = max - min;
+  let h = 0;
+  const s = max === 0 ? 0 : d / max;
+  const v = max;
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  return { h, s: s * 100, v: v * 100 };
+}
+function hsvToRgb({ h, s, v }) {
+  s /= 100; v /= 100;
+  const c = v * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = v - c;
+  let r = 0, g = 0, b = 0;
+  if      (h <  60) { r = c; g = x; }
+  else if (h < 120) { r = x; g = c; }
+  else if (h < 180) { g = c; b = x; }
+  else if (h < 240) { g = x; b = c; }
+  else if (h < 300) { r = x; b = c; }
+  else              { r = c; b = x; }
+  return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
+}
+const hexToHsv = (hex) => rgbToHsv(hexToRgb(hex));
+const hsvToHex = (hsv) => rgbToHex(hsvToRgb(hsv));
+
+/* ── HsvPicker ────────────────────────────────────────── */
+/* Inline drag-to-pick color picker. 2D SL pad on top, hue slider below,
+   hex input at the bottom. Pointer events with window-level capture
+   so dragging stays live even when the pointer leaves the element. */
+function HsvPicker({ value, onChange }) {
+  const safe = (typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)) ? value : '#000000';
+  const [hsv, setHsv] = useState(() => hexToHsv(safe));
+  const [hexDraft, setHexDraft] = useState(safe.toUpperCase());
+  const padRef = useRef(null);
+  const hueRef = useRef(null);
+  const dragRef = useRef(null);
+  const internalHexRef = useRef(safe.toUpperCase());
+
+  // Sync from external value when it changes (e.g. swatch switch).
+  useEffect(() => {
+    if (value && value.toUpperCase() !== internalHexRef.current) {
+      const next = hexToHsv(safe);
+      setHsv(next);
+      setHexDraft(safe.toUpperCase());
+      internalHexRef.current = safe.toUpperCase();
+    }
+  }, [value]);
+
+  const commitHsv = (next) => {
+    setHsv(next);
+    const hex = hsvToHex(next).toUpperCase();
+    setHexDraft(hex);
+    internalHexRef.current = hex;
+    onChange(hex);
+  };
+
+  const handlePad = (clientX, clientY) => {
+    const r = padRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+    const y = Math.max(0, Math.min(1, (clientY - r.top)  / r.height));
+    commitHsv({ ...hsv, s: x * 100, v: (1 - y) * 100 });
+  };
+  const handleHue = (clientX) => {
+    const r = hueRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+    commitHsv({ ...hsv, h: x * 360 });
+  };
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!dragRef.current) return;
+      e.preventDefault();
+      if (dragRef.current === 'pad') handlePad(e.clientX, e.clientY);
+      if (dragRef.current === 'hue') handleHue(e.clientX);
+    };
+    const onUp = () => { dragRef.current = null; };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+  });
+
+  const padDown = (e) => {
+    e.preventDefault();
+    dragRef.current = 'pad';
+    handlePad(e.clientX, e.clientY);
+  };
+  const hueDown = (e) => {
+    e.preventDefault();
+    dragRef.current = 'hue';
+    handleHue(e.clientX);
+  };
+
+  const onHexChange = (e) => {
+    let v = e.target.value;
+    if (v && v[0] !== '#') v = '#' + v;
+    setHexDraft(v.toUpperCase());
+    if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+      const next = hexToHsv(v);
+      setHsv(next);
+      internalHexRef.current = v.toUpperCase();
+      onChange(v.toUpperCase());
+    }
+  };
+
+  return (
+    <div>
+      <div
+        className="hsv-pad"
+        ref={padRef}
+        onPointerDown={padDown}
+        style={{
+          background:
+            'linear-gradient(to top, #000, transparent), ' +
+            'linear-gradient(to right, #fff, transparent), ' +
+            `hsl(${hsv.h}, 100%, 50%)`,
+        }}
+      >
+        <div
+          className="hsv-pad-marker"
+          style={{
+            left: `${hsv.s}%`,
+            top: `${100 - hsv.v}%`,
+            background: hsvToHex(hsv),
+          }}
+        />
+      </div>
+      <div
+        className="hsv-hue"
+        ref={hueRef}
+        onPointerDown={hueDown}
+      >
+        <div className="hsv-hue-marker" style={{ left: `${(hsv.h / 360) * 100}%` }} />
+      </div>
+      <div className="hsv-hex-row">
+        <input
+          type="text"
+          className="hsv-hex"
+          value={hexDraft}
+          onChange={onHexChange}
+          spellCheck={false}
+          autoComplete="off"
+          maxLength={7}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ── FloatingColorPicker ─────────────────────────────── */
+function FloatingColorPicker({ colorOverrides, setColorOverrides, modeId }) {
+  const [open, setOpen] = useState(true);
+  const [activeKey, setActiveKey] = useState(() => `${modeId}.bg`);
+  const [copied, setCopied] = useState(false);
+
+  // When mode changes, focus the active swatch on the new mode if helpful
+  useEffect(() => {
+    const [m] = activeKey.split('.');
+    if (m !== 'classic' && m !== 'soyboy') return;
+    // Optionally re-target to current mode's bg when user switches mode
+    setActiveKey(prev => {
+      const [mm, kk] = prev.split('.');
+      return mm === modeId ? prev : `${modeId}.${kk}`;
+    });
+  }, [modeId]);
+
+  const get = (m, k) =>
+    (colorOverrides[m] && colorOverrides[m][k]) || DEFAULT_COLORS[m][k];
+  const isOverride = (m, k) =>
+    !!(colorOverrides[m] && colorOverrides[m][k]);
+
+  const updateActive = (hex) => {
+    const [m, k] = activeKey.split('.');
+    setColorOverrides(prev => ({
+      ...prev,
+      [m]: { ...(prev[m] || {}), [k]: hex },
+    }));
+  };
+
+  const reset = () => setColorOverrides({});
+  const copy = () => {
+    const text =
+`Classic — bg: ${get('classic','bg')}  accent: ${get('classic','accent')}
+Soyboy  — bg: ${get('soyboy','bg')}   accent: ${get('soyboy','accent')}`;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    }).catch(() => {});
+  };
+
+  if (!open) {
+    return (
+      <button
+        className="cp-fab"
+        onClick={() => setOpen(true)}
+        aria-label="Open color tool"
+        title="Color tool"
+      >
+        🎨
+      </button>
+    );
+  }
+
+  const swatches = [
+    { key: 'classic.bg',     label: 'Soar Boar BG' },
+    { key: 'classic.accent', label: 'Soar Boar Accent' },
+    { key: 'soyboy.bg',      label: 'Soy Boy BG' },
+    { key: 'soyboy.accent',  label: 'Soy Boy Accent' },
+  ];
+  const [activeMode, activeKind] = activeKey.split('.');
+  const currentValue = get(activeMode, activeKind);
+
+  return (
+    <div className="cp-floating" role="dialog" aria-label="Color tool">
+      <div className="cp-header">
+        <span className="cp-title">Color tool</span>
+        <button className="cp-close" onClick={() => setOpen(false)} aria-label="Close">×</button>
+      </div>
+
+      <div className="cp-swatches">
+        {swatches.map(s => {
+          const [m, k] = s.key.split('.');
+          const v = get(m, k);
+          const isActive = s.key === activeKey;
+          return (
+            <button
+              key={s.key}
+              type="button"
+              className={`cp-swatch${isActive ? ' active' : ''}`}
+              onClick={() => setActiveKey(s.key)}
+            >
+              <span className="cp-swatch-color" style={{ background: v }} />
+              <span className="cp-swatch-text">
+                <span className="cp-swatch-label">{s.label}</span>
+                <span className="cp-swatch-hex" style={{
+                  color: isOverride(m, k) ? v : 'inherit',
+                  fontWeight: isOverride(m, k) ? 700 : 600,
+                }}>{v.toUpperCase()}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <HsvPicker value={currentValue} onChange={updateActive} />
+
+      <div className="cp-actions">
+        <button type="button" className="cp-btn" onClick={reset}>Reset</button>
+        <button type="button" className="cp-btn primary" onClick={copy}>
+          {copied ? 'Copied ✓' : 'Copy values'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── DebugBadge ───────────────────────────────────────── */
+/* Small indicator pinned top-right when debug mode is on, so I can see
+   at a glance whether design-experiments + color picker are exposed. */
+function DebugBadge({ onToggle }) {
+  return (
+    <button
+      type="button"
+      className="debug-badge"
+      onClick={onToggle}
+      title="Click to disable debug (or press ⌘⇧D / Ctrl+Shift+D)"
+    >
+      ● Debug
+    </button>
+  );
+}
+
+/* ── ExperimentsPanel ─────────────────────────────────── */
+/* Design experiments — A/B compare directions.
+   The colored-bg color picker lives in a floating panel rendered at the
+   App root (not here) so it stays visible while scrolling. */
+function ExperimentsPanel({ debug, setDebug }) {
+  return (
+    <>
+      <div style={{
+        marginTop: 16, paddingTop: 14,
+        borderTop: '1px solid rgba(0,0,0,0.06)',
+        fontFamily: 'var(--ff-sans)', fontSize: 12, fontWeight: 700,
+        letterSpacing: '0.08em', textTransform: 'uppercase',
+        color: 'var(--muted)',
+      }}>
+        Design experiments
+      </div>
+      {[
+        { key: 'simpleLanding', label: 'Simple landing',     sub: 'Tiles-style minimal hero (refresh to apply)' },
+        { key: 'coloredBg',     label: 'Colored background', sub: 'Orange-pink classic · green soyboy' },
+      ].map(({ key, label, sub }) => (
+        <div key={key} className="prefs-row" style={{ marginTop: 12 }}>
+          <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
+          <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
+        </div>
+      ))}
+    </>
+  );
+}
+
 /* ── StartScreen ──────────────────────────────────────── */
-function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }) {
+function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId, debugMode }) {
   const cfg = MODES[modeId];
   const [showPrefs, setShowPrefs] = useState(false);
   const bestScore = getBestScore(modeId);
@@ -1271,19 +2380,21 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }
   ];
 
   return (
-    <div style={{ animation: 'fadeIn 280ms ease' }}>
+    <div className="stagger">
 
-      {/* Hero */}
+      {/* Hero — horizontal lockup */}
       <div className="start-hero">
-        <AnimatedMascot size={120} modeId={modeId} />
-        <div className="hero-wordmark" style={{ marginTop: 8 }}>
-          {modeId === 'classic' ? <>Soar <em>Boar</em></> : <>Soy <em>Boy</em></>}
+        <div className="hero-mark">
+          <AnimatedMascot size={80} modeId={modeId} />
+          <div className="hero-wordmark">
+            {modeId === 'classic' ? <>Soar <span className="accent">Boar</span></> : <>Soy <span className="accent">Boy</span></>}
+          </div>
         </div>
-        <div className="hero-tag" style={{ marginTop: 10 }}>{subtitles[modeId]}</div>
+        <div className="hero-tag">{subtitles[modeId]}</div>
       </div>
 
       {/* Mode picker */}
-      <div style={{ marginTop: 36 }}>
+      <div style={{ marginTop: 32 }}>
         <div className="mode-section-label">Choose your challenge</div>
         <div className="mode-picker">
           {Object.values(MODES).map(m => (
@@ -1293,10 +2404,8 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }
               onClick={() => setModeId(m.id)}
               aria-pressed={modeId === m.id}
             >
-              <div style={{ fontWeight: 600, fontSize: 22 }}>{m.name}</div>
-              <div style={{ fontSize: 13, marginTop: 6, opacity: modeId === m.id ? 0.7 : 0.55, fontFamily: 'var(--ff-sans)' }}>
-                {m.sub} · {m.duration} sec
-              </div>
+              <div className="mode-pill-title">{m.name}</div>
+              <div className="mode-pill-sub">{m.sub} · {m.duration} sec</div>
             </button>
           ))}
         </div>
@@ -1307,47 +2416,53 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }
         )}
       </div>
 
-      {/* How it works */}
-      <div style={{ marginTop: 12 }}>
-        <div className="info-card">
-          <div className="info-card-title">How it works</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {howItWorks.map((text, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                <div className="info-num">{i + 1}</div>
-                <div style={{ fontFamily: 'var(--ff-sans)', fontSize: 14, lineHeight: 1.55, paddingTop: 3, color: 'var(--muted)' }}>{text}</div>
-              </div>
-            ))}
+      {/* How it works — first-time players only.
+         Once someone has a personal best in this mode, they've learned. */}
+      {bestScore === 0 && (
+        <div style={{ marginTop: 16 }}>
+          <div className="info-card">
+            <div className="info-card-title">How it works</div>
+            <div className="info-list">
+              {howItWorks.map((text, i) => (
+                <div key={i} className="info-list-row">
+                  <div className="info-num">{i + 1}</div>
+                  <div className="info-list-text">{text}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* CTA buttons */}
-      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
         <button className="btn btn-primary btn-full" onClick={onStart}>
-          <svg width="20" height="20" viewBox="0 0 16 16" fill="white" style={{ flexShrink: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="white" style={{ flexShrink: 0 }} aria-hidden="true">
             <polygon points="3,2 14,8 3,14"/>
           </svg>
           Start playing
         </button>
         <button
-          className="prefs-toggle-btn"
-          style={{ justifyContent: 'center', paddingTop: 10, paddingBottom: 10 }}
-          onClick={() => setShowPrefs(p => !p)}
+          className="btn btn-ghost btn-full"
+          onClick={onTutorial}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          Show me how to play
+        </button>
+      </div>
+
+      {/* Preferences toggle */}
+      <div style={{ marginTop: 8, textAlign: 'center' }}>
+        <button
+          className="prefs-toggle-btn"
+          style={{ justifyContent: 'center' }}
+          onClick={() => setShowPrefs(p => !p)}
+          aria-expanded={showPrefs}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
           {showPrefs ? 'Hide' : 'Show'} preferences
-        </button>
-      </div>
-
-      {/* Show me how link */}
-      <div style={{ textAlign: 'center', marginTop: 4 }}>
-        <button className="btn btn-ghost btn-sm" onClick={onTutorial}
-          style={{ fontSize: 13, color: 'var(--muted)' }}>
-          Show me how to play
         </button>
       </div>
 
@@ -1365,6 +2480,7 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId }
               <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
             </div>
           ))}
+          {debugMode && <ExperimentsPanel debug={debug} setDebug={setDebug} />}
         </div>
       )}
 
@@ -1536,10 +2652,17 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
   const wordsPlayed = chain.length - 1;
 
   return (
-    <div style={{ animation: 'fadeIn 250ms ease' }}>
-      <div className="hdr" onClick={onHome} style={{ cursor: 'pointer' }} role="button" aria-label="Back to home">
+    <div className="stagger">
+      <div
+        className="hdr"
+        onClick={onHome}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onHome(); } }}
+        role="button"
+        tabIndex={0}
+        aria-label="Back to home"
+      >
         <MascotIcon size={72} modeId={cfg.id} />
-        <div className="wordmark">{cfg.name.split(' ')[0]} <em>{cfg.name.split(' ')[1]}</em></div>
+        <div className="wordmark">{cfg.name.split(' ')[0]} <span className="accent">{cfg.name.split(' ')[1]}</span></div>
         {debug.foreverMode && <span className="forever-badge">∞</span>}
       </div>
 
@@ -1637,13 +2760,37 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
   const [copied, setCopied] = useState(false);
   const wordsPlayed = chain.length - 1;
 
-  // Best score: only tracked for timed runs (foreverMode is endless / different scoring)
+  // Best score: only tracked for timed runs (foreverMode is endless / different scoring).
+  // Persisted to localStorage via setBestScore -> see BEST_KEY('classic'|'soyboy').
   const previousBest = useRef(getBestScore(modeId)).current;
   const isNewBest = !debug.foreverMode && score > 0 && score > previousBest;
   useEffect(() => {
     if (isNewBest) setBestScore(modeId, score);
   }, [isNewBest, modeId, score]);
   const currentBest = isNewBest ? score : previousBest;
+
+  // Emoji burst on tapping the new-best banner
+  const [bursts, setBursts] = useState([]);
+  const burstId = useRef(0);
+  const handleBurst = useCallback(() => {
+    const emojis = modeId === 'soyboy' ? ['🫛'] : ['🐷', '🪽'];
+    const id = ++burstId.current;
+    const N = 14;
+    const particles = Array.from({ length: N }, (_, i) => {
+      const angle = (i / N) * 360 + (Math.random() * 24 - 12);
+      const dist  = 130 + Math.random() * 110;
+      const rad   = (angle * Math.PI) / 180;
+      return {
+        emoji: emojis[i % emojis.length],
+        dx: Math.cos(rad) * dist,
+        dy: Math.sin(rad) * dist,
+        rot: (Math.random() - 0.5) * 720,
+        dur: 900 + Math.random() * 500,
+      };
+    });
+    setBursts(prev => [...prev, { id, particles }]);
+    setTimeout(() => setBursts(prev => prev.filter(b => b.id !== id)), 1500);
+  }, [modeId]);
 
   const handleShare = useCallback(async () => {
     const text = generateShareText(chain, score, modeId);
@@ -1656,58 +2803,93 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
         setTimeout(() => setCopied(false), 2500);
       }
     } catch (_) {
-      // fallback: show text in alert
       try {
         await navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2500);
       } catch (_) {}
     }
-  }, [chain, score]);
+  }, [chain, score, modeId]);
 
   return (
-    <div style={{ animation: 'fadeIn 300ms ease' }}>
-      <div className="hdr" onClick={onHome} style={{ cursor: 'pointer' }} role="button" aria-label="Back to home">
+    <div className="stagger">
+      <div
+        className="hdr"
+        onClick={onHome}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onHome(); } }}
+        role="button"
+        tabIndex={0}
+        aria-label="Back to home"
+      >
         <MascotIcon size={72} modeId={cfg.id} />
-        <div className="wordmark">{cfg.name.split(' ')[0]} <em>{cfg.name.split(' ')[1]}</em></div>
+        <div className="wordmark">{cfg.name.split(' ')[0]} <span className="accent">{cfg.name.split(' ')[1]}</span></div>
       </div>
 
-      <div className="card" style={{ marginTop: 20 }}>
+      {/* Score readout */}
+      <div style={{ marginTop: 24, textAlign: 'center' }}>
         <div className="end-score">{debug.foreverMode ? wordsPlayed : score}</div>
         <div className="end-score-label">
           {debug.foreverMode
             ? `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} in chain`
             : `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} · ${score} point${score !== 1 ? 's' : ''}`}
         </div>
-        {deadEnd && <div className="dead-end-sub" style={{ fontSize: 12, textAlign: 'center', marginTop: 4 }}>{`Ended on a dead end ${modeId === 'soyboy' ? '🫛' : '🐷'}`}</div>}
+        {deadEnd && (
+          <div className="dead-end-sub" style={{ fontSize: 13, textAlign: 'center', marginTop: 6 }}>
+            {`Ended on a dead end ${modeId === 'soyboy' ? '🫛' : '🐷'}`}
+          </div>
+        )}
         {!debug.foreverMode && isNewBest && (
-          <div className="new-best-banner">🏆 New personal best!</div>
+          <button
+            type="button"
+            className="new-best-banner"
+            onClick={handleBurst}
+            aria-label="Celebrate new personal best"
+          >
+            🏆 New personal best!
+            {bursts.map(burst => (
+              <React.Fragment key={burst.id}>
+                {burst.particles.map((p, i) => (
+                  <span
+                    key={i}
+                    className="burst-emoji"
+                    aria-hidden="true"
+                    style={{
+                      '--burst-dx':  `${p.dx}px`,
+                      '--burst-dy':  `${p.dy}px`,
+                      '--burst-rot': `${p.rot}deg`,
+                      '--burst-dur': `${p.dur}ms`,
+                    }}
+                  >{p.emoji}</span>
+                ))}
+              </React.Fragment>
+            ))}
+          </button>
         )}
         {!debug.foreverMode && !isNewBest && currentBest > 0 && (
-          <div style={{ textAlign: 'center', marginTop: 10 }}>
+          <div style={{ marginTop: 12 }}>
             <span className="best-chip">Personal best · <strong>{currentBest} pts</strong></span>
           </div>
         )}
+      </div>
 
-        <div style={{ margin: '20px 0 8px' }}>
-          <div className="section-label" style={{ marginBottom: 10 }}>Your chain</div>
-          <ChainRows chain={chain} maxHeight={260} modeId={modeId} />
-        </div>
+      {/* Chain */}
+      <div style={{ marginTop: 28 }}>
+        <div className="section-label">Your chain</div>
+        <ChainRows chain={chain} maxHeight={260} modeId={modeId} />
+      </div>
 
-        <div style={{ marginBottom: 20 }}><PosLegend modeId={modeId} /></div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button className="btn btn-primary btn-full" onClick={onRestart}>Play again</button>
-          {!debug.foreverMode && (
-            <button className="btn btn-copy btn-full" onClick={handleShare}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-              </svg>
-              {navigator.share ? 'Share chain' : 'Copy chain'}
-            </button>
-          )}
-        </div>
+      {/* Actions */}
+      <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <button className="btn btn-primary btn-full" onClick={onRestart}>Play again</button>
+        {!debug.foreverMode && (
+          <button className="btn btn-copy btn-full" onClick={handleShare}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            {navigator.share ? 'Share chain' : 'Copy chain'}
+          </button>
+        )}
         {copied && <div className="share-copied">Copied to clipboard! ✓</div>}
       </div>
     </div>
@@ -1722,31 +2904,125 @@ function App() {
   const [playKey, setPlayKey] = useState(0);
   const restart = () => { setPlayKey(k => k + 1); setScreen('playing'); };
   const [debug,   setDebug]   = useState(() => ({
-    streakRule:  true,
-    foreverMode: false,
-    darkMode:    localStorage.getItem('darkMode') === 'true',
+    streakRule:    true,
+    foreverMode:   false,
+    darkMode:      localStorage.getItem('darkMode') === 'true',
+    /* Design experiments — flip these to A/B compare directions. */
+    simpleLanding: localStorage.getItem('exp:simpleLanding') === 'true',
+    coloredBg:     localStorage.getItem('exp:coloredBg') === 'true',
   }));
   const [modeId,  setModeId]  = useState('classic');
+
+  /* Debug mode — gates the design-experiments panel and the floating
+     color picker. Toggle on/off via:
+     - URL parameter:  ?debug=1  /  ?debug=0
+     - Keyboard:       Cmd/Ctrl + Shift + D
+     Persists in localStorage so once enabled it stays enabled. */
+  const [debugMode, setDebugMode] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('debug')) {
+        const val = params.get('debug') === '1';
+        localStorage.setItem('debugMode', String(val));
+        return val;
+      }
+    } catch (_) {}
+    return localStorage.getItem('debugMode') === 'true';
+  });
+  useEffect(() => {
+    localStorage.setItem('debugMode', String(debugMode));
+  }, [debugMode]);
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        setDebugMode(d => !d);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // Color picker overrides — live tweak bg + accent per mode, write to a
+  // dynamic <style> tag so changes apply without reload.
+  const [colorOverrides, setColorOverrides] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('colorOverrides')) || {}; }
+    catch { return {}; }
+  });
+  useEffect(() => {
+    let styleEl = document.getElementById('color-overrides');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'color-overrides';
+      document.head.appendChild(styleEl);
+    }
+    const cls = colorOverrides.classic || {};
+    const soy = colorOverrides.soyboy  || {};
+    styleEl.textContent = [
+      cls.bg     && `:root[data-exp-colored-bg="1"][data-exp-mode="classic"] { --cream: ${cls.bg}; }`,
+      cls.accent && `:root[data-exp-colored-bg="1"][data-exp-mode="classic"] { --deep-peach: ${cls.accent}; --accent: ${cls.accent}; }`,
+      soy.bg     && `:root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]  { --cream: ${soy.bg}; }`,
+      soy.accent && `:root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]  { --deep-sage: ${soy.accent}; --accent: ${soy.accent}; }`,
+    ].filter(Boolean).join('\n');
+    localStorage.setItem('colorOverrides', JSON.stringify(colorOverrides));
+  }, [colorOverrides]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = debug.darkMode ? 'dark' : '';
     localStorage.setItem('darkMode', debug.darkMode);
-    // Keep browser chrome (status bar / address bar) in sync with app background
+    // Keep browser chrome (status bar / address bar) in sync with app background.
+    // Adjusted further below when coloredBg is on.
     const tc = document.querySelector('meta[name="theme-color"]');
-    if (tc) tc.setAttribute('content', debug.darkMode ? '#141413' : '#F7F4F0');
+    if (tc) tc.setAttribute('content', debug.darkMode ? '#16140F' : '#F8F1E5');
   }, [debug.darkMode]);
 
+  // Persist experiments + apply body-level classes that drive CSS variables.
+  // Colored bg is intentionally scoped to the start screen only — game/end keep cream.
+  useEffect(() => {
+    localStorage.setItem('exp:simpleLanding', String(debug.simpleLanding));
+    localStorage.setItem('exp:coloredBg',     String(debug.coloredBg));
+    const coloredBgActive = debug.coloredBg && (screen === 'start' || screen === 'tutorial');
+    document.documentElement.dataset.expColoredBg = coloredBgActive ? '1' : '';
+    document.documentElement.dataset.expMode = modeId;
+    // Keep iOS status-bar color in sync with whatever bg is showing
+    const tc = document.querySelector('meta[name="theme-color"]');
+    if (tc) {
+      if (coloredBgActive) {
+        const bg = debug.darkMode
+          ? (modeId === 'soyboy' ? '#1C2823' : '#3A1F18')
+          : (modeId === 'soyboy' ? '#B7D197' : '#FFD1A8');
+        tc.setAttribute('content', bg);
+      } else {
+        tc.setAttribute('content', debug.darkMode ? '#16140F' : '#F8F1E5');
+      }
+    }
+  }, [debug.simpleLanding, debug.coloredBg, debug.darkMode, modeId, screen]);
+
   return (
+    <ColorOverrideContext.Provider value={colorOverrides}>
     <div id="root" className={modeId === 'soyboy' ? 'soyboy' : ''}>
       {screen === 'start' && (
-        <StartScreen
-          onStart={restart}
-          onTutorial={() => setScreen('tutorial')}
-          debug={debug}
-          setDebug={setDebug}
-          modeId={modeId}
-          setModeId={setModeId}
-        />
+        debug.simpleLanding ? (
+          <SimplifiedStartScreen
+            onStart={restart}
+            onTutorial={() => setScreen('tutorial')}
+            debug={debug}
+            setDebug={setDebug}
+            modeId={modeId}
+            setModeId={setModeId}
+            debugMode={debugMode}
+          />
+        ) : (
+          <StartScreen
+            onStart={restart}
+            onTutorial={() => setScreen('tutorial')}
+            debug={debug}
+            setDebug={setDebug}
+            modeId={modeId}
+            setModeId={setModeId}
+            debugMode={debugMode}
+          />
+        )
       )}
       {screen === 'tutorial' && (
         <OnboardingScreen
@@ -1776,7 +3052,18 @@ function App() {
           onHome={() => setScreen('start')}
         />
       )}
+      {debugMode && debug.coloredBg && (screen === 'start' || screen === 'tutorial') && (
+        <FloatingColorPicker
+          colorOverrides={colorOverrides}
+          setColorOverrides={setColorOverrides}
+          modeId={modeId}
+        />
+      )}
+      {debugMode && (
+        <DebugBadge enabled={debugMode} onToggle={() => setDebugMode(false)} />
+      )}
     </div>
+    </ColorOverrideContext.Provider>
   );
 }
 
