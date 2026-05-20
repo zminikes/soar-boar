@@ -838,14 +838,18 @@
     }
     .big-demo-caption {
       margin: 44px auto 0;
+      padding: 0 16px;
       font-family: var(--ff-serif);
-      font-size: clamp(28px, 6vw, 44px);  /* 1.5x larger */
+      font-size: clamp(24px, 5.2vw, 40px);
       font-weight: 500;
-      line-height: 1.25;
+      line-height: 1.2;
       letter-spacing: 0.25px;
       color: var(--dark);
       text-align: center;
-      max-width: 28ch;
+      /* Allow full container width so longer phrases sit on one line on
+         wider screens; balance prevents single-word orphans when wrapping. */
+      max-width: 100%;
+      text-wrap: balance;
       /* Reserve room for ≤2 lines so single-line captions don't shift the
          scene up and double-line captions don't push the sub-text down. */
       min-height: 2.5em;
@@ -858,11 +862,13 @@
     }
     .big-demo-sub {
       margin: 16px auto 0;
+      padding: 0 16px;
       font-family: var(--ff-sans);
       font-size: 15px;
       font-weight: 500;
       color: var(--muted);
-      max-width: 44ch;
+      max-width: 100%;
+      text-wrap: balance;
       text-align: center;
       min-height: 2.5em;
     }
