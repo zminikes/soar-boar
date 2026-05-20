@@ -1868,6 +1868,7 @@ const WORDS = new Set([
   "RICH",
   "RICK",
   "RIDE",
+  "RIDS",
   "RIFE",
   "RIFF",
   "RIFT",
