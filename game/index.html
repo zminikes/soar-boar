@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#F8F1E5" />
+  <meta name="theme-color" content="#F8F1E5" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)" />
   <meta name="description" content="Change one letter at a time to build the longest word chain you can. Race the clock — 60 seconds to score big." />
   <title>Soar Boar — the word-chaining game</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐷</text></svg>" />
@@ -35,15 +36,15 @@
 
     :root {
       --cream:      #F8F1E5;
-      --orange:     #EC694A;
-      --pink:       rgba(236,105,74,0.12);
+      --orange:     #F88065;
+      --pink:       rgba(248,128,101,0.12);
       --white:      #FFFFFF;
       --dark:       #0A0A0A;
       --muted:      #737373;
       --border:     rgba(0,0,0,0.08);
       --error:      #C0392B;
       --ok:         #27AE60;
-      --pos1:       #F48870;
+      --pos1:       #F88065;
       --pos2:       #9B59B6;
       --pos3:       #2E86C1;
       --pos4:       #27AE60;
@@ -53,7 +54,7 @@
       /* Brand "deep" colors — pig SVG fill, bean SVG fill, and the
          wordmark accent are all driven by these tokens so they
          can't drift apart. */
-      --deep-peach: #EC694A;
+      --deep-peach: #F88065;
       --deep-sage:  #27885E;
       --accent:     var(--deep-peach);
       /* Tutorial uses a separate "guidance" color so the arrow / changed-ok
@@ -80,6 +81,7 @@
       flex-direction: column;
       align-items: center;
       overscroll-behavior-y: none;
+      overflow-x: hidden; /* full-bleed sections use 100vw; prevent horizontal scroll */
     }
 
     /* ── Animations ─────────────────────────────────────── */
@@ -88,13 +90,83 @@
       25%       { transform: rotate(-3deg); }
       75%       { transform: rotate(3deg); }
     }
-    @keyframes earFlap {
-      0%   { transform: translateY(0)    scaleY(1);    }
-      18%  { transform: translateY(-5px) scaleY(0.93); }
-      38%  { transform: translateY(2px)  scaleY(1.04); }
-      58%  { transform: translateY(-3px) scaleY(0.97); }
-      78%  { transform: translateY(1px)  scaleY(1.01); }
-      100% { transform: translateY(0)    scaleY(1);    }
+    /* AnimatedMascot — two SVG frames (open + closed) stacked.
+       On hover or random blink, the closed frame fades in over the open one. */
+    .animated-mascot {
+      display: block;
+      position: relative;
+      cursor: pointer;
+    }
+    .animated-mascot .frame { display: block; }
+    /* Instant frame swap — no transition, no overlap.
+       When blinking: open hides, closed shows; both happen simultaneously. */
+    .animated-mascot .frame-open {
+      position: relative;
+      width: 100%; height: 100%;
+    }
+    .animated-mascot .frame-closed {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+    }
+    .animated-mascot.blinking .frame-open   { opacity: 0; }
+    .animated-mascot.blinking .frame-closed { opacity: 1; }
+    .animated-mascot.bouncing {
+      animation: heroMascotBounce 360ms cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+    @keyframes heroMascotBounce {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
+    }
+
+    .animated-mascot svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+      filter: url(#pig-boil-subtle);
+    }
+    .animated-mascot svg #ears > path,
+    .animated-mascot svg #leaves {
+      transform-box: fill-box;
+    }
+    /* Ear flap — pig: each ear rotates from its base, mirrored */
+    .animated-mascot[data-mode="classic"] svg #ears > path {
+      transform-origin: 50% 100%;
+    }
+    .animated-mascot[data-mode="classic"] svg #ears > path:nth-child(1) {
+      animation: heroMascotEarA 1.7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+    .animated-mascot[data-mode="classic"] svg #ears > path:nth-child(2) {
+      animation: heroMascotEarB 1.7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+    @keyframes heroMascotEarA {
+      0%, 100% { transform: rotate(0); }
+      50%      { transform: rotate(7deg); }
+    }
+    @keyframes heroMascotEarB {
+      0%, 100% { transform: rotate(0); }
+      50%      { transform: rotate(-7deg); }
+    }
+    /* Leaf sway — bean */
+    .animated-mascot[data-mode="soyboy"] svg #leaves {
+      transform-origin: 50% 100%;
+      animation: heroMascotLeaves 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+    @keyframes heroMascotLeaves {
+      0%, 100% { transform: rotate(-2deg); }
+      50%      { transform: rotate(2deg); }
+    }
+
+    /* Dark mode color tweaks for mascots are handled via direct SVG
+       string substitution in FlyingPig + AnimatedMascot — more reliable
+       than relying on CSS cascade across inlined <style> blocks. */
+
+    @media (prefers-reduced-motion: reduce) {
+      .animated-mascot svg { filter: none !important; }
+      .animated-mascot svg #ears > path,
+      .animated-mascot svg #leaves,
+      .animated-mascot.bouncing { animation: none !important; }
     }
 
     @keyframes shake {
@@ -180,11 +252,11 @@
        data-exp-colored-bg is only set when the start screen is active —
        game/end screens always render on cream. */
     :root[data-exp-colored-bg="1"][data-exp-mode="classic"] {
-      --cream: #FFD1A8;             /* picked peach */
+      --cream: #FAD8B8;             /* picked soft peach cream */
       --muted: rgba(0,0,0,0.62);
       --border: rgba(0,0,0,0.16);
       --accent: var(--deep-peach);
-      --accent-soft: rgba(236,105,74,0.14);
+      --accent-soft: rgba(248,128,101,0.14);
     }
     :root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]  {
       --cream: #B7D197;             /* picked sage */
@@ -193,25 +265,11 @@
       --accent: var(--deep-sage);
       --accent-soft: rgba(39,136,94,0.14);
     }
-    /* Dark mode variants — deep saturated bgs with lighter accents for contrast */
-    :root[data-theme="dark"][data-exp-colored-bg="1"][data-exp-mode="classic"] {
-      --cream: #3A1F18;
-      --muted: rgba(255,255,255,0.72);
-      --border: rgba(255,255,255,0.16);
-      --accent: #F49780;
-      --accent-soft: rgba(244,151,128,0.18);
-    }
-    :root[data-theme="dark"][data-exp-colored-bg="1"][data-exp-mode="soyboy"]  {
-      --cream: #1C2823;
-      --muted: rgba(255,255,255,0.72);
-      --border: rgba(255,255,255,0.16);
-      --accent: #58BB8B;
-      --accent-soft: rgba(88,187,139,0.18);
-    }
-    /* Dark cream (regular dark mode, no coloredBg) gets lighter accents
-       so the wordmark accent stays readable on dark cream. */
-    :root[data-theme="dark"] { --accent: #F49780; }
-    :root[data-theme="dark"] .soyboy { --accent: #58BB8B; }
+    /* Dark mode intentionally does NOT apply the colored bg —
+       sticks with the neutral near-black cream for a calmer feel.
+       Wordmark accent matches the SVG fill exactly (no lightening). */
+    :root[data-theme="dark"] { --accent: var(--deep-peach); }
+    :root[data-theme="dark"] .soyboy { --accent: var(--deep-sage); }
 
     /* Surfaces on colored bg — translucent cream tint reads cleanly on saturated bgs.
        Higher opacity = cleaner cream-on-color, less muddy mix. */
@@ -313,6 +371,10 @@
       background: var(--dark);
       color: var(--cream);
     }
+    /* Regular dark mode — needs a light overlay so the segmented control is visible */
+    :root[data-theme="dark"] .mode-segmented { background: rgba(255,255,255,0.08); }
+    :root[data-theme="dark"] .seg-tab.active { background: var(--dark); color: var(--cream); }
+    :root[data-theme="dark"] .seg-tab:not(.active) { color: var(--muted); }
     :root[data-exp-colored-bg="1"] .mode-segmented { background: rgba(255,251,246,0.68); }
     :root[data-exp-colored-bg="1"] .seg-tab.active { background: #1A1918; color: #fff; }
     :root[data-exp-colored-bg="1"] .seg-tab:not(.active) { color: rgba(0,0,0,0.62); }
@@ -419,6 +481,26 @@
     }
     .debug-badge:hover  { opacity: 1; }
     .debug-badge:active { transform: scale(0.94); }
+
+    /* Collapsible prefs container — uses grid-template-rows so the
+       animation tracks the panel's actual content height (no clipping
+       at the bottom from a guessed max-height). */
+    .prefs-collapse {
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transition:
+        grid-template-rows 340ms var(--ease-out),
+        opacity 220ms var(--ease-out);
+    }
+    .prefs-collapse.open {
+      grid-template-rows: 1fr;
+      opacity: 1;
+    }
+    .prefs-collapse > * {
+      overflow: hidden;
+      min-height: 0;
+    }
 
     /* ── Floating Color Picker ─────────────────────────── */
     .cp-fab {
@@ -599,6 +681,626 @@
       background: #F5F3F0; color: #1A1918; border-color: #F5F3F0;
     }
     .cp-btn.primary:hover { filter: brightness(1.2); }
+
+    /* ── Big scroll-jacked tutorial ─────────────────────── */
+    /* Outer wrapper is N viewport-heights tall.
+       Inner scene is sticky so it pins to the viewport, and scroll
+       progress through the outer drives which step is shown. */
+    .big-demo {
+      position: relative;
+      width: 100vw;
+      margin-left: calc(50% - 50vw); /* break out of #root max-width */
+      margin-top: 120px;
+      background: var(--cream);
+    }
+    .big-demo-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px;
+      box-sizing: border-box;
+      overflow: hidden; /* scroll hint can't escape */
+    }
+    /* Inner sticky needs to be positioned so the scroll-hint can anchor absolutely inside it */
+    .big-demo-sticky-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      width: 100%;
+    }
+    .big-demo-eyebrow {
+      font-family: var(--ff-sans);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .big-demo-progress {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 36px;
+    }
+    .big-demo-progress-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 280ms var(--ease-out), transform 280ms var(--ease-out);
+    }
+    .big-demo-progress-dot.active {
+      background: var(--accent);
+      transform: scale(1.4);
+    }
+    .big-demo-tiles {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      position: relative;
+    }
+    .big-demo-tile {
+      width: clamp(72px, 18vw, 120px);
+      height: clamp(72px, 18vw, 120px);
+      border-radius: clamp(16px, 4vw, 26px);
+      border: 2px solid rgba(0,0,0,0.18);
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(36px, 8vw, 60px);
+      font-weight: 800;
+      color: var(--dark);
+      transition: all 360ms var(--ease-spring);
+    }
+    :root[data-theme="dark"] .big-demo-tile { border-color: rgba(255,255,255,0.18); }
+    .big-demo-tile.changed {
+      background: var(--accent-soft, rgba(248,128,101,0.16));
+      border-color: var(--accent);
+      color: var(--accent);
+      animation: bigTileSnap 700ms var(--ease-spring);
+    }
+    @keyframes bigTileSnap {
+      0%   { transform: scale(0.6) rotate(-10deg); opacity: 0.4; }
+      45%  { transform: scale(1.18) rotate(6deg); opacity: 1; }
+      70%  { transform: scale(0.96) rotate(-2deg); }
+      100% { transform: scale(1) rotate(0); }
+    }
+    .big-demo-pts {
+      position: absolute;
+      top: -42px; left: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--ff-sans);
+      font-size: 14px;
+      font-weight: 800;
+      padding: 7px 14px;
+      border-radius: 999px;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      transform: translateX(-50%);
+      animation: bigPtsPop 1400ms var(--ease-spring) 300ms both;
+    }
+    @keyframes bigPtsPop {
+      0%   { transform: translateX(-50%) translateY(8px) scale(0.4); opacity: 0; }
+      20%  { transform: translateX(-50%) translateY(-6px) scale(1.1); opacity: 1; }
+      55%  { transform: translateX(-50%) translateY(-12px) scale(1); opacity: 1; }
+      100% { transform: translateX(-50%) translateY(-20px) scale(1); opacity: 0; }
+    }
+    /* Scene wrapper — centers children to align with the stepper above */
+    .big-demo-scene {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    .big-demo-caption {
+      margin: 44px auto 0;
+      font-family: var(--ff-serif);
+      font-size: clamp(28px, 6vw, 44px);  /* 1.5x larger */
+      font-weight: 500;
+      line-height: 1.25;
+      letter-spacing: 0.25px;
+      color: var(--dark);
+      text-align: center;
+      max-width: 28ch;
+      /* Reserve room for ≤2 lines so single-line captions don't shift the
+         scene up and double-line captions don't push the sub-text down. */
+      min-height: 2.5em;
+    }
+    .big-demo-caption .accent {
+      color: var(--accent);
+      font-weight: 800; /* bold instead of italic */
+      font-style: normal;
+      letter-spacing: 0.5px;
+    }
+    .big-demo-sub {
+      margin: 16px auto 0;
+      font-family: var(--ff-sans);
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--muted);
+      max-width: 44ch;
+      text-align: center;
+      min-height: 2.5em;
+    }
+    /* Scroll hint stays mounted so removing it never shifts content;
+       fades out via opacity past the first scene. */
+    .big-demo-scroll-hint {
+      position: absolute;
+      bottom: max(48px, env(safe-area-inset-bottom, 48px));
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--ff-sans);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      pointer-events: none;
+      transition: opacity 300ms var(--ease-out);
+    }
+    .big-demo-scroll-hint::after {
+      content: '';
+      display: block;
+      margin: 6px auto 0;
+      width: 1px; height: 22px;
+      background: currentColor;
+      animation: hintLine 1.8s var(--ease-in-out) infinite;
+    }
+    @keyframes hintLine {
+      0%, 100% { transform: scaleY(0.4); transform-origin: top; opacity: 0.3; }
+      50%      { transform: scaleY(1); opacity: 1; }
+    }
+    .big-demo-finale-cta {
+      margin-top: 36px;
+      padding: 18px 40px;
+      border-radius: 999px;
+      background: #1A1918;
+      color: #fff;
+      border: none;
+      font-family: var(--ff-sans);
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: transform 120ms var(--ease-out), filter 120ms var(--ease-out);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+    }
+    .big-demo-finale-cta:hover  { filter: brightness(1.20); transform: translateY(-2px); }
+    .big-demo-finale-cta:active { transform: scale(0.97); }
+    :root[data-theme="dark"] .big-demo-finale-cta { background: #F5F3F0; color: #1A1918; }
+    :root[data-theme="dark"] .big-demo-finale-cta:hover { filter: brightness(0.92); }
+    .big-demo-finale-ghost {
+      margin-top: 14px;
+      padding: 12px 28px;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      border: none;
+      font-family: var(--ff-sans);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: color 120ms var(--ease-out);
+    }
+    .big-demo-finale-ghost:hover { color: var(--dark); text-decoration: underline; text-underline-offset: 4px; }
+
+    /* Big flying Soar Boar — sailing through wind.
+       Layered rhythms so motions feel related:
+         · ears + body  (0.5s, in phase — body rides the wing-flap)
+         · wind lines    (0.85s linear — continuous gust, no easing)
+         · tail          (0.85s, matches wind)
+         · overall glide (5s slow Y-wave — sailing) */
+    .flying-section {
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      padding: 64px 0 24px;
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .flying-pig {
+      display: block;
+      margin: 0 auto;
+      width: min(96vw, 880px);
+      animation: pigSail 5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+    .flying-pig svg {
+      width: 100%; height: auto; display: block;
+      overflow: visible; /* let wind lines streak past the viewBox edge */
+      filter: url(#pig-boil);   /* hand-drawn "boil" effect on the linework */
+    }
+    .boil-defs {
+      position: absolute;
+      width: 0; height: 0;
+      pointer-events: none;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .flying-pig svg { filter: none !important; }
+    }
+    .flying-pig svg [id],
+    .flying-pig svg #ears > g,
+    .flying-pig svg #air > path,
+    .flying-pig svg #eyes > path {
+      transform-box: fill-box;
+    }
+
+    /* Slow sailing Y-wave — the pig riding wind currents */
+    @keyframes pigSail {
+      0%, 100% { transform: translateY(0)    rotate(-0.5deg); }
+      50%      { transform: translateY(-14px) rotate(1deg); }
+    }
+
+    /* Body — bobs in time with ear flaps */
+    .flying-pig svg #body {
+      transform-origin: 50% 60%;
+      animation: pigBodyBob 0.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+    @keyframes pigBodyBob {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-3px); }
+    }
+
+    /* Head — same beat as body, slightly softer */
+    .flying-pig svg #head {
+      transform-origin: 55% 90%;
+      animation: pigHeadBob 0.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+    @keyframes pigHeadBob {
+      0%, 100% { transform: translateY(0)    rotate(0); }
+      50%      { transform: translateY(-2px) rotate(0.6deg); }
+    }
+
+    /* Ears (wings) — each is wrapped in its own <g> inside #ears.
+       Target the wrapper groups; mirror the rotation so they flap
+       like a pair of wings opening/closing in sync. */
+    .flying-pig svg #ears > g {
+      transform-origin: 50% 100%; /* hinge at the base */
+    }
+    .flying-pig svg #ears > g:nth-child(1) {
+      animation: pigEarLeft 0.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    }
+    .flying-pig svg #ears > g:nth-child(2) {
+      animation: pigEarRight 0.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    }
+    @keyframes pigEarLeft {
+      0%, 100% { transform: translateY(0)     rotate(0)      scaleY(1); }
+      50%      { transform: translateY(-10px) rotate(-12deg) scaleY(1.08); }
+    }
+    @keyframes pigEarRight {
+      0%, 100% { transform: translateY(0)     rotate(0)      scaleY(1); }
+      50%      { transform: translateY(-10px) rotate(12deg)  scaleY(1.08); }
+    }
+
+    /* Tail — hinges from its base (bottom of the shape) so it
+       stays connected to the body as it sweeps. */
+    .flying-pig svg #tail {
+      transform-origin: 50% 100%;
+      animation: pigTailWave 0.85s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+    @keyframes pigTailWave {
+      0%, 100% { transform: rotate(-6deg); }
+      50%      { transform: rotate(9deg);  }
+    }
+
+    /* Wind lines — flowing right → left, staggered for continuous gust.
+       Opacity holds high through the journey then snaps to 0 at the
+       end, so each line "exits" cleanly without ever looking clipped. */
+    .flying-pig svg #air > path {
+      transform-origin: 50% 50%;
+      animation: pigWindStreak 0.95s linear infinite;
+      will-change: transform, opacity;
+    }
+    .flying-pig svg #air > path:nth-child(1) { animation-delay: 0s;    }
+    .flying-pig svg #air > path:nth-child(2) { animation-delay: -0.19s; }
+    .flying-pig svg #air > path:nth-child(3) { animation-delay: -0.38s; }
+    .flying-pig svg #air > path:nth-child(4) { animation-delay: -0.57s; }
+    .flying-pig svg #air > path:nth-child(5) { animation-delay: -0.76s; }
+    @keyframes pigWindStreak {
+      0%   { transform: translateX(40px)  scaleX(1);    opacity: 0;    }
+      10%  { transform: translateX(28px)  scaleX(1.05); opacity: 0.85; }
+      25%  { transform: translateX(8px)   scaleX(1.1);  opacity: 1;    }
+      65%  { transform: translateX(-30px) scaleX(1.15); opacity: 1;    }
+      90%  { transform: translateX(-58px) scaleX(1.1);  opacity: 0.5;  }
+      100% { transform: translateX(-70px) scaleX(1);    opacity: 0;    }
+    }
+
+    /* Eyes — opacity blink, avoids the wrong-angle issue from scaling
+       a tilted eye-shape's bounding box. */
+    .flying-pig svg #eyes > path {
+      animation: pigBlink 5.2s infinite;
+    }
+    @keyframes pigBlink {
+      0%, 94%, 100% { opacity: 1; }
+      96%, 97%      { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .flying-pig,
+      .flying-pig svg [id],
+      .flying-pig svg #ears > path,
+      .flying-pig svg #air > path,
+      .flying-pig svg #eyes > path { animation: none !important; }
+    }
+
+    /* Email newsletter signup — minimal underline style */
+    .signup-section {
+      max-width: 460px;
+      margin: 24px auto 96px;
+      padding: 0 20px;
+      text-align: center;
+    }
+    .signup-pre {
+      font-family: var(--ff-serif);
+      font-size: 22px;
+      font-weight: 500;
+      line-height: 1.3;
+      color: var(--dark);
+      margin-bottom: 20px;
+      letter-spacing: 0.25px;
+    }
+    .signup-sub {
+      font-family: var(--ff-sans);
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .signup-form {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      border-bottom: 1.5px solid var(--dark);
+      padding-bottom: 8px;
+    }
+    .signup-form input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      font-family: var(--ff-sans);
+      font-size: 16px;
+      padding: 10px 0;
+      color: var(--dark);
+      outline: none;
+      min-width: 0;
+    }
+    .signup-form input::placeholder { color: var(--muted); }
+    .signup-form button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--ff-sans);
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--accent);
+      padding: 8px 4px;
+      letter-spacing: 0.02em;
+      transition: transform 120ms var(--ease-out);
+    }
+    .signup-form button:hover  { transform: translateX(2px); }
+    .signup-form button:active { transform: scale(0.95); }
+    .signup-success {
+      font-family: var(--ff-serif);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--accent);
+      animation: fadeIn 280ms var(--ease-out);
+    }
+
+    /* ── Old (small) whimsy demo styles — kept for any leftover refs ── */
+    .demo-section {
+      margin-top: 96px;
+      padding-bottom: 64px;
+      text-align: center;
+      position: relative;
+    }
+    .demo-section::before {
+      content: '↓';
+      display: block;
+      font-family: var(--ff-serif);
+      font-size: 28px;
+      color: var(--muted);
+      opacity: 0.5;
+      margin-bottom: 40px;
+      animation: nudgeDown 2.4s var(--ease-in-out) infinite;
+    }
+    @keyframes nudgeDown {
+      0%, 100% { transform: translateY(0); opacity: 0.3; }
+      50%      { transform: translateY(6px); opacity: 0.6; }
+    }
+    .demo-title {
+      font-family: var(--ff-serif);
+      font-weight: 600;
+      font-size: 36px;
+      line-height: 1;
+      margin-bottom: 48px;
+      letter-spacing: 0;
+    }
+    .demo-title em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .demo-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 64px;
+      margin: 0 auto;
+      max-width: 360px;
+    }
+    .demo-step {
+      position: relative;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out);
+    }
+    .demo-step.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .demo-tile-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+    }
+    .demo-tile {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      border: 1.5px solid rgba(0,0,0,0.18);
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--dark);
+      transition:
+        background-color 360ms var(--ease-spring),
+        border-color 360ms var(--ease-spring),
+        color 360ms var(--ease-spring),
+        transform 420ms var(--ease-spring);
+    }
+    :root[data-theme="dark"] .demo-tile { border-color: rgba(255,255,255,0.18); }
+    .demo-step.visible .demo-tile.changed {
+      background: var(--accent-soft, rgba(236,105,74,0.14));
+      border-color: var(--accent);
+      color: var(--accent);
+      animation: tileWiggle 600ms var(--ease-spring) 240ms;
+    }
+    @keyframes tileWiggle {
+      0%   { transform: scale(1) rotate(0); }
+      30%  { transform: scale(1.18) rotate(-5deg); }
+      55%  { transform: scale(1.10) rotate(4deg); }
+      80%  { transform: scale(1.04) rotate(-2deg); }
+      100% { transform: scale(1) rotate(0); }
+    }
+    .demo-pts {
+      position: absolute;
+      top: -18px; left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--ff-sans);
+      font-size: 12px; font-weight: 800;
+      padding: 5px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.06em;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .demo-step.visible .demo-pts {
+      animation: ptsFloat 1100ms var(--ease-spring) 380ms forwards;
+    }
+    @keyframes ptsFloat {
+      0%   { transform: translateX(-50%) translateY(8px) scale(0.4); opacity: 0; }
+      30%  { transform: translateX(-50%) translateY(-14px) scale(1.1); opacity: 1; }
+      80%  { transform: translateX(-50%) translateY(-22px) scale(1); opacity: 1; }
+      100% { transform: translateX(-50%) translateY(-30px) scale(1); opacity: 0; }
+    }
+    .demo-caption {
+      margin-top: 22px;
+      font-family: var(--ff-sans);
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .demo-caption em {
+      font-family: var(--ff-serif);
+      font-style: italic;
+      font-weight: 500;
+      font-size: 17px;
+      color: var(--accent);
+      margin: 0 1px;
+    }
+    /* Flying mascot peeks in from the side per step */
+    .demo-mascot {
+      position: absolute;
+      top: -8px;
+      width: 64px; height: 64px;
+      pointer-events: none;
+      opacity: 0;
+      transform: rotate(-12deg) translateX(40px);
+      transition: opacity 600ms var(--ease-out) 400ms, transform 800ms var(--ease-spring) 400ms;
+    }
+    .demo-step.visible .demo-mascot {
+      opacity: 1;
+      transform: rotate(-6deg) translateX(0);
+      animation: mascotBob 2.6s var(--ease-in-out) 1.2s infinite;
+    }
+    @keyframes mascotBob {
+      0%, 100% { transform: rotate(-6deg) translateY(0); }
+      50%      { transform: rotate(2deg) translateY(-6px); }
+    }
+    .demo-mascot.left  { left: -72px; }
+    .demo-mascot.right { right: -72px; transform: rotate(12deg) translateX(-40px); }
+    .demo-step.visible .demo-mascot.right {
+      transform: rotate(6deg) translateX(0);
+    }
+    .demo-step.visible .demo-mascot.right { animation: mascotBobR 2.6s var(--ease-in-out) 1.2s infinite; }
+    @keyframes mascotBobR {
+      0%, 100% { transform: rotate(6deg) translateY(0); }
+      50%      { transform: rotate(-2deg) translateY(-6px); }
+    }
+    @media (max-width: 480px) {
+      .demo-mascot { width: 48px; height: 48px; }
+      .demo-mascot.left  { left: -16px; top: -32px; }
+      .demo-mascot.right { right: -16px; top: -32px; }
+    }
+    .demo-finale {
+      margin-top: 80px;
+      font-family: var(--ff-serif);
+      font-size: 28px;
+      font-style: italic;
+      text-align: center;
+      color: var(--accent);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 800ms var(--ease-out), transform 800ms var(--ease-spring);
+    }
+    .demo-finale.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .demo-finale-arrow {
+      display: inline-block;
+      animation: arrowUp 1.6s var(--ease-in-out) infinite;
+    }
+    @keyframes arrowUp {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-4px); }
+    }
+
+    /* Hero wordmark whimsy — letters wiggle on hover */
+    .simple-wordmark {
+      cursor: default;
+    }
+    .simple-wordmark .letter {
+      display: inline-block;
+      transition: transform 280ms var(--ease-spring);
+    }
+    .simple-wordmark:hover .letter {
+      animation: letterWiggle 600ms var(--ease-spring);
+    }
+    .simple-wordmark:hover .letter:nth-child(1) { animation-delay: 0ms; }
+    .simple-wordmark:hover .letter:nth-child(2) { animation-delay: 40ms; }
+    .simple-wordmark:hover .letter:nth-child(3) { animation-delay: 80ms; }
+    .simple-wordmark:hover .letter:nth-child(4) { animation-delay: 120ms; }
+    .simple-wordmark:hover .letter:nth-child(5) { animation-delay: 160ms; }
+    .simple-wordmark:hover .letter:nth-child(6) { animation-delay: 200ms; }
+    .simple-wordmark:hover .letter:nth-child(7) { animation-delay: 240ms; }
+    .simple-wordmark:hover .letter:nth-child(8) { animation-delay: 280ms; }
+    @keyframes letterWiggle {
+      0%, 100% { transform: rotate(0) translateY(0); }
+      25%      { transform: rotate(-6deg) translateY(-4px); }
+      55%      { transform: rotate(5deg)  translateY(2px); }
+      80%      { transform: rotate(-2deg) translateY(-1px); }
+    }
 
     /* Dark pill primary used in simple landing */
     .btn-dark { background: #1A1918; color: #fff; }
@@ -868,7 +1570,7 @@
       box-shadow: 0 1px 0 rgba(0,0,0,0.04);
       animation: fadeIn 400ms var(--ease-out);
     }
-    .new-best-banner:hover  { filter: brightness(1.05); box-shadow: 0 6px 18px -8px rgba(244,136,112,0.55); }
+    .new-best-banner:hover  { filter: brightness(1.05); box-shadow: 0 6px 18px -8px rgba(248,128,101,0.55); }
     .new-best-banner:active { transform: scale(0.98); }
     .burst-emoji {
       position: absolute;
@@ -885,10 +1587,18 @@
     .chain-scroll {
       display: flex;
       flex-direction: column;
+      /* Anchor every row to the same left edge regardless of width. */
+      align-items: flex-start;
       gap: 5px;
       max-height: 200px;
       overflow-y: auto;
       overscroll-behavior: contain;
+      /* Sized to the widest row + centered as a block, so words
+         line up flush-left with each other while the chain itself
+         sits visually centered within the card. */
+      width: fit-content;
+      max-width: 100%;
+      margin: 0 auto;
     }
     .chain-row {
       display: flex;
@@ -1173,8 +1883,8 @@
     .info-num {
       width: 26px; height: 26px;
       border-radius: 50%;
-      background: rgba(244,136,112,0.14);
-      color: #F48870;
+      background: rgba(248,128,101,0.14);
+      color: #F88065;
       font-size: 13px; font-weight: 700;
       display: inline-flex; align-items: center; justify-content: center;
       flex-shrink: 0;
@@ -1228,10 +1938,10 @@
 
     /* ── Dark mode ───────────────────────────────────────── */
     :root[data-theme="dark"] {
-      --cream:  #16140F;
-      --white:  #1F1D17;
-      --dark:   #F6F2EB;
-      --muted:  #A8A29A;
+      --cream:  #141413;
+      --white:  #1E1D1C;
+      --dark:   #F5F5F4;
+      --muted:  #A3A3A3;
       --border: rgba(255,255,255,0.10);
       --orange: #F49780;
       --pink:   rgba(244,151,128,0.14);
@@ -1239,11 +1949,11 @@
       --ok:     #4AC47A;
     }
     :root[data-theme="dark"] .soyboy { --orange: #58BB8B; }
-    :root[data-theme="dark"] .info-card { background: #1E1D1C; border-color: rgba(255,255,255,0.1); }
+    :root[data-theme="dark"] .info-card { background: var(--white); border-color: rgba(255,255,255,0.10); }
     :root[data-theme="dark"] .info-card-title { color: var(--dark); }
-    :root[data-theme="dark"] .mode-pill { background: #1E1D1C; border-color: rgba(255,255,255,0.1); color: var(--dark); }
+    :root[data-theme="dark"] .mode-pill { background: var(--white); border-color: rgba(255,255,255,0.10); color: var(--dark); }
     :root[data-theme="dark"] .mode-pill:hover:not(.active) { background: #252422; }
-    :root[data-theme="dark"] .mode-pill.active { background: #F5F5F4; color: #141413; border-color: #F5F5F4; }
+    :root[data-theme="dark"] .mode-pill.active { background: var(--dark); color: var(--cream); border-color: var(--dark); }
     :root[data-theme="dark"] .chain-tile.changed { background: rgba(236,105,74,0.20); color: #F4A88E; }
     :root[data-theme="dark"] .tile { border-color: rgba(255,255,255,0.18); }
     :root[data-theme="dark"] .tile.wrong { background: #3A1A16; }
@@ -1305,8 +2015,8 @@
       font-size: 13px;
       letter-spacing: 0.05em;
     }
-    :root[data-theme="dark"] .kb { background: #141413; border-top-color: rgba(255,255,255,0.1); }
-    :root[data-theme="dark"] .kb-key { background: #2A2826; color: #F5F5F4; box-shadow: none; }
+    :root[data-theme="dark"] .kb { background: var(--cream); border-top-color: rgba(255,255,255,0.10); }
+    :root[data-theme="dark"] .kb-key { background: #2A2826; color: var(--dark); box-shadow: none; }
     /* Reserve space below content ONLY when the on-screen keyboard is mounted.
        Using :has() so the start/end screens don't get a phantom 230px gap. */
     @media (hover: none) and (pointer: coarse) {
@@ -1351,6 +2061,17 @@ const { useState, useEffect, useRef, useCallback, useContext, createContext, use
 /* Provided by App, consumed by AnimatedMascot so the pig/bean
    SVG body can be re-colored live from the floating color picker. */
 const ColorOverrideContext = createContext({});
+
+/* Scopes an SVG's internal <style> rules to a wrapper class so multiple
+   inlined SVGs on the same page don't fight each other for the same
+   class names (e.g. pig's .cls-3 vs big-pig's .cls-3). */
+function scopeSvgStyles(svgString, scopeClass) {
+  if (!svgString) return '';
+  return svgString.replace(/<style[^>]*>([\s\S]*?)<\/style>/i, (_, body) => {
+    const scoped = body.replace(/(\.cls-[a-zA-Z0-9-]+)/g, `.${scopeClass} $1`);
+    return `<style>${scoped}</style>`;
+  });
+}
 
 /* useColoredSvg — synchronously generates a data: URI with the body
    fill substituted, using the inline SVG_DATA loaded from svg-data.js.
@@ -1398,7 +2119,7 @@ const MODES = {
     tutorialStart:  'SOAR',
     tutorialTarget: 'BOAR',
     tutorialWords:  ['SOAR', 'BOAR', 'BEAR'],
-    tutorialHints:  ['Type BOAR, then press enter', 'Now type BEAR, then press enter'],
+    tutorialHints:  ['Type BOAR', 'Now type BEAR'],
   },
   soyboy: {
     id: 'soyboy',
@@ -1413,7 +2134,7 @@ const MODES = {
     tutorialStart:  'SOY',
     tutorialTarget: 'BOY',
     tutorialWords:  ['SOY', 'BOY', 'BAY'],
-    tutorialHints:  ['Type BOY, then press enter', 'Now type BAY, then press enter'],
+    tutorialHints:  ['Type BOY', 'Now type BAY'],
   },
 };
 
@@ -1537,7 +2258,7 @@ function PeaPodSVG({ size = 180 }) {
   );
 }
 
-function MascotIcon({ size = 48, modeId = 'classic' }) {
+function MascotIcon({ size = 48, modeId = 'classic', className = '' }) {
   const [isDark, setIsDark] = useState(() =>
     document.documentElement.dataset.theme === 'dark'
   );
@@ -1549,7 +2270,7 @@ function MascotIcon({ size = 48, modeId = 'classic' }) {
   }, []);
   const dm  = isDark ? '-dark' : '';
   const src = modeId === 'soyboy' ? `bean-open${dm}.svg` : `pig-open${dm}.svg`;
-  return <img src={src} width={size} height={size} alt="" style={{ display: 'block' }} />;
+  return <img src={src} width={size} height={size} alt="" className={className} style={{ display: 'block' }} />;
 }
 
 function Toggle({ checked, onChange, label }) {
@@ -1659,12 +2380,10 @@ function Keyboard({ onKey, visible = true }) {
   );
 }
 
-function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
+function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'classic' }) {
   const cfg   = MODES[modeId];
   const words = cfg.tutorialWords;   // e.g. ['SOAR','BOAR','BEAR']
-  // On mobile, submit is via the on-screen ENTER key; on desktop it's the physical enter
-  const submitLabel = isTouchDevice ? 'tap ENTER' : 'press enter';
-  const hints = cfg.tutorialHints.map(h => h.replace('press enter', submitLabel));
+  const hints = cfg.tutorialHints;   // typed words auto-submit, no enter prompt
 
   const [step,           setStep]           = useState(0);
   const [typed,          setTyped]          = useState('');
@@ -1838,9 +2557,12 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
                 Now do that as fast as you can — {cfg.duration} seconds on the clock.
               </div>
             </div>
-            <div style={{ marginTop: 20 }}>
+            <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button className="btn btn-primary btn-full" onClick={onDone}>
-                Let's play! →
+                Let's play!
+              </button>
+              <button className="btn btn-ghost btn-full" onClick={onDoneForever}>
+                Try forever mode (no timer)
               </button>
             </div>
           </>
@@ -1853,19 +2575,22 @@ function OnboardingScreen({ onDone, onBack, modeId = 'classic' }) {
   );
 }
 /* ── AnimatedMascot ───────────────────────────────────── */
+/* Renders open + closed SVG frames stacked. The closed frame fades in
+   when eyes are "closed" (random ambient blink OR hover). Hover also
+   plays a single subtle bounce animation. All styles are scoped via
+   scopeSvgStyles so multiple inline SVGs don't fight over class names. */
 function AnimatedMascot({ size = 120, modeId = 'classic' }) {
-  const [isBlinking,    setIsBlinking]    = useState(false);
-  const [isFlapping,    setIsFlapping]    = useState(false);
-  const [isDark,        setIsDark]        = useState(false);
-  const [renderDark,    setRenderDark]    = useState(false);
-  const [mascotOpacity, setMascotOpacity] = useState(1);
+  const [isDark, setIsDark] = useState(
+    () => document.documentElement.dataset.theme === 'dark'
+  );
   const [coloredBgActive, setColoredBgActive] = useState(
     () => document.documentElement.dataset.expColoredBg === '1'
   );
-  const prevDarkRef = useRef(false);
+  const [ambientBlink, setAmbientBlink] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isBouncing, setIsBouncing] = useState(false);
   const overrides = useContext(ColorOverrideContext);
 
-  // Track dark mode + colored-bg changes
   useEffect(() => {
     const check = () => {
       setIsDark(document.documentElement.dataset.theme === 'dark');
@@ -1880,60 +2605,80 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
     return () => obs.disconnect();
   }, []);
 
-  // Crossfade when dark mode toggles
+  // Ambient blink — random ~35% every 2.5s
   useEffect(() => {
-    if (prevDarkRef.current === isDark) return;
-    prevDarkRef.current = isDark;
-    setMascotOpacity(0);
-    const t = setTimeout(() => { setRenderDark(isDark); setMascotOpacity(1); }, 180);
-    return () => clearTimeout(t);
-  }, [isDark]);
+    const id = setInterval(() => {
+      if (Math.random() < 0.35) {
+        setAmbientBlink(true);
+        setTimeout(() => setAmbientBlink(false), 140);
+      }
+    }, 2500);
+    return () => clearInterval(id);
+  }, []);
+
+  const handleEnter = useCallback(() => {
+    setIsHovered(true);
+    setIsBouncing(true);
+    setTimeout(() => setIsBouncing(false), 420);
+  }, []);
+  const handleLeave = useCallback(() => setIsHovered(false), []);
 
   const isClassic = modeId !== 'soyboy';
-  const dm = renderDark ? '-dark' : '';
+  const dm = isDark ? '-dark' : '';
   const openPath   = isClassic ? `pig-open${dm}.svg`   : `bean-open${dm}.svg`;
   const closedPath = isClassic ? `pig-closed${dm}.svg` : `bean-closed${dm}.svg`;
-
-  // Re-color from picker — only when coloredBg is active for the screen.
-  // defaultColor MUST match the fill currently in the SVG file.
-  const defaultColor = isClassic ? '#EC694A' : '#27885E';
+  const defaultColor = isClassic ? '#F88065' : '#27885E';
   const modeKey = isClassic ? 'classic' : 'soyboy';
   const accent = coloredBgActive ? (overrides[modeKey] || {}).accent : null;
-  const openSrc   = useColoredSvg(openPath,   defaultColor, accent);
-  const closedSrc = useColoredSvg(closedPath, defaultColor, accent);
 
-  useEffect(() => {
-    // Blink: ~25% chance every 2s
-    const blinkId = setInterval(() => {
-      if (Math.random() < 0.25) {
-        setIsBlinking(true);
-        setTimeout(() => setIsBlinking(false), 150);
-      }
-    }, 2000);
-    // Flap: ~20% chance every 3s, single play
-    const flapId = setInterval(() => {
-      if (Math.random() < 0.20) {
-        setIsFlapping(true);
-        setTimeout(() => setIsFlapping(false), 500);
-      }
-    }, 3000);
-    return () => { clearInterval(blinkId); clearInterval(flapId); };
-  }, [modeId]);
+  const recolor = (raw) => {
+    if (!raw) return '';
+    let result = raw;
+    // Accent color from picker
+    if (accent && accent.toLowerCase() !== defaultColor.toLowerCase()) {
+      result = result.replace(
+        new RegExp(`fill\\s*:\\s*${defaultColor}`, 'gi'),
+        `fill: ${accent}`
+      );
+    }
+    // Dark mode: all dark strokes (.cls-2 = #2e2b26) — outlines + facial
+    // features — flip to "almost black" so they stay readable but feel
+    // dark. Applies to both pig and bean.
+    if (isDark) {
+      result = result.replace(/fill:\s*#2e2b26/gi, 'fill: #1A1918');
+    }
+    return result;
+  };
+  const openSvg = useMemo(() => {
+    const data = (typeof SVG_DATA !== 'undefined') ? SVG_DATA : {};
+    return scopeSvgStyles(recolor(data[openPath]), 'animated-mascot');
+  }, [openPath, defaultColor, accent]);
+  const closedSvg = useMemo(() => {
+    const data = (typeof SVG_DATA !== 'undefined') ? SVG_DATA : {};
+    return scopeSvgStyles(recolor(data[closedPath]), 'animated-mascot');
+  }, [closedPath, defaultColor, accent]);
+
+  const eyesClosed = ambientBlink || isHovered;
 
   return (
-    <img
-      src={isBlinking ? closedSrc : openSrc}
-      width={size}
-      height={size}
-      style={{
-        display: 'block',
-        animation: isFlapping ? 'earFlap 500ms ease' : 'none',
-        opacity: mascotOpacity,
-        transition: 'opacity 180ms ease',
-        transformOrigin: 'center bottom',
-      }}
-      alt=""
-    />
+    <div
+      className={[
+        'animated-mascot',
+        eyesClosed ? 'blinking' : '',
+        isBouncing ? 'bouncing' : '',
+      ].filter(Boolean).join(' ')}
+      data-mode={isClassic ? 'classic' : 'soyboy'}
+      style={{ width: size, height: size }}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      onFocus={handleEnter}
+      onBlur={handleLeave}
+      role="img"
+      aria-label={isClassic ? 'Flying pig mascot' : 'Soy bean mascot'}
+    >
+      <div className="frame frame-open"  dangerouslySetInnerHTML={{ __html: openSvg }} />
+      <div className="frame frame-closed" dangerouslySetInnerHTML={{ __html: closedSvg }} />
+    </div>
   );
 }
 
@@ -1941,7 +2686,7 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
 /* Tiles-style minimal landing — used when debug.simpleLanding is on.
    Mode switcher is a pill-shaped segmented control with both mascots
    visible at once — you "peek" into each mode just by seeing the tabs. */
-function SimplifiedStartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId, debugMode }) {
+function SimplifiedStartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, modeId, setModeId, debugMode }) {
   const cfg = MODES[modeId];
   const [showPrefs, setShowPrefs] = useState(false);
   const bestScore = getBestScore(modeId);
@@ -1977,10 +2722,18 @@ function SimplifiedStartScreen({ onStart, onTutorial, debug, setDebug, modeId, s
         }}>
           <AnimatedMascot size={120} modeId={modeId} />
           <div className="simple-wordmark">
-            {cfg.name.split(' ')[0]} <span className="accent">{cfg.name.split(' ')[1]}</span>
+            {cfg.name.split(' ')[0].split('').map((ch, i) => (
+              <span key={`a${i}`} className="letter">{ch}</span>
+            ))}
+            {' '}
+            <span className="accent">
+              {cfg.name.split(' ')[1].split('').map((ch, i) => (
+                <span key={`b${i}`} className="letter">{ch}</span>
+              ))}
+            </span>
           </div>
           <div className="simple-tag">
-            Change one letter at a time.<br />
+            Change one letter.<br />
             <span className="simple-tag-meta">
               {cfg.wordLen}-letter words · {cfg.duration} seconds
             </span>
@@ -1997,8 +2750,27 @@ function SimplifiedStartScreen({ onStart, onTutorial, debug, setDebug, modeId, s
       <div className="simple-footer">
         <button className="simple-link" onClick={onTutorial}>Show me how</button>
         <button className="simple-link" onClick={() => setShowPrefs(p => !p)} aria-expanded={showPrefs}>
-          {showPrefs ? 'Hide' : 'Preferences'}
+          Preferences
         </button>
+      </div>
+
+      <div className={`prefs-collapse${showPrefs ? ' open' : ''}`} aria-hidden={!showPrefs}>
+        <div>
+          <div className="info-card" style={{ marginTop: 16 }}>
+            <div className="info-card-title">Preferences</div>
+            {[
+              { key: 'streakRule',  label: 'Position streak rule', sub: 'Forces variety — no changing the same position 3 turns in a row' },
+              { key: 'foreverMode', label: 'Forever mode',         sub: 'No timer — play at your own pace' },
+              { key: 'darkMode',    label: 'Dark mode',            sub: 'Easy on the eyes' },
+            ].map(({ key, label, sub }) => (
+              <div key={key} className="prefs-row">
+                <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
+                <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
+              </div>
+            ))}
+            {debugMode && <ExperimentsPanel debug={debug} setDebug={setDebug} />}
+          </div>
+        </div>
       </div>
 
       {bestScore > 0 && (
@@ -2007,29 +2779,16 @@ function SimplifiedStartScreen({ onStart, onTutorial, debug, setDebug, modeId, s
         </div>
       )}
 
-      {showPrefs && (
-        <div className="info-card" style={{ animation: 'slideDown 200ms ease', marginTop: 16 }}>
-          <div className="info-card-title">Preferences</div>
-          {[
-            { key: 'streakRule',  label: 'Position streak rule', sub: 'Prevents changing same position 3x in a row' },
-            { key: 'foreverMode', label: 'Practice mode',        sub: 'No timer, play at your own pace' },
-            { key: 'darkMode',    label: 'Dark mode',            sub: 'Easy on the eyes' },
-          ].map(({ key, label, sub }) => (
-            <div key={key} className="prefs-row">
-              <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
-              <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
-            </div>
-          ))}
-          {debugMode && <ExperimentsPanel debug={debug} setDebug={setDebug} />}
-        </div>
-      )}
+      <DemoSection modeId={modeId} onStart={onStart} onStartForever={onStartForever} />
+      <FlyingPig />
+      <EmailSignup />
     </div>
   );
 }
 
 /* Default colors used by the floating color picker. */
 const DEFAULT_COLORS = {
-  classic: { bg: '#FFD1A8', accent: '#EC694A' },
+  classic: { bg: '#FAD8B8', accent: '#F88065' },
   soyboy:  { bg: '#B7D197', accent: '#27885E' },
 };
 
@@ -2315,6 +3074,389 @@ Soyboy  — bg: ${get('soyboy','bg')}   accent: ${get('soyboy','accent')}`;
   );
 }
 
+/* ── useInView ────────────────────────────────────────── */
+/* Toggles `visible` to true once the element scrolls past a threshold.
+   Used by the playful demo section so each scene reveals on entrance. */
+function useInView(threshold = 0.35) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!ref.current) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setVisible(true);
+        obs.disconnect();
+      }
+    }, { threshold });
+    obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return [ref, visible];
+}
+
+/* ── DemoSection (scroll-jacked, sticky scene) ──────────
+   Outer wrapper is N viewport-heights tall.
+   Inner scene is sticky and shows exactly one step at a time.
+   Scroll progress through the outer drives which step is active.
+   Each new step re-mounts via React `key`, so the entrance
+   animations replay (tile snap-in + points float). */
+function DemoSection({ modeId, onStart, onStartForever }) {
+  const cfg = MODES[modeId];
+
+  // 4 scenes per mode. The last is a CTA finale.
+  const STEPS = modeId === 'soyboy' ? [
+    { word: 'SOY', changed: null, pts: null,
+      caption: <>Every game starts with a different word.</>,
+      sub: 'Your goal: change one letter to make a new word.' },
+    { word: 'BOY', changed: 0, pts: 1,
+      caption: <>Like <span className="accent">SOY</span> to <span className="accent">BOY</span>.</>,
+      sub: 'The first letter earns 1 point.' },
+    { word: 'BAY', changed: 1, pts: 3,
+      caption: <>Middle letters score more.</>,
+      sub: 'The second letter is worth 3 points.' },
+    { word: 'BAT', changed: 2, pts: 2,
+      caption: <>Keep chaining new words.</>,
+      sub: 'Race the clock — 45 seconds to chain as many as you can.' },
+  ] : [
+    { word: 'SOAR', changed: null, pts: null,
+      caption: <>Every game starts with a different word.</>,
+      sub: 'Your goal: change one letter to make a new word.' },
+    { word: 'BOAR', changed: 0, pts: 1,
+      caption: <>Like <span className="accent">SOAR</span> to <span className="accent">BOAR</span>.</>,
+      sub: 'The first letter earns 1 point.' },
+    { word: 'BEAR', changed: 1, pts: 4,
+      caption: <>Inner letters score more.</>,
+      sub: 'The second letter is worth 4 points.' },
+    { word: 'BEAD', changed: 3, pts: 2,
+      caption: <>Keep chaining new words.</>,
+      sub: 'Race the clock — 60 seconds to chain as many as you can.' },
+  ];
+  const FINALE_INDEX = STEPS.length; // one extra scene at the end
+  const totalScenes = STEPS.length + 1;
+
+  const outerRef = useRef(null);
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const el = outerRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const totalScroll = Math.max(1, r.height - window.innerHeight);
+      const scrolled = Math.max(0, Math.min(totalScroll, -r.top));
+      const idx = Math.min(totalScenes - 1, Math.floor((scrolled / totalScroll) * totalScenes));
+      setStep(prev => prev === idx ? prev : idx);
+    };
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [totalScenes]);
+
+  const isFinale = step >= FINALE_INDEX;
+  const current = STEPS[Math.min(step, STEPS.length - 1)];
+
+  return (
+    <section
+      ref={outerRef}
+      className="big-demo"
+      style={{ height: `${totalScenes * 100}vh` }}
+      aria-label="How it works"
+    >
+      <div className="big-demo-sticky">
+        <div className="big-demo-eyebrow">How it works</div>
+
+        <div className="big-demo-progress" role="presentation">
+          {Array.from({ length: totalScenes }).map((_, i) => (
+            <span key={i} className={`big-demo-progress-dot${i === step ? ' active' : ''}`} />
+          ))}
+        </div>
+
+        {!isFinale ? (
+          <div key={`scene-${step}`} className="big-demo-scene">
+            <div className="big-demo-tiles">
+              {current.pts != null && (
+                <span key={`pts-${step}`} className="big-demo-pts">+{current.pts}</span>
+              )}
+              {current.word.split('').map((l, i) => (
+                <div
+                  key={`${step}-${i}`}
+                  className={`big-demo-tile${current.changed === i ? ' changed' : ''}`}
+                >
+                  {l}
+                </div>
+              ))}
+            </div>
+            <div className="big-demo-caption">{current.caption}</div>
+            <div className="big-demo-sub">{current.sub}</div>
+          </div>
+        ) : (
+          <div key="finale" className="big-demo-scene">
+            <div className="big-demo-caption">
+              Now <span className="accent">you</span> try.
+            </div>
+            <div className="big-demo-sub">
+              {cfg.wordLen}-letter words · {cfg.duration} seconds on the clock.
+            </div>
+            <button className="big-demo-finale-cta" onClick={onStart}>
+              Start playing →
+            </button>
+            {onStartForever && (
+              <button className="big-demo-finale-ghost" onClick={onStartForever}>
+                Try forever mode (no timer)
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Always mounted — fading via opacity prevents a layout jump
+           when leaving the first scene. */}
+        <div
+          className="big-demo-scroll-hint"
+          aria-hidden="true"
+          style={{ opacity: step === 0 ? 0.55 : 0 }}
+        >
+          Scroll
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── BoilDefs ─────────────────────────────────────────── */
+/* Globally-available hand-drawn "line boil" filter. Mounted once
+   at the App root so any SVG can reference it via `filter: url(#pig-boil)`
+   and `filter: url(#pig-boil-subtle)`. */
+function BoilDefs() {
+  return (
+    <svg className="boil-defs" width="0" height="0" aria-hidden="true">
+      <defs>
+        {/* Stronger boil for the big flying pig */}
+        <filter id="pig-boil" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.018"
+            numOctaves="2"
+            seed="1"
+            result="noise"
+          >
+            <animate
+              attributeName="seed"
+              values="1;2;3;4;5;6;7;8"
+              dur="0.55s"
+              repeatCount="indefinite"
+              calcMode="discrete"
+            />
+          </feTurbulence>
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            scale="3"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+        {/* Subtler boil for the small hero mascot — same idea, tamer */}
+        <filter id="pig-boil-subtle" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.045"
+            numOctaves="2"
+            seed="1"
+            result="noise"
+          >
+            <animate
+              attributeName="seed"
+              values="1;2;3;4;5;6"
+              dur="0.5s"
+              repeatCount="indefinite"
+              calcMode="discrete"
+            />
+          </feTurbulence>
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            scale="1.2"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </defs>
+    </svg>
+  );
+}
+
+/* ── FlyingPig ────────────────────────────────────────── */
+function FlyingPig() {
+  const [isDark, setIsDark] = useState(
+    () => document.documentElement.dataset.theme === 'dark'
+  );
+  useEffect(() => {
+    const check = () => setIsDark(document.documentElement.dataset.theme === 'dark');
+    check();
+    const obs = new MutationObserver(check);
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+    return () => obs.disconnect();
+  }, []);
+
+  const svgMarkup = useMemo(() => {
+    const data = (typeof SVG_DATA !== 'undefined') ? SVG_DATA : {};
+    let raw = data['big-pig-1.svg'] || data['big-soar-boar.svg'] || '';
+    if (isDark) {
+      /* Illustrator's dark palette for the big pig:
+         - Body: peach (unchanged — the hero)
+         - All linework: a warm cocoa brown (#5B453B) — reads as
+           "dark brown ink" against the near-black page. Not too dark
+           to disappear, not so light that it competes with the body.
+         - Wind lines: a slightly cooler medium gray (#8C8884) so the
+           wind feels atmospheric, not solid.
+         - Ear fills: white (kept). */
+      raw = raw.replace(/fill:\s*#2e2b26/gi, 'fill: #5B453B');
+      raw = raw.replace(/<g id="air">([\s\S]*?)<\/g>/, (_, inner) => {
+        const updated = inner.replace(
+          /<path class="cls-3"/g,
+          '<path class="cls-3" fill="#8C8884"'
+        );
+        return `<g id="air">${updated}</g>`;
+      });
+      // Ear fills (cls-2 = #fff) stay white — no substitution.
+    }
+    return scopeSvgStyles(raw, 'flying-pig');
+  }, [isDark]);
+
+  return (
+    <div className="flying-section" aria-hidden="true">
+      <div className="flying-pig" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
+    </div>
+  );
+}
+
+/* ── EmailSignup ──────────────────────────────────────── */
+function EmailSignup() {
+  const [email, setEmail] = useState('');
+  const [done, setDone] = useState(false);
+  const submit = (e) => {
+    e.preventDefault();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return;
+    // No backend — just acknowledge.
+    setDone(true);
+  };
+
+  if (done) {
+    return (
+      <div className="signup-section">
+        <div className="signup-success">You’re on the list. See you Saturday. 🐷</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="signup-section">
+      <div className="signup-pre">One new chain in your inbox each Saturday.</div>
+      <form className="signup-form" onSubmit={submit}>
+        <input
+          type="email"
+          placeholder="you@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          aria-label="Email address"
+          required
+        />
+        <button type="submit">Sign up →</button>
+      </form>
+    </div>
+  );
+}
+
+/* ── (legacy) DemoSection ─────────────────────────────── */
+function LegacyDemoSection({ modeId, onStart }) {
+  const cfg = MODES[modeId];
+
+  const SOARBOAR_STEPS = [
+    { word: 'SOAR', changed: null, pts: null,
+      caption: <>Start with a word like <em>SOAR</em>.</> },
+    { word: 'BOAR', changed: 0, pts: 1,
+      caption: <>Swap one letter — meet <em>BOAR</em>.</> },
+    { word: 'BEAR', changed: 1, pts: 4,
+      caption: <>Inner letters score bigger. <em>BEAR</em> earns 4.</> },
+    { word: 'BEAD', changed: 3, pts: 2,
+      caption: <>Keep going. Every new word builds your chain.</> },
+  ];
+  const SOYBOY_STEPS = [
+    { word: 'SOY', changed: null, pts: null,
+      caption: <>Start with a tiny word like <em>SOY</em>.</> },
+    { word: 'BOY', changed: 0, pts: 1,
+      caption: <>Swap one letter — meet <em>BOY</em>.</> },
+    { word: 'BAY', changed: 1, pts: 3,
+      caption: <>The middle letter is the prize. <em>BAY</em> scores 3.</> },
+    { word: 'BAT', changed: 2, pts: 2,
+      caption: <>Keep going. Every new word grows the chain.</> },
+  ];
+  const steps = modeId === 'soyboy' ? SOYBOY_STEPS : SOARBOAR_STEPS;
+
+  // Per-step inView + alternating mascot side for visual rhythm
+  const sceneHooks = steps.map(() => useInView(0.35));
+  const [finaleRef, finaleVisible] = useInView(0.4);
+
+  return (
+    <section className="demo-section" aria-label="How it works">
+      <h3 className="demo-title">How it <em>works</em></h3>
+
+      <div className="demo-steps">
+        {steps.map((step, i) => {
+          const [ref, visible] = sceneHooks[i];
+          const side = i % 2 === 0 ? 'right' : 'left';
+          return (
+            <div key={i} ref={ref} className={`demo-step${visible ? ' visible' : ''}`}>
+              <div className="demo-tile-row">
+                {step.pts != null && <div className="demo-pts">+{step.pts}</div>}
+                {step.word.split('').map((l, j) => (
+                  <div key={j} className={`demo-tile${step.changed === j ? ' changed' : ''}`}>
+                    {l}
+                  </div>
+                ))}
+                {step.changed != null && (
+                  <MascotIcon
+                    size={64}
+                    modeId={modeId}
+                    className={`demo-mascot ${side}`}
+                  />
+                )}
+              </div>
+              <div className="demo-caption">{step.caption}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div
+        ref={finaleRef}
+        className={`demo-finale${finaleVisible ? ' visible' : ''}`}
+        onClick={onStart}
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onStart(); } }}
+        style={{ cursor: 'pointer' }}
+      >
+        Now <span className="demo-finale-arrow">↑</span> your turn
+      </div>
+    </section>
+  );
+}
+
 /* ── DebugBadge ───────────────────────────────────────── */
 /* Small indicator pinned top-right when debug mode is on, so I can see
    at a glance whether design-experiments + color picker are exposed. */
@@ -2340,7 +3482,7 @@ function ExperimentsPanel({ debug, setDebug }) {
     <>
       <div style={{
         marginTop: 16, paddingTop: 14,
-        borderTop: '1px solid rgba(0,0,0,0.06)',
+        borderTop: '1px solid var(--border)',
         fontFamily: 'var(--ff-sans)', fontSize: 12, fontWeight: 700,
         letterSpacing: '0.08em', textTransform: 'uppercase',
         color: 'var(--muted)',
@@ -2466,13 +3608,13 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId, 
         </button>
       </div>
 
-      {/* Preferences panel */}
-      {showPrefs && (
-        <div className="info-card" style={{ animation: 'slideDown 200ms ease', marginTop: 12 }}>
+      {/* Preferences panel — collapsible with smooth in/out */}
+      <div className={`prefs-collapse${showPrefs ? ' open' : ''}`} aria-hidden={!showPrefs}>
+        <div className="info-card" style={{ marginTop: 12 }}>
           <div className="info-card-title">Preferences</div>
           {[
-            { key: 'streakRule',  label: 'Position streak rule', sub: 'Prevents changing same position 3x in a row' },
-            { key: 'foreverMode', label: 'Practice mode',        sub: 'No timer, play at your own pace' },
+            { key: 'streakRule',  label: 'Position streak rule', sub: 'Forces variety — no changing the same position 3 turns in a row' },
+            { key: 'foreverMode', label: 'Forever mode',         sub: 'No timer — play at your own pace' },
             { key: 'darkMode',    label: 'Dark mode',            sub: 'Easy on the eyes' },
           ].map(({ key, label, sub }) => (
             <div key={key} className="prefs-row">
@@ -2482,7 +3624,7 @@ function StartScreen({ onStart, onTutorial, debug, setDebug, modeId, setModeId, 
           ))}
           {debugMode && <ExperimentsPanel debug={debug} setDebug={setDebug} />}
         </div>
-      )}
+      </div>
 
     </div>
   );
@@ -2583,7 +3725,7 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
     const pos = diffs[0];
     let newStreakCnt = (streakPosRef.current === pos) ? streakCntRef.current + 1 : 1;
     if (debug.streakRule && newStreakCnt >= 3) {
-      showMsg(`Can't change position ${pos + 1} three times in a row`, 'error');
+      showMsg(`Can't change letter ${pos + 1} three times`, 'error');
       triggerShake(); return;
     }
     const pts      = cfg.posPts[pos];
@@ -2687,6 +3829,15 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
         <div className="score-badge">{score}</div>
         <div className="score-meta">
           <div className="score-sub">{wordsPlayed} word{wordsPlayed !== 1 ? 's' : ''} played</div>
+          {debug.foreverMode && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => onEnd({ score: scoreRef.current, chain: chainRef.current, deadEnd: false })}
+            >
+              End run
+            </button>
+          )}
           <button
             type="button"
             className="restart-btn"
@@ -2725,7 +3876,7 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
       )}
 
       <div style={{ marginTop: 16, opacity: deadEnd ? 0.4 : 1, pointerEvents: deadEnd ? 'none' : 'auto' }}>
-        <div className="section-label">Your next word</div>
+        <div className="section-label">Next word</div>
         <div className={`tile-row${shaking ? ' shake' : ''}`}>
           {Array.from({ length: cfg.wordLen }, (_, i) => {
             const letter   = typed[i] || '';
@@ -2744,7 +3895,7 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
 
       {chain.length > 1 && (
         <div style={{ marginTop: 20 }}>
-          <div className="section-label">Word chain</div>
+          <div className="section-label">Chain</div>
           <ChainRows chain={chain} modeId={modeId} />
         </div>
       )}
@@ -2835,7 +3986,7 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
         </div>
         {deadEnd && (
           <div className="dead-end-sub" style={{ fontSize: 13, textAlign: 'center', marginTop: 6 }}>
-            {`Ended on a dead end ${modeId === 'soyboy' ? '🫛' : '🐷'}`}
+            {`Hit a dead end ${modeId === 'soyboy' ? '🫛' : '🐷'}`}
           </div>
         )}
         {!debug.foreverMode && isNewBest && (
@@ -2873,8 +4024,8 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
       </div>
 
       {/* Chain */}
-      <div style={{ marginTop: 28 }}>
-        <div className="section-label">Your chain</div>
+      <div style={{ marginTop: 28, textAlign: 'center' }}>
+        <div className="section-label">Chain</div>
         <ChainRows chain={chain} maxHeight={260} modeId={modeId} />
       </div>
 
@@ -2946,6 +4097,13 @@ function App() {
   // Color picker overrides — live tweak bg + accent per mode, write to a
   // dynamic <style> tag so changes apply without reload.
   const [colorOverrides, setColorOverrides] = useState(() => {
+    // One-time migration: prior versions baked picked values into
+    // localStorage. Clear once so the new brand defaults can take effect.
+    if (localStorage.getItem('appVersion') !== '3') {
+      localStorage.removeItem('colorOverrides');
+      localStorage.setItem('appVersion', '3');
+      return {};
+    }
     try { return JSON.parse(localStorage.getItem('colorOverrides')) || {}; }
     catch { return {}; }
   });
@@ -2973,7 +4131,7 @@ function App() {
     // Keep browser chrome (status bar / address bar) in sync with app background.
     // Adjusted further below when coloredBg is on.
     const tc = document.querySelector('meta[name="theme-color"]');
-    if (tc) tc.setAttribute('content', debug.darkMode ? '#16140F' : '#F8F1E5');
+    if (tc) tc.setAttribute('content', debug.darkMode ? '#141413' : '#F8F1E5');
   }, [debug.darkMode]);
 
   // Persist experiments + apply body-level classes that drive CSS variables.
@@ -2981,19 +4139,20 @@ function App() {
   useEffect(() => {
     localStorage.setItem('exp:simpleLanding', String(debug.simpleLanding));
     localStorage.setItem('exp:coloredBg',     String(debug.coloredBg));
-    const coloredBgActive = debug.coloredBg && (screen === 'start' || screen === 'tutorial');
+    // Colored bg is a light-mode-only treatment — dark mode stays neutral.
+    const coloredBgActive = debug.coloredBg && !debug.darkMode && (screen === 'start' || screen === 'tutorial');
     document.documentElement.dataset.expColoredBg = coloredBgActive ? '1' : '';
     document.documentElement.dataset.expMode = modeId;
     // Keep iOS status-bar color in sync with whatever bg is showing
     const tc = document.querySelector('meta[name="theme-color"]');
     if (tc) {
-      if (coloredBgActive) {
-        const bg = debug.darkMode
-          ? (modeId === 'soyboy' ? '#1C2823' : '#3A1F18')
-          : (modeId === 'soyboy' ? '#B7D197' : '#FFD1A8');
-        tc.setAttribute('content', bg);
+      // Dark mode always uses the neutral cream — colored bg is light-only.
+      if (debug.darkMode) {
+        tc.setAttribute('content', '#141413');
+      } else if (coloredBgActive) {
+        tc.setAttribute('content', modeId === 'soyboy' ? '#B7D197' : '#FAD8B8');
       } else {
-        tc.setAttribute('content', debug.darkMode ? '#16140F' : '#F8F1E5');
+        tc.setAttribute('content', '#F8F1E5');
       }
     }
   }, [debug.simpleLanding, debug.coloredBg, debug.darkMode, modeId, screen]);
@@ -3005,6 +4164,10 @@ function App() {
         debug.simpleLanding ? (
           <SimplifiedStartScreen
             onStart={restart}
+            onStartForever={() => {
+              setDebug(d => ({ ...d, foreverMode: true }));
+              restart();
+            }}
             onTutorial={() => setScreen('tutorial')}
             debug={debug}
             setDebug={setDebug}
@@ -3028,6 +4191,10 @@ function App() {
         <OnboardingScreen
           modeId={modeId}
           onDone={restart}
+          onDoneForever={() => {
+            setDebug(d => ({ ...d, foreverMode: true }));
+            restart();
+          }}
           onBack={() => setScreen('start')}
         />
       )}
@@ -3052,7 +4219,7 @@ function App() {
           onHome={() => setScreen('start')}
         />
       )}
-      {debugMode && debug.coloredBg && (screen === 'start' || screen === 'tutorial') && (
+      {debugMode && debug.coloredBg && !debug.darkMode && (screen === 'start' || screen === 'tutorial') && (
         <FloatingColorPicker
           colorOverrides={colorOverrides}
           setColorOverrides={setColorOverrides}
@@ -3062,6 +4229,7 @@ function App() {
       {debugMode && (
         <DebugBadge enabled={debugMode} onToggle={() => setDebugMode(false)} />
       )}
+      <BoilDefs />
     </div>
     </ColorOverrideContext.Provider>
   );
