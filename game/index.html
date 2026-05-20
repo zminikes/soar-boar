@@ -399,6 +399,14 @@
         color var(--dur-base) var(--ease-out),
         transform 100ms var(--ease-out);
       min-height: 40px;
+      white-space: nowrap;   /* prevent mode names wrapping to a second line */
+    }
+    /* Tighter padding on small screens so all three tabs fit on one line */
+    @media (max-width: 480px) {
+      .seg-tab { padding: 10px 14px; font-size: 13px; }
+    }
+    @media (max-width: 360px) {
+      .seg-tab { padding: 9px 11px; font-size: 12.5px; }
     }
     .seg-tab:active { transform: scale(0.96); }
     .seg-tab.active {
@@ -434,6 +442,11 @@
       line-height: 1;
       text-align: center;
       margin-top: 4px;
+      /* Instrument Serif only ships at weight 400 — iOS Safari skips bold
+         synthesis, so add a tiny stroke to keep the wordmark feeling weighty
+         and consistent across desktop / mobile. */
+      font-synthesis: weight style;
+      -webkit-text-stroke: 0.5px currentColor;
     }
     .simple-wordmark .accent {
       color: var(--accent);
@@ -859,6 +872,13 @@
       font-weight: 800; /* bold instead of italic */
       font-style: normal;
       letter-spacing: 0.5px;
+    }
+    /* Finale caption ("Now you try.") — match the landing wordmark scale */
+    .big-demo-caption.is-finale {
+      font-size: clamp(48px, 10vw, 80px);
+      line-height: 1.05;
+      font-synthesis: weight style;
+      -webkit-text-stroke: 0.5px currentColor;
     }
     .big-demo-sub {
       margin: 16px auto 0;
@@ -3541,7 +3561,7 @@ function DemoSection({ modeId, onStart, onStartForever }) {
           </div>
         ) : (
           <div key="finale" className="big-demo-scene">
-            <div className="big-demo-caption">
+            <div className="big-demo-caption is-finale">
               Now <span className="accent">you</span> try.
             </div>
             <div className="big-demo-sub">
