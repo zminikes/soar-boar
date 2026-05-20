@@ -1,6 +1,6 @@
 ---
 name: create-pr
-description: Use when opening or revising a pull request in the stagecraft monorepo. Enforces the screenshots convention — PRs that change rendered UI (public site or Keystatic admin) must embed screenshots from a public gist, since this repo is private and in-tree / raw.githubusercontent URLs don't render anonymously. Trigger phrases include "create a PR", "open a pull request", "update my PR description", or any task where a branch is ready for review.
+description: Use when opening or revising a pull request in the soar-boar monorepo. Enforces the screenshots convention — PRs that change rendered UI (public site or Keystatic admin) must embed screenshots from a public gist, since this repo is private and in-tree / raw.githubusercontent URLs don't render anonymously. Trigger phrases include "create a PR", "open a pull request", "update my PR description", or any task where a branch is ready for review.
 ---
 
 # Create PR
@@ -74,8 +74,8 @@ using the same naming convention.
 
 ```bash
 # Seed the gist (needs at least one file to create it)
-echo "stagecraft PR #<N> screenshots" > /tmp/pr-<N>-readme.md
-gh gist create --public --desc "stagecraft PR #<N> screenshots" \
+echo "soar-boar PR #<N> screenshots" > /tmp/pr-<N>-readme.md
+gh gist create --public --desc "soar-boar PR #<N> screenshots" \
   /tmp/pr-<N>-readme.md
 # → https://gist.github.com/<user>/<GIST_ID>
 
