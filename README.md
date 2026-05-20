@@ -32,7 +32,6 @@ game/           The playable app (deploy this directory)
   *.svg         Mascot illustrations (pig + bean, light + dark variants)
 
 design/         Visual direction explorations
-tokens/         Design tokens (CSS variables + JSON)
 scripts/        Utility scripts (word list analysis)
 ```
 

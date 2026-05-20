@@ -8,7 +8,7 @@ import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'node_modules', 'game', 'design', 'scripts', 'tokens', 'fonts'],
+    ignores: ['dist', 'node_modules', 'game', 'design', 'scripts', 'fonts'],
   },
   {
     files: ['**/*.{ts,tsx,js,jsx}'],
