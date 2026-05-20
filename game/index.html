@@ -5,22 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#F8F1E5" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)" />
-  <meta name="description" content="Change one letter at a time to build the longest word chain you can. Race the clock — 60 seconds to score big." />
-  <title>Soar Boar — the word-chaining game</title>
+  <meta name="description" content="Change one letter at a time to build the longest word ladder you can. Race the clock — 60 seconds to score big." />
+  <title>Soar Boar — the word-ladder game</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐷</text></svg>" />
 
   <!-- Open Graph / social -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Soar Boar — the word-chaining game" />
-  <meta property="og:description" content="Change one letter at a time to build the longest word chain you can. Race the clock — 60 seconds to score big." />
+  <meta property="og:title" content="Soar Boar — the word-ladder game" />
+  <meta property="og:description" content="Change one letter at a time to build the longest word ladder you can. Race the clock — 60 seconds to score big." />
   <meta property="og:url" content="https://soarboar.com" />
   <meta property="og:image" content="https://soarboar.com/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="1200" />
   <meta property="og:image:alt" content="Soar Boar — a flying pig" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Soar Boar — the word-chaining game" />
-  <meta name="twitter:description" content="Change one letter at a time to build the longest word chain you can." />
+  <meta name="twitter:title" content="Soar Boar — the word-ladder game" />
+  <meta name="twitter:description" content="Change one letter at a time to build the longest word ladder you can." />
   <meta name="twitter:image" content="https://soarboar.com/og-image.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -268,9 +268,9 @@
     .shake { animation: shake 240ms ease; }
 
     /* ── Soy Boy green theme ─────────────────────────────── */
-    .soyboy   { --orange: #27885E; --accent: var(--deep-sage); --accent-soft: rgba(39,136,94,0.22); }
+    .soyboy   { --orange: #27885E; --accent: var(--deep-sage); --accent-soft: rgba(39,136,94,0.22);  --pink: rgba(39,136,94,0.12); }
     /* ── This That blue theme ────────────────────────────── */
-    .thisthat { --orange: #59a1d8; --accent: var(--deep-blue); --accent-soft: rgba(89,161,216,0.26); }
+    .thisthat { --orange: #59a1d8; --accent: var(--deep-blue); --accent-soft: rgba(89,161,216,0.26); --pink: rgba(89,161,216,0.14); }
 
     /* ── Design experiments — driven by data attrs on <html> ── */
 
@@ -1953,7 +1953,7 @@
       font-weight: 700;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: var(--accent);
+      color: var(--dark);
       margin-bottom: 10px;
     }
     .ladder-goal-tiles {
@@ -3448,8 +3448,8 @@ function DemoSection({ modeId, onStart, onStartForever }) {
       caption: <>Middle letters score more.</>,
       sub: 'The second letter is worth 3 points.' },
     { word: 'BAT', changed: 2, pts: 2,
-      caption: <>Keep chaining new words.</>,
-      sub: 'Race the clock — 45 seconds to chain as many as you can.' },
+      caption: <>Keep climbing the ladder.</>,
+      sub: 'Race the clock — 45 seconds to stack as many words as you can.' },
   ] : [
     { word: 'SOAR', changed: null, pts: null,
       caption: <>Every game starts with a different word.</>,
@@ -3461,8 +3461,8 @@ function DemoSection({ modeId, onStart, onStartForever }) {
       caption: <>Inner letters score more.</>,
       sub: 'The second letter is worth 4 points.' },
     { word: 'BEAD', changed: 3, pts: 2,
-      caption: <>Keep chaining new words.</>,
-      sub: 'Race the clock — 60 seconds to chain as many as you can.' },
+      caption: <>Keep climbing the ladder.</>,
+      sub: 'Race the clock — 60 seconds to stack as many words as you can.' },
   ];
   const FINALE_INDEX = STEPS.length; // one extra scene at the end
   const totalScenes = STEPS.length + 1;
@@ -3700,7 +3700,7 @@ function EmailSignup() {
 
   return (
     <div className="signup-section">
-      <div className="signup-pre">One new chain in your inbox each Saturday.</div>
+      <div className="signup-pre">One new ladder in your inbox each Saturday.</div>
       <form className="signup-form" onSubmit={submit}>
         <input
           type="email"
@@ -3728,7 +3728,7 @@ function LegacyDemoSection({ modeId, onStart }) {
     { word: 'BEAR', changed: 1, pts: 4,
       caption: <>Inner letters score bigger. <em>BEAR</em> earns 4.</> },
     { word: 'BEAD', changed: 3, pts: 2,
-      caption: <>Keep going. Every new word builds your chain.</> },
+      caption: <>Keep going. Every new word adds a rung.</> },
   ];
   const SOYBOY_STEPS = [
     { word: 'SOY', changed: null, pts: null,
@@ -3738,7 +3738,7 @@ function LegacyDemoSection({ modeId, onStart }) {
     { word: 'BAY', changed: 1, pts: 3,
       caption: <>The middle letter is the prize. <em>BAY</em> scores 3.</> },
     { word: 'BAT', changed: 2, pts: 2,
-      caption: <>Keep going. Every new word grows the chain.</> },
+      caption: <>Keep going. Every new word adds a rung.</> },
   ];
   const steps = modeId === 'soyboy' ? SOYBOY_STEPS : SOARBOAR_STEPS;
 
@@ -4230,7 +4230,7 @@ function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, debug, 
 
       {chain.length > 1 && (
         <div style={{ marginTop: 20 }}>
-          <div className="section-label">Chain</div>
+          <div className="section-label">Ladder</div>
           <ChainRows chain={chain} modeId={modeId} />
         </div>
       )}
@@ -4336,7 +4336,7 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
             <div className="end-score">{debug.foreverMode ? wordsPlayed : score}</div>
             <div className="end-score-label">
               {debug.foreverMode
-                ? `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} in chain`
+                ? `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} in ladder`
                 : `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} · ${score} point${score !== 1 ? 's' : ''}`}
             </div>
             {deadEnd && (
@@ -4380,9 +4380,9 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
         )}
       </div>
 
-      {/* Chain */}
+      {/* Ladder */}
       <div style={{ marginTop: 28, textAlign: 'center' }}>
-        <div className="section-label">Chain</div>
+        <div className="section-label">Ladder</div>
         <ChainRows chain={chain} maxHeight={260} modeId={modeId} />
       </div>
 
@@ -4397,7 +4397,7 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
             </svg>
-            {navigator.share ? 'Share chain' : 'Copy chain'}
+            {navigator.share ? 'Share ladder' : 'Copy ladder'}
           </button>
         )}
         {copied && <div className="share-copied">Copied to clipboard! ✓</div>}
