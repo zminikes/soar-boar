@@ -56,6 +56,7 @@
          can't drift apart. */
       --deep-peach: #F88065;
       --deep-sage:  #27885E;
+      --deep-blue:  #59a1d8;
       --accent:     var(--deep-peach);
       /* Tutorial uses a separate "guidance" color so the arrow / changed-ok
          pills don't clash with the mode accent. Default cream bg → blue.
@@ -157,6 +158,27 @@
       0%, 100% { transform: rotate(-2deg); }
       50%      { transform: rotate(2deg); }
     }
+    /* This That — hide the static hair group; an absolutely-positioned
+       hair-frame layer animates on top. */
+    .animated-mascot[data-mode="thisthat"] svg #hair { display: none; }
+    .animated-mascot .hair-anim {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      pointer-events: none;
+    }
+    .animated-mascot .hair-anim svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: url(#pig-boil-subtle);
+    }
+    .animated-mascot .hair-frame {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+    }
+    .animated-mascot .hair-frame.is-on { opacity: 1; }
 
     /* Dark mode color tweaks for mascots are handled via direct SVG
        string substitution in FlyingPig + AnimatedMascot — more reliable
@@ -245,6 +267,8 @@
 
     /* ── Soy Boy green theme ─────────────────────────────── */
     .soyboy { --orange: #27885E; --accent: var(--deep-sage); }
+    /* ── This That blue theme ────────────────────────────── */
+    .thisthat { --orange: #59a1d8; --accent: var(--deep-blue); }
 
     /* ── Design experiments — driven by data attrs on <html> ── */
 
@@ -265,11 +289,19 @@
       --accent: var(--deep-sage);
       --accent-soft: rgba(39,136,94,0.14);
     }
+    :root[data-exp-colored-bg="1"][data-exp-mode="thisthat"] {
+      --cream: #CCE1F2;             /* soft sky blue, derived from #59a1d8 */
+      --muted: rgba(0,0,0,0.62);
+      --border: rgba(0,0,0,0.16);
+      --accent: var(--deep-blue);
+      --accent-soft: rgba(89,161,216,0.16);
+    }
     /* Dark mode intentionally does NOT apply the colored bg —
        sticks with the neutral near-black cream for a calmer feel.
        Wordmark accent matches the SVG fill exactly (no lightening). */
     :root[data-theme="dark"] { --accent: var(--deep-peach); }
-    :root[data-theme="dark"] .soyboy { --accent: var(--deep-sage); }
+    :root[data-theme="dark"] .soyboy   { --accent: var(--deep-sage); }
+    :root[data-theme="dark"] .thisthat { --accent: var(--deep-blue); }
 
     /* Surfaces on colored bg — translucent cream tint reads cleanly on saturated bgs.
        Higher opacity = cleaner cream-on-color, less muddy mix. */
@@ -1506,6 +1538,11 @@
       justify-content: space-between;
       margin-top: 16px;
     }
+    .score-display {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
     .score-badge {
       background: var(--orange);
       color: #fff;
@@ -1519,7 +1556,102 @@
       font-variant-numeric: tabular-nums;
     }
     .score-sub { font-size: 13px; color: var(--muted); font-weight: 600; }
-    .score-meta { display: flex; align-items: center; gap: 12px; }
+    .score-meta { display: flex; align-items: center; gap: 8px; }
+
+    /* "New word" CTA — friendlier than "Give up" */
+    .btn-newword {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--ff-sans);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      border-radius: 999px;
+      padding: 9px 14px;
+      line-height: 1;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition:
+        background var(--dur-fast) var(--ease-out),
+        color var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out),
+        transform 100ms var(--ease-out);
+    }
+    .btn-newword:hover  { color: var(--dark); background: var(--pink); border-color: transparent; }
+    .btn-newword:active { transform: scale(0.96); }
+
+    /* Hint toggle (eye icon + tooltip) */
+    .hint-btn {
+      position: relative;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 999px;
+      width: 44px;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition:
+        background var(--dur-fast) var(--ease-out),
+        color var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out),
+        transform 100ms var(--ease-out);
+    }
+    .hint-btn:hover  { color: var(--dark); background: var(--pink); border-color: transparent; }
+    .hint-btn:active { transform: scale(0.92); }
+    .hint-btn.active { color: var(--dark); border-color: var(--dark); }
+    .hint-tooltip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      background: #1a1816;
+      color: #fff;
+      font-family: var(--ff-sans);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      padding: 6px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out);
+      z-index: 20;
+    }
+    .hint-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: #1a1816;
+    }
+    .hint-btn:hover .hint-tooltip,
+    .hint-btn:focus-visible .hint-tooltip {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Idle hint wiggle on a tile letter */
+    @keyframes hintWiggle {
+      0%, 100% { transform: translateX(0) rotate(0); }
+      15%      { transform: translateX(-3px) rotate(-3deg); }
+      30%      { transform: translateX(3px)  rotate(3deg); }
+      45%      { transform: translateX(-2px) rotate(-2deg); }
+      60%      { transform: translateX(2px)  rotate(2deg); }
+      75%      { transform: translateX(-1px) rotate(-1deg); }
+    }
+    .tile.wiggle {
+      animation: hintWiggle 900ms var(--ease-out) infinite;
+      color: var(--accent);
+    }
+
     .restart-btn {
       background: none;
       border: 1px solid var(--border);
@@ -1803,6 +1935,51 @@
       padding: 4px 10px; border-radius: 999px;
     }
 
+    /* ── Ladder mode goal banner ──────────────────────── */
+    .ladder-goal {
+      margin-top: 20px;
+      padding: 18px 16px 16px;
+      background: var(--accent-soft, rgba(244,136,112,0.14));
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      text-align: center;
+    }
+    .ladder-goal-label {
+      display: block;
+      font-family: var(--ff-sans);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .ladder-goal-tiles {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+    .ladder-target-tile {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      border: 1.5px solid var(--accent);
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .ladder-goal-par {
+      margin-top: 10px;
+      font-family: var(--ff-sans);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
     /* ── Chain scroll ────────────────────────────────────── */
     /* overscroll-behavior: contain keeps momentum inside the list, not the body */
 
@@ -2052,6 +2229,7 @@
 <script src="starters.js"></script>
 <script src="wordlist3.js"></script>
 <script src="starters3.js"></script>
+<script src="pairs.js"></script>
 <script src="svg-data.js"></script>
 
 <script type="text/babel">
@@ -2136,6 +2314,23 @@ const MODES = {
     tutorialWords:  ['SOY', 'BOY', 'BAY'],
     tutorialHints:  ['Type BOY', 'Now type BAY'],
   },
+  thisthat: {
+    id: 'thisthat',
+    name: 'This That',
+    sub: 'Word ladder',
+    wordLen: 4,
+    duration: null,           // no timer — solve at your own pace
+    isLadder: true,
+    getWords:    () => WORDS,
+    getStarters: () => [],     // pairs drive start words
+    getPairs:    () => (typeof THIS_THAT_PAIRS !== 'undefined' ? THIS_THAT_PAIRS : []),
+    posPts:      [1, 4, 3, 2], // unused for scoring but kept for chain coloring
+    posLabels:   ['1st','2nd','3rd','4th'],
+    tutorialStart:  'THIS',
+    tutorialTarget: 'THAT',
+    tutorialWords:  ['THIS', 'THIN', 'THAN', 'THAT'],
+    tutorialHints:  ['Type THIN', 'Now type THAN', 'Now type THAT'],
+  },
 };
 
 /* Detect touch device — used to show/hide keyboard hints */
@@ -2157,11 +2352,58 @@ function diffPos(a, b) {
   return d;
 }
 
-function randomStarter(modeId = 'classic') {
+function getStarterPool(modeId = 'classic') {
   const cfg = MODES[modeId];
   const words = cfg.getWords();
-  const pool = cfg.getStarters().map(w => w.toUpperCase()).filter(w => words.has(w));
-  return pool.length ? pool[Math.floor(Math.random() * pool.length)] : cfg.tutorialStart;
+  return cfg.getStarters().map(w => w.toUpperCase()).filter(w => words.has(w));
+}
+
+function pickStarter(modeId, seed) {
+  const cfg = MODES[modeId];
+  const pool = getStarterPool(modeId);
+  if (!pool.length) return cfg.tutorialStart;
+  const s = typeof seed === 'number' ? seed : Math.random();
+  return pool[Math.floor(s * pool.length) % pool.length];
+}
+
+function pickLadderPair(modeId, seed) {
+  const cfg = MODES[modeId];
+  const pairs = cfg.getPairs ? cfg.getPairs() : [];
+  if (!pairs.length) {
+    return {
+      start: cfg.tutorialStart,
+      end:   cfg.tutorialTarget,
+      par:   cfg.tutorialWords.length - 1,
+      path:  cfg.tutorialWords,
+    };
+  }
+  const s = typeof seed === 'number' ? seed : Math.random();
+  return pairs[Math.floor(s * pairs.length) % pairs.length];
+}
+
+// BFS shortest path from `start` to `target` (for hint wiggle).
+function bfsPath(start, target, words) {
+  if (start === target) return [start];
+  const queue = [[start]];
+  const seen  = new Set([start]);
+  while (queue.length) {
+    const path = queue.shift();
+    const w    = path[path.length - 1];
+    for (let i = 0; i < w.length; i++) {
+      for (let c = 0; c < 26; c++) {
+        const letter = String.fromCharCode(65 + c);
+        if (letter === w[i]) continue;
+        const cand = w.slice(0, i) + letter + w.slice(i + 1);
+        if (!words.has(cand) || seen.has(cand)) continue;
+        const next = [...path, cand];
+        if (cand === target) return next;
+        seen.add(cand);
+        queue.push(next);
+      }
+    }
+    if (path.length > 8) return null; // safety cap
+  }
+  return null;
 }
 
 function getValidMoves(word, used, streakPos, streakCount, streakRule, words) {
@@ -2269,7 +2511,10 @@ function MascotIcon({ size = 48, modeId = 'classic', className = '' }) {
     return () => obs.disconnect();
   }, []);
   const dm  = isDark ? '-dark' : '';
-  const src = modeId === 'soyboy' ? `bean-open${dm}.svg` : `pig-open${dm}.svg`;
+  const src =
+    modeId === 'soyboy'   ? `bean-open${dm}.svg` :
+    modeId === 'thisthat' ? `pig-tt-open.svg` :
+    `pig-open${dm}.svg`;
   return <img src={src} width={size} height={size} alt="" className={className} style={{ display: 'block' }} />;
 }
 
@@ -2381,7 +2626,8 @@ function Keyboard({ onKey, visible = true }) {
 }
 
 function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'classic' }) {
-  const cfg   = MODES[modeId];
+  const cfg      = MODES[modeId];
+  const isLadder = !!cfg.isLadder;
   const words = cfg.tutorialWords;   // e.g. ['SOAR','BOAR','BEAR']
   const hints = cfg.tutorialHints;   // typed words auto-submit, no enter prompt
 
@@ -2478,10 +2724,22 @@ function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'classic' })
           letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
         }}>Tutorial · {cfg.name}</div>
         <div className="hero-wordmark" style={{ fontSize: 36, marginTop: 6, letterSpacing: '0.03em' }}>
-          Change one letter
+          {isLadder ? 'Reach the target' : 'Change one letter'}
         </div>
 
       </div>
+
+      {/* Goal banner — ladder mode only */}
+      {isLadder && (
+        <div className="ladder-goal" style={{ marginTop: 16 }}>
+          <span className="ladder-goal-label">Get to</span>
+          <div className="ladder-goal-tiles">
+            {cfg.tutorialTarget.split('').map((l, i) => (
+              <div key={i} className="tile ladder-target-tile">{l}</div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Game board */}
       <div className="info-card" style={{ marginTop: 20 }}>
@@ -2499,12 +2757,14 @@ function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'classic' })
           <React.Fragment key={i}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, margin: '8px 0' }}>
               <span style={{ fontSize: 22, color: 'var(--tutorial-accent)' }}>↓</span>
-              <span style={{
-                fontSize: 12, fontWeight: 700, color: 'var(--tutorial-accent)',
-                fontFamily: 'var(--ff-sans)', animation: 'fadeIn 300ms ease',
-                background: 'var(--tutorial-accent-bg)', borderRadius: 999,
-                padding: '2px 10px', letterSpacing: '0.02em',
-              }}>+{s.pts} pt{s.pts !== 1 ? 's' : ''}</span>
+              {!isLadder && (
+                <span style={{
+                  fontSize: 12, fontWeight: 700, color: 'var(--tutorial-accent)',
+                  fontFamily: 'var(--ff-sans)', animation: 'fadeIn 300ms ease',
+                  background: 'var(--tutorial-accent-bg)', borderRadius: 999,
+                  padding: '2px 10px', letterSpacing: '0.02em',
+                }}>+{s.pts} pt{s.pts !== 1 ? 's' : ''}</span>
+              )}
             </div>
             <div className="tile-row" style={{ animation: 'fadeIn 240ms ease' }}>
               {s.word.split('').map((l, j) => (
@@ -2553,17 +2813,20 @@ function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'classic' })
               <div className="onboard-success-emoji">🎉</div>
               <div className="onboard-success-title">You've got it!</div>
               <div className="onboard-success-sub">
-                {totalPts} point{totalPts !== 1 ? 's' : ''} in {completedSteps.length} moves.
-                Now do that as fast as you can — {cfg.duration} seconds on the clock.
+                {isLadder
+                  ? <>You reached <strong>{cfg.tutorialTarget}</strong> in {completedSteps.length} move{completedSteps.length !== 1 ? 's' : ''}. The real puzzles are tougher — try to find the shortest path.</>
+                  : <>{totalPts} point{totalPts !== 1 ? 's' : ''} in {completedSteps.length} moves. Now do that as fast as you can — {cfg.duration} seconds on the clock.</>}
               </div>
             </div>
             <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button className="btn btn-primary btn-full" onClick={onDone}>
                 Let's play!
               </button>
-              <button className="btn btn-ghost btn-full" onClick={onDoneForever}>
-                Try forever mode (no timer)
-              </button>
+              {!isLadder && (
+                <button className="btn btn-ghost btn-full" onClick={onDoneForever}>
+                  Try forever mode (no timer)
+                </button>
+              )}
             </div>
           </>
         )}
@@ -2623,12 +2886,23 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
   }, []);
   const handleLeave = useCallback(() => setIsHovered(false), []);
 
-  const isClassic = modeId !== 'soyboy';
+  const isSoyboy   = modeId === 'soyboy';
+  const isThisThat = modeId === 'thisthat';
+  const isClassic  = !isSoyboy && !isThisThat;
   const dm = isDark ? '-dark' : '';
-  const openPath   = isClassic ? `pig-open${dm}.svg`   : `bean-open${dm}.svg`;
-  const closedPath = isClassic ? `pig-closed${dm}.svg` : `bean-closed${dm}.svg`;
-  const defaultColor = isClassic ? '#F88065' : '#27885E';
-  const modeKey = isClassic ? 'classic' : 'soyboy';
+  const openPath =
+    isSoyboy   ? `bean-open${dm}.svg` :
+    isThisThat ? `pig-tt-open.svg`    :
+    `pig-open${dm}.svg`;
+  const closedPath =
+    isSoyboy   ? `bean-closed${dm}.svg` :
+    isThisThat ? `pig-tt-closed.svg`    :
+    `pig-closed${dm}.svg`;
+  const defaultColor =
+    isSoyboy   ? '#27885E' :
+    isThisThat ? '#59a1d8' :
+    '#F88065';
+  const modeKey = isSoyboy ? 'soyboy' : (isThisThat ? 'thisthat' : 'classic');
   const accent = coloredBgActive ? (overrides[modeKey] || {}).accent : null;
 
   const recolor = (raw) => {
@@ -2658,6 +2932,29 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
     return scopeSvgStyles(recolor(data[closedPath]), 'animated-mascot');
   }, [closedPath, defaultColor, accent]);
 
+  // This That: build 8 hair frames + cycle them 1→8→1 (ping-pong).
+  // Use a distinct scope class so the hair's .cls-1 rules (dark fill) don't
+  // override the pig body's .cls-1 (blue fill) via DOM-order cascade.
+  const hairFrames = useMemo(() => {
+    if (!isThisThat) return [];
+    const data = (typeof SVG_DATA !== 'undefined') ? SVG_DATA : {};
+    return Array.from({ length: 8 }, (_, i) =>
+      scopeSvgStyles(recolor(data[`hair-${i + 1}.svg`]), 'hair-anim')
+    );
+  }, [isThisThat, isDark]);
+  const [hairIdx, setHairIdx] = useState(0);
+  useEffect(() => {
+    if (!isThisThat) return;
+    // 14-step ping-pong: 0,1,2,3,4,5,6,7,6,5,4,3,2,1 → repeat
+    const seq = [0,1,2,3,4,5,6,7,6,5,4,3,2,1];
+    let step = 0;
+    const id = setInterval(() => {
+      step = (step + 1) % seq.length;
+      setHairIdx(seq[step]);
+    }, 130); // ~1.8s for full forward+back cycle
+    return () => clearInterval(id);
+  }, [isThisThat]);
+
   const eyesClosed = ambientBlink || isHovered;
 
   return (
@@ -2667,7 +2964,7 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
         eyesClosed ? 'blinking' : '',
         isBouncing ? 'bouncing' : '',
       ].filter(Boolean).join(' ')}
-      data-mode={isClassic ? 'classic' : 'soyboy'}
+      data-mode={isClassic ? 'classic' : (isSoyboy ? 'soyboy' : 'thisthat')}
       style={{ width: size, height: size }}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
@@ -2678,6 +2975,17 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
     >
       <div className="frame frame-open"  dangerouslySetInnerHTML={{ __html: openSvg }} />
       <div className="frame frame-closed" dangerouslySetInnerHTML={{ __html: closedSvg }} />
+      {isThisThat && (
+        <div className="hair-anim" aria-hidden="true">
+          {hairFrames.map((svg, i) => (
+            <div
+              key={i}
+              className={`hair-frame${i === hairIdx ? ' is-on' : ''}`}
+              dangerouslySetInnerHTML={{ __html: svg }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -2733,9 +3041,11 @@ function StartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, mod
             </span>
           </div>
           <div className="simple-tag">
-            Change one letter.<br />
+            {cfg.isLadder ? <>Reach the target word.</> : <>Change one letter.</>}<br />
             <span className="simple-tag-meta">
-              {cfg.wordLen}-letter words · {cfg.duration} seconds
+              {cfg.isLadder
+                ? `${cfg.wordLen}-letter words · word ladder`
+                : `${cfg.wordLen}-letter words · ${cfg.duration} seconds`}
             </span>
           </div>
         </div>
@@ -3102,9 +3412,23 @@ function useInView(threshold = 0.35) {
    animations replay (tile snap-in + points float). */
 function DemoSection({ modeId, onStart, onStartForever }) {
   const cfg = MODES[modeId];
+  const isLadder = !!cfg.isLadder;
 
   // 4 scenes per mode. The last is a CTA finale.
-  const STEPS = modeId === 'soyboy' ? [
+  const STEPS = modeId === 'thisthat' ? [
+    { word: 'THIS', changed: null, pts: null, target: 'THAT',
+      caption: <>Each game has a starting word and a goal.</>,
+      sub: <>Get from <span className="accent">THIS</span> to <span className="accent">THAT</span>.</> },
+    { word: 'THIN', changed: 3, pts: null, target: 'THAT',
+      caption: <>Change one letter at a time.</>,
+      sub: <><span className="accent">THIS</span> → <span className="accent">THIN</span>.</> },
+    { word: 'THAN', changed: 2, pts: null, target: 'THAT',
+      caption: <>Every step has to be a real word.</>,
+      sub: <><span className="accent">THIN</span> → <span className="accent">THAN</span>.</> },
+    { word: 'THAT', changed: 2, pts: null, target: 'THAT',
+      caption: <>Hit the target word to win.</>,
+      sub: <>Three moves — see if you can match the best path.</> },
+  ] : modeId === 'soyboy' ? [
     { word: 'SOY', changed: null, pts: null,
       caption: <>Every game starts with a different word.</>,
       sub: 'Your goal: change one letter to make a new word.' },
@@ -3206,12 +3530,14 @@ function DemoSection({ modeId, onStart, onStartForever }) {
               Now <span className="accent">you</span> try.
             </div>
             <div className="big-demo-sub">
-              {cfg.wordLen}-letter words · {cfg.duration} seconds on the clock.
+              {isLadder
+                ? <>{cfg.wordLen}-letter words · word ladder, no clock.</>
+                : <>{cfg.wordLen}-letter words · {cfg.duration} seconds on the clock.</>}
             </div>
             <button className="big-demo-finale-cta" onClick={onStart}>
               Start playing →
             </button>
-            {onStartForever && (
+            {onStartForever && !isLadder && (
               <button className="big-demo-finale-ghost" onClick={onStartForever}>
                 Try forever mode (no timer)
               </button>
@@ -3502,37 +3828,95 @@ function ExperimentsPanel({ debug, setDebug }) {
 }
 
 /* ── PlayScreen ───────────────────────────────────────── */
-function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
+function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, debug, modeId = 'classic' }) {
   const cfg = MODES[modeId];
-  const [phase,       setPhase]       = useState('countdown');
+  const isLadder = !!cfg.isLadder;
+  // Ladder mode skips countdown/timer entirely
+  const [phase,       setPhase]       = useState(isLadder ? 'playing' : 'countdown');
   const [countdown,   setCountdown]   = useState(HEAD_START);
   const [currentWord, setCurrentWord] = useState('');
+  const [targetWord,  setTargetWord]  = useState(''); // ladder mode only
+  const [par,         setPar]         = useState(null);
   const [typed,       setTyped]       = useState('');
   const [usedWords,   setUsedWords]   = useState(() => new Set());
   const [chain,       setChain]       = useState([]);
   const [score,       setScore]       = useState(0);
-  const [timeLeft,    setTimeLeft]    = useState(cfg.duration);
+  const [timeLeft,    setTimeLeft]    = useState(cfg.duration || 0);
   const [msg,         setMsg]         = useState({ text: '', type: '' });
   const [shaking,     setShaking]     = useState(false);
   const [acceptKey,   setAcceptKey]   = useState(0);
   const [deadEnd,     setDeadEnd]     = useState(false);
+  const [hintOn, setHintOn] = useState(() => localStorage.getItem('hintOn') === 'true');
+  const [wiggleIdx, setWiggleIdx] = useState(null); // which tile letter to wiggle
+  useEffect(() => { localStorage.setItem('hintOn', String(hintOn)); }, [hintOn]);
 
   const typedRef     = useRef('');
   const currentRef   = useRef('');
+  const targetRef    = useRef('');
   const usedRef      = useRef(new Set());
   const streakPosRef = useRef(null);
   const streakCntRef = useRef(0);
   const scoreRef     = useRef(0);
   const chainRef     = useRef([]);
-  const phaseRef     = useRef('countdown');
+  const phaseRef     = useRef(isLadder ? 'playing' : 'countdown');
   const gameOverRef  = useRef(false);
   const msgTimer     = useRef(null);
 
   useEffect(() => { currentRef.current = currentWord; }, [currentWord]);
+  useEffect(() => { targetRef.current  = targetWord; },  [targetWord]);
   useEffect(() => { phaseRef.current   = phase; },       [phase]);
 
+  // ── Hint wiggle: after 15s idle, wiggle a useful tile letter ──
+  // Resets whenever the player types, current word changes, or hint toggles.
   useEffect(() => {
-    const start = randomStarter(modeId);
+    setWiggleIdx(null);
+    if (!hintOn || phase !== 'playing' || gameOverRef.current) return;
+    const t = setTimeout(() => {
+      // Pick which letter position to highlight
+      let idx = null;
+      if (isLadder && targetRef.current) {
+        const path = bfsPath(currentRef.current, targetRef.current, cfg.getWords());
+        if (path && path.length > 1) {
+          const next = path[1];
+          for (let i = 0; i < next.length; i++) {
+            if (next[i] !== currentRef.current[i]) { idx = i; break; }
+          }
+        }
+      } else {
+        // Non-ladder: pick the position with the most valid moves
+        const moves = getValidMoves(
+          currentRef.current, usedRef.current,
+          streakPosRef.current, streakCntRef.current,
+          debug.streakRule, cfg.getWords()
+        );
+        if (moves.length) {
+          const counts = new Array(cfg.wordLen).fill(0);
+          for (const m of moves) {
+            for (let i = 0; i < m.length; i++) if (m[i] !== currentRef.current[i]) { counts[i]++; break; }
+          }
+          let best = 0;
+          for (let i = 1; i < counts.length; i++) if (counts[i] > counts[best]) best = i;
+          if (counts[best] > 0) idx = best;
+        }
+      }
+      if (idx != null) setWiggleIdx(idx);
+    }, 15000);
+    return () => clearTimeout(t);
+  }, [hintOn, phase, typed, currentWord, acceptKey, isLadder, debug.streakRule, cfg]);
+
+  useEffect(() => {
+    let start, target = '', parVal = null;
+    if (isLadder) {
+      const pair = pickLadderPair(modeId, puzzleSeed);
+      start  = pair.start;
+      target = pair.end;
+      parVal = pair.par;
+      targetRef.current = target;
+      setTargetWord(target);
+      setPar(parVal);
+    } else {
+      start = pickStarter(modeId, puzzleSeed);
+    }
     const s = new Set([start]);
     currentRef.current = start;
     usedRef.current    = s;
@@ -3554,9 +3938,9 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
     return () => clearInterval(id);
   }, [phase]);
 
-  // Timer
+  // Timer — skipped for ladder mode and forever mode
   useEffect(() => {
-    if (phase !== 'playing' || debug.foreverMode) return;
+    if (phase !== 'playing' || debug.foreverMode || isLadder) return;
     const id = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {
@@ -3569,7 +3953,7 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [phase, debug.foreverMode, onEnd]);
+  }, [phase, debug.foreverMode, isLadder, onEnd]);
 
   const showMsg = useCallback((text, type) => {
     clearTimeout(msgTimer.current);
@@ -3594,8 +3978,9 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
     }
     if (usedRef.current.has(upper)) { showMsg('Already used', 'error'); triggerShake(); return; }
     const pos = diffs[0];
+    // Streak rule applies only to timed/forever (free-form) modes, not ladder.
     let newStreakCnt = (streakPosRef.current === pos) ? streakCntRef.current + 1 : 1;
-    if (debug.streakRule && newStreakCnt >= 3) {
+    if (!isLadder && debug.streakRule && newStreakCnt >= 3) {
       showMsg(`Can't change letter ${pos + 1} three times`, 'error');
       triggerShake(); return;
     }
@@ -3615,16 +4000,36 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
     setChain(newChain);
     setScore(newScore);
     setAcceptKey(k => k + 1);
-    showMsg(`+${pts} pt${pts !== 1 ? 's' : ''}`, 'ok');
-    const moves = getValidMoves(upper, newUsed, pos, newStreakCnt, debug.streakRule, cfg.getWords());
-    if (moves.length === 0) {
-      setDeadEnd(true);
-      if (debug.foreverMode) {
-        gameOverRef.current = true;
-        setTimeout(() => onEnd({ score: newScore, chain: newChain, deadEnd: true }), 1800);
+
+    // Ladder mode: check if we've hit the target → solved!
+    if (isLadder && upper === targetRef.current) {
+      gameOverRef.current = true;
+      showMsg('Solved!', 'ok');
+      setTimeout(() => onEnd({
+        score: newChain.length - 1, // moves taken
+        chain: newChain,
+        deadEnd: false,
+        win: true,
+        target: targetRef.current,
+        par,
+      }), 700);
+      return;
+    }
+
+    showMsg(isLadder ? '✓' : `+${pts} pt${pts !== 1 ? 's' : ''}`, 'ok');
+
+    // Dead-end detection (skipped in ladder — backtracking is fine there)
+    if (!isLadder) {
+      const moves = getValidMoves(upper, newUsed, pos, newStreakCnt, debug.streakRule, cfg.getWords());
+      if (moves.length === 0) {
+        setDeadEnd(true);
+        if (debug.foreverMode) {
+          gameOverRef.current = true;
+          setTimeout(() => onEnd({ score: newScore, chain: newChain, deadEnd: true }), 1800);
+        }
       }
     }
-  }, [debug.streakRule, debug.foreverMode, showMsg, triggerShake, onEnd]);
+  }, [isLadder, par, debug.streakRule, debug.foreverMode, showMsg, triggerShake, onEnd]);
 
   const handleKeyDown = useCallback((e) => {
     if (gameOverRef.current) return;
@@ -3660,8 +4065,8 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
     : noChange ? 'Same as current word' : '';
   const displayMsg = persistentError ? { text: persistentError, type: 'error' } : msg;
 
-  const urgent      = timeLeft <= 10 && !debug.foreverMode;
-  const pct         = debug.foreverMode ? 100 : (timeLeft / cfg.duration) * 100;
+  const urgent      = !isLadder && timeLeft <= 10 && !debug.foreverMode;
+  const pct         = (debug.foreverMode || isLadder) ? 100 : (timeLeft / cfg.duration) * 100;
   const wordsPlayed = chain.length - 1;
 
   return (
@@ -3676,10 +4081,25 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
       >
         <MascotIcon size={72} modeId={cfg.id} />
         <div className="wordmark">{cfg.name.split(' ')[0]} <span className="accent">{cfg.name.split(' ')[1]}</span></div>
-        {debug.foreverMode && <span className="forever-badge">∞</span>}
+        {debug.foreverMode && !isLadder && <span className="forever-badge">∞</span>}
       </div>
 
-      {!debug.foreverMode && (
+      {/* Goal banner for ladder mode */}
+      {isLadder && targetWord && (
+        <div className="ladder-goal">
+          <span className="ladder-goal-label">Get to</span>
+          <div className="ladder-goal-tiles">
+            {targetWord.split('').map((l, i) => (
+              <div key={i} className="tile ladder-target-tile">{l}</div>
+            ))}
+          </div>
+          {hintOn && par != null && (
+            <div className="ladder-goal-par">Best path: {par} move{par !== 1 ? 's' : ''}</div>
+          )}
+        </div>
+      )}
+
+      {!debug.foreverMode && !isLadder && (
         <div className="timer-wrap">
           <div className="timer-row">
             <span className="timer-label">
@@ -3697,24 +4117,50 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
       )}
 
       <div className="score-row">
-        <div className="score-badge">{score}</div>
+        <div className="score-display">
+          <div className="score-badge">{isLadder ? wordsPlayed : score}</div>
+          <div className="score-sub">
+            {isLadder
+              ? `move${wordsPlayed !== 1 ? 's' : ''}`
+              : `word${wordsPlayed !== 1 ? 's' : ''} played`}
+          </div>
+        </div>
         <div className="score-meta">
-          <div className="score-sub">{wordsPlayed} word{wordsPlayed !== 1 ? 's' : ''} played</div>
-          {debug.foreverMode && (
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              onClick={() => onEnd({ score: scoreRef.current, chain: chainRef.current, deadEnd: false })}
-            >
-              End run
-            </button>
-          )}
+          <button
+            type="button"
+            className="btn-newword"
+            onClick={onNewPuzzle}
+          >
+            New word
+          </button>
+          <button
+            type="button"
+            className={`hint-btn${hintOn ? ' active' : ''}`}
+            onClick={() => setHintOn(h => !h)}
+            aria-label={hintOn ? 'Hide hint' : 'Show hint'}
+            aria-pressed={hintOn}
+          >
+            {hintOn ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a19.78 19.78 0 0 1 5.06-5.94"/>
+                <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a19.46 19.46 0 0 1-2.16 3.19"/>
+                <path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            )}
+            <span className="hint-tooltip">{hintOn ? 'Hide hint' : 'Show hint'}</span>
+          </button>
           <button
             type="button"
             className="restart-btn"
             onClick={onRestart}
-            aria-label="Restart game"
-            title="Restart"
+            aria-label="Restart same puzzle"
+            title="Restart same puzzle"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="23 4 23 10 17 10"/>
@@ -3727,9 +4173,16 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
       <div style={{ marginTop: 20 }}>
         <div className="section-label">Current word</div>
         <div className="tile-row">
-          {currentWord.split('').map((l, i) => (
-            <div key={`${acceptKey}-${i}`} className="tile accept" style={{ animationDelay: `${i * 40}ms` }}>{l}</div>
-          ))}
+          {currentWord.split('').map((l, i) => {
+            const isWiggle = wiggleIdx === i && typed.length === 0;
+            return (
+              <div
+                key={`${acceptKey}-${i}`}
+                className={`tile accept${isWiggle ? ' wiggle' : ''}`}
+                style={{ animationDelay: `${i * 40}ms` }}
+              >{l}</div>
+            );
+          })}
         </div>
       </div>
 
@@ -3777,15 +4230,16 @@ function PlayScreen({ onEnd, onHome, onRestart, debug, modeId = 'classic' }) {
 }
 
 /* ── EndScreen ────────────────────────────────────────── */
-function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = 'classic' }) {
+function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = 'classic', win, target, par }) {
   const cfg = MODES[modeId];
+  const isLadder = !!cfg.isLadder;
   const [copied, setCopied] = useState(false);
   const wordsPlayed = chain.length - 1;
 
-  // Best score: only tracked for timed runs (foreverMode is endless / different scoring).
-  // Persisted to localStorage via setBestScore -> see BEST_KEY('classic'|'soyboy').
+  // Best score: only tracked for timed runs.
+  // Ladder mode + forever mode don't write to personal-best.
   const previousBest = useRef(getBestScore(modeId)).current;
-  const isNewBest = !debug.foreverMode && score > 0 && score > previousBest;
+  const isNewBest = !isLadder && !debug.foreverMode && score > 0 && score > previousBest;
   useEffect(() => {
     if (isNewBest) setBestScore(modeId, score);
   }, [isNewBest, modeId, score]);
@@ -3849,16 +4303,37 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
 
       {/* Score readout */}
       <div style={{ marginTop: 24, textAlign: 'center' }}>
-        <div className="end-score">{debug.foreverMode ? wordsPlayed : score}</div>
-        <div className="end-score-label">
-          {debug.foreverMode
-            ? `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} in chain`
-            : `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} · ${score} point${score !== 1 ? 's' : ''}`}
-        </div>
-        {deadEnd && (
-          <div className="dead-end-sub" style={{ fontSize: 13, textAlign: 'center', marginTop: 6 }}>
-            {`Hit a dead end ${modeId === 'soyboy' ? '🫛' : '🐷'}`}
-          </div>
+        {isLadder ? (
+          <>
+            <div className="end-score" style={{ color: win ? 'var(--accent)' : 'var(--dark)' }}>
+              {win ? `${score} move${score !== 1 ? 's' : ''}` : 'Gave up'}
+            </div>
+            <div className="end-score-label">
+              {win
+                ? (par != null
+                    ? (score === par
+                        ? `🎯 You matched the best path of ${par}!`
+                        : score < par
+                          ? `🏆 Beat the best path of ${par}!`
+                          : `Best path: ${par} move${par !== 1 ? 's' : ''}`)
+                    : 'Solved it!')
+                : (target ? `Was heading to ${target}` : '')}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="end-score">{debug.foreverMode ? wordsPlayed : score}</div>
+            <div className="end-score-label">
+              {debug.foreverMode
+                ? `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} in chain`
+                : `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} · ${score} point${score !== 1 ? 's' : ''}`}
+            </div>
+            {deadEnd && (
+              <div className="dead-end-sub" style={{ fontSize: 13, textAlign: 'center', marginTop: 6 }}>
+                {`Hit a dead end ${modeId === 'soyboy' ? '🫛' : '🐷'}`}
+              </div>
+            )}
+          </>
         )}
         {!debug.foreverMode && isNewBest && (
           <button
@@ -3902,8 +4377,10 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
 
       {/* Actions */}
       <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <button className="btn btn-primary btn-full" onClick={onRestart}>Play again</button>
-        {!debug.foreverMode && (
+        <button className="btn btn-primary btn-full" onClick={onRestart}>
+          {isLadder ? 'Next puzzle' : 'Play again'}
+        </button>
+        {!debug.foreverMode && !isLadder && (
           <button className="btn btn-copy btn-full" onClick={handleShare}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
@@ -3924,7 +4401,13 @@ function App() {
   const [screen,  setScreen]  = useState('start');
   const [result,  setResult]  = useState(null);
   const [playKey, setPlayKey] = useState(0);
-  const restart = () => { setPlayKey(k => k + 1); setScreen('playing'); };
+  const [puzzleSeed, setPuzzleSeed] = useState(() => Math.random());
+  // Restart the *same* puzzle (keep seed, just remount PlayScreen)
+  const restartSame = () => { setPlayKey(k => k + 1); setScreen('playing'); };
+  // Fresh puzzle (new seed → different starter/pair)
+  const newPuzzle   = () => { setPuzzleSeed(Math.random()); setPlayKey(k => k + 1); setScreen('playing'); };
+  // Default entry point from landing/tutorial = fresh puzzle
+  const restart = newPuzzle;
   const [debug,   setDebug]   = useState(() => ({
     streakRule:    true,
     foreverMode:   false,
@@ -4019,7 +4502,11 @@ function App() {
       if (debug.darkMode) {
         tc.setAttribute('content', '#141413');
       } else if (coloredBgActive) {
-        tc.setAttribute('content', modeId === 'soyboy' ? '#B7D197' : '#FAD8B8');
+        tc.setAttribute('content',
+          modeId === 'soyboy'   ? '#B7D197' :
+          modeId === 'thisthat' ? '#CCE1F2' :
+          '#FAD8B8'
+        );
       } else {
         tc.setAttribute('content', '#F8F1E5');
       }
@@ -4028,7 +4515,7 @@ function App() {
 
   return (
     <ColorOverrideContext.Provider value={colorOverrides}>
-    <div id="root" className={modeId === 'soyboy' ? 'soyboy' : ''}>
+    <div id="root" className={modeId === 'soyboy' ? 'soyboy' : (modeId === 'thisthat' ? 'thisthat' : '')}>
       {screen === 'start' && (
         <StartScreen
           onStart={restart}
@@ -4058,9 +4545,11 @@ function App() {
       {screen === 'playing' && (
         <PlayScreen
           key={playKey}
+          puzzleSeed={puzzleSeed}
           onEnd={res => { setResult(res); setScreen('end'); }}
           onHome={() => setScreen('start')}
-          onRestart={restart}
+          onRestart={restartSame}
+          onNewPuzzle={newPuzzle}
           debug={debug}
           modeId={modeId}
         />
@@ -4070,9 +4559,12 @@ function App() {
           score={result.score}
           chain={result.chain}
           deadEnd={result.deadEnd}
+          win={result.win}
+          target={result.target}
+          par={result.par}
           debug={debug}
           modeId={modeId}
-          onRestart={restart}
+          onRestart={newPuzzle}
           onHome={() => setScreen('start')}
         />
       )}
