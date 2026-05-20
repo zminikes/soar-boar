@@ -58,12 +58,14 @@
       --deep-sage:  #27885E;
       --deep-blue:  #59a1d8;
       --accent:     var(--deep-peach);
-      /* Tutorial uses a separate "guidance" color so the arrow / changed-ok
-         pills don't clash with the mode accent. Default cream bg → blue.
-         When coloredBg is on, falls through to --accent for visual cohesion. */
-      --tutorial-accent:      #4a90d9;
-      --tutorial-accent-soft: rgba(134,187,239,0.18);
-      --tutorial-accent-bg:   #EEF5FD;
+      /* Per-mode accent-soft — set on the mode class so tutorial highlights
+         and chain pills always match the active hue, even without coloredBg. */
+      --accent-soft: rgba(248,128,101,0.30);
+      /* Tutorial highlights inherit the mode accent so the ↓ arrow and the
+         changed-ok pill stay on-brand across all modes. */
+      --tutorial-accent:      var(--accent);
+      --tutorial-accent-soft: var(--accent-soft);
+      --tutorial-accent-bg:   var(--accent-soft);
       /* Motion */
       --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);
       --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
@@ -266,9 +268,9 @@
     .shake { animation: shake 240ms ease; }
 
     /* ── Soy Boy green theme ─────────────────────────────── */
-    .soyboy { --orange: #27885E; --accent: var(--deep-sage); }
+    .soyboy   { --orange: #27885E; --accent: var(--deep-sage); --accent-soft: rgba(39,136,94,0.22); }
     /* ── This That blue theme ────────────────────────────── */
-    .thisthat { --orange: #59a1d8; --accent: var(--deep-blue); }
+    .thisthat { --orange: #59a1d8; --accent: var(--deep-blue); --accent-soft: rgba(89,161,216,0.26); }
 
     /* ── Design experiments — driven by data attrs on <html> ── */
 
@@ -276,11 +278,11 @@
        data-exp-colored-bg is only set when the start screen is active —
        game/end screens always render on cream. */
     :root[data-exp-colored-bg="1"][data-exp-mode="classic"] {
-      --cream: #FAD8B8;             /* picked soft peach cream */
+      --cream: #F7F1E6;             /* warm neutral cream */
       --muted: rgba(0,0,0,0.62);
       --border: rgba(0,0,0,0.16);
       --accent: var(--deep-peach);
-      --accent-soft: rgba(248,128,101,0.14);
+      --accent-soft: rgba(248,128,101,0.22);
     }
     :root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]  {
       --cream: #B7D197;             /* picked sage */
@@ -410,6 +412,10 @@
     :root[data-exp-colored-bg="1"] .mode-segmented { background: rgba(255,251,246,0.68); }
     :root[data-exp-colored-bg="1"] .seg-tab.active { background: #1A1918; color: #fff; }
     :root[data-exp-colored-bg="1"] .seg-tab:not(.active) { color: rgba(0,0,0,0.62); }
+    /* Soar Boar light mode — flat warm-beige container instead of cream overlay */
+    :root[data-exp-colored-bg="1"][data-exp-mode="classic"]:not([data-theme="dark"]) .mode-segmented {
+      background: #EAE3D5;
+    }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .mode-segmented { background: rgba(0,0,0,0.32); }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .seg-tab.active { background: #F5F3F0; color: #1A1918; }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .seg-tab:not(.active) { color: rgba(255,255,255,0.72); }
@@ -1511,12 +1517,8 @@
       background: var(--tutorial-accent-bg);
       color: var(--tutorial-accent);
     }
-    /* On colored bg, use the mode accent so tutorial highlights stay readable */
-    :root[data-exp-colored-bg="1"] {
-      --tutorial-accent:      var(--accent);
-      --tutorial-accent-soft: var(--accent-soft);
-      --tutorial-accent-bg:   var(--accent-soft);
-    }
+    /* Tutorial highlights inherit --accent/--accent-soft from the mode class,
+       so no separate override needed here. */
 
     /* ── Input hint ──────────────────────────────────────── */
     .input-hint {
@@ -1751,7 +1753,7 @@
       color: var(--dark);
       flex-shrink: 0;
     }
-    .chain-tile.changed { background: #FFE8DC; color: #B85540; }
+    .chain-tile.changed { background: var(--accent-soft); color: var(--accent); }
     .chain-pts { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.01em; }
 
     /* countdown integrated into timer row — no separate overlay */
@@ -1916,8 +1918,8 @@
     }
     .toggle input:checked + .toggle-track::after { transform: translateX(24px); }
     /* Dark mode — track + knob both adapt so they don't disappear */
-    :root[data-theme="dark"] .toggle-track { background: rgba(255,255,255,0.18); }
-    :root[data-theme="dark"] .toggle-track::after { background: #2A2826; box-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+    :root[data-theme="dark"] .toggle-track { background: rgba(255,255,255,0.28); }
+    :root[data-theme="dark"] .toggle-track::after { background: #E5E2DC; box-shadow: 0 1px 4px rgba(0,0,0,0.6); }
     :root[data-theme="dark"] .toggle input:checked + .toggle-track::after { background: #fff; }
     /* On colored bg, bump the off-track darkness so it stays visible */
     :root[data-exp-colored-bg="1"] .toggle-track { background: rgba(0,0,0,0.22); }
@@ -2131,11 +2133,12 @@
     :root[data-theme="dark"] .mode-pill { background: var(--white); border-color: rgba(255,255,255,0.10); color: var(--dark); }
     :root[data-theme="dark"] .mode-pill:hover:not(.active) { background: #252422; }
     :root[data-theme="dark"] .mode-pill.active { background: var(--dark); color: var(--cream); border-color: var(--dark); }
-    :root[data-theme="dark"] .chain-tile.changed { background: rgba(236,105,74,0.20); color: #F4A88E; }
     :root[data-theme="dark"] .tile { border-color: rgba(255,255,255,0.18); }
     :root[data-theme="dark"] .tile.wrong { background: #3A1A16; }
-    :root[data-theme="dark"] { --tutorial-accent: #8FB6E0; --tutorial-accent-bg: rgba(134,187,239,0.15); }
-    :root[data-theme="dark"] .tile.changed-ok { background: var(--tutorial-accent-bg); border-color: var(--tutorial-accent); color: var(--tutorial-accent); }
+    /* Boost accent-soft alpha on dark bg so highlights stay visible */
+    :root[data-theme="dark"]            { --accent-soft: rgba(248,128,101,0.22); }
+    :root[data-theme="dark"] .soyboy    { --accent-soft: rgba(88,187,139,0.22); }
+    :root[data-theme="dark"] .thisthat  { --accent-soft: rgba(143,182,224,0.22); }
     :root[data-theme="dark"] .dead-end-banner { background: #252010; border-color: #5A4A18; color: #D4B860; }
     :root[data-theme="dark"] .dead-end-banner .dead-end-title { color: #D4B860; }
     :root[data-theme="dark"] .dead-end-banner .dead-end-sub   { color: #A89040; }
@@ -2935,12 +2938,17 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
   // This That: build 8 hair frames + cycle them 1→8→1 (ping-pong).
   // Use a distinct scope class so the hair's .cls-1 rules (dark fill) don't
   // override the pig body's .cls-1 (blue fill) via DOM-order cascade.
+  // In dark mode, force hair to white for contrast against the dark bg.
   const hairFrames = useMemo(() => {
     if (!isThisThat) return [];
     const data = (typeof SVG_DATA !== 'undefined') ? SVG_DATA : {};
-    return Array.from({ length: 8 }, (_, i) =>
-      scopeSvgStyles(recolor(data[`hair-${i + 1}.svg`]), 'hair-anim')
-    );
+    return Array.from({ length: 8 }, (_, i) => {
+      let raw = data[`hair-${i + 1}.svg`] || '';
+      if (isDark) {
+        raw = raw.replace(/fill:\s*#2e2b26/gi, 'fill: #F5F3F0');
+      }
+      return scopeSvgStyles(raw, 'hair-anim');
+    });
   }, [isThisThat, isDark]);
   const [hairIdx, setHairIdx] = useState(0);
   useEffect(() => {
@@ -3072,7 +3080,7 @@ function StartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, mod
               { key: 'streakRule',  label: 'Position streak rule', sub: 'Forces variety — no changing the same position 3 turns in a row' },
               { key: 'foreverMode', label: 'Forever mode',         sub: 'No timer — play at your own pace' },
               { key: 'darkMode',    label: 'Dark mode',            sub: 'Easy on the eyes' },
-            ].map(({ key, label, sub }) => (
+            ].filter(p => !(modeId === 'thisthat' && p.key === 'foreverMode')).map(({ key, label, sub }) => (
               <div key={key} className="prefs-row">
                 <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
                 <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
@@ -3098,8 +3106,9 @@ function StartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, mod
 
 /* Default colors used by the floating color picker. */
 const DEFAULT_COLORS = {
-  classic: { bg: '#FAD8B8', accent: '#F88065' },
-  soyboy:  { bg: '#B7D197', accent: '#27885E' },
+  classic:  { bg: '#F7F1E6', accent: '#F88065' },
+  soyboy:   { bg: '#B7D197', accent: '#27885E' },
+  thisthat: { bg: '#CCE1F2', accent: '#59a1d8' },
 };
 
 /* ── Color math ───────────────────────────────────────── */
@@ -3285,9 +3294,6 @@ function FloatingColorPicker({ colorOverrides, setColorOverrides, modeId }) {
 
   // When mode changes, focus the active swatch on the new mode if helpful
   useEffect(() => {
-    const [m] = activeKey.split('.');
-    if (m !== 'classic' && m !== 'soyboy') return;
-    // Optionally re-target to current mode's bg when user switches mode
     setActiveKey(prev => {
       const [mm, kk] = prev.split('.');
       return mm === modeId ? prev : `${modeId}.${kk}`;
@@ -3310,8 +3316,9 @@ function FloatingColorPicker({ colorOverrides, setColorOverrides, modeId }) {
   const reset = () => setColorOverrides({});
   const copy = () => {
     const text =
-`Classic — bg: ${get('classic','bg')}  accent: ${get('classic','accent')}
-Soyboy  — bg: ${get('soyboy','bg')}   accent: ${get('soyboy','accent')}`;
+`Classic   — bg: ${get('classic','bg')}   accent: ${get('classic','accent')}
+Soyboy    — bg: ${get('soyboy','bg')}    accent: ${get('soyboy','accent')}
+This That — bg: ${get('thisthat','bg')} accent: ${get('thisthat','accent')}`;
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
@@ -3332,10 +3339,12 @@ Soyboy  — bg: ${get('soyboy','bg')}   accent: ${get('soyboy','accent')}`;
   }
 
   const swatches = [
-    { key: 'classic.bg',     label: 'Soar Boar BG' },
-    { key: 'classic.accent', label: 'Soar Boar Accent' },
-    { key: 'soyboy.bg',      label: 'Soy Boy BG' },
-    { key: 'soyboy.accent',  label: 'Soy Boy Accent' },
+    { key: 'classic.bg',      label: 'Soar Boar BG' },
+    { key: 'classic.accent',  label: 'Soar Boar Accent' },
+    { key: 'soyboy.bg',       label: 'Soy Boy BG' },
+    { key: 'soyboy.accent',   label: 'Soy Boy Accent' },
+    { key: 'thisthat.bg',     label: 'This That BG' },
+    { key: 'thisthat.accent', label: 'This That Accent' },
   ];
   const [activeMode, activeKind] = activeKey.split('.');
   const currentValue = get(activeMode, activeKind);
@@ -4412,8 +4421,9 @@ function App() {
     streakRule:    true,
     foreverMode:   false,
     darkMode:      localStorage.getItem('darkMode') === 'true',
-    /* Design experiments — flip these to A/B compare directions. */
-    coloredBg:     localStorage.getItem('exp:coloredBg') === 'true',
+    /* Design experiments — flip these to A/B compare directions.
+       Default ON (colored bgs) — falls back to localStorage only if set. */
+    coloredBg:     localStorage.getItem('exp:coloredBg') !== 'false',
   }));
   const [modeId,  setModeId]  = useState('classic');
 
@@ -4467,13 +4477,16 @@ function App() {
       styleEl.id = 'color-overrides';
       document.head.appendChild(styleEl);
     }
-    const cls = colorOverrides.classic || {};
-    const soy = colorOverrides.soyboy  || {};
+    const cls = colorOverrides.classic  || {};
+    const soy = colorOverrides.soyboy   || {};
+    const tt  = colorOverrides.thisthat || {};
     styleEl.textContent = [
-      cls.bg     && `:root[data-exp-colored-bg="1"][data-exp-mode="classic"] { --cream: ${cls.bg}; }`,
-      cls.accent && `:root[data-exp-colored-bg="1"][data-exp-mode="classic"] { --deep-peach: ${cls.accent}; --accent: ${cls.accent}; }`,
-      soy.bg     && `:root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]  { --cream: ${soy.bg}; }`,
-      soy.accent && `:root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]  { --deep-sage: ${soy.accent}; --accent: ${soy.accent}; }`,
+      cls.bg     && `:root[data-exp-colored-bg="1"][data-exp-mode="classic"]  { --cream: ${cls.bg}; }`,
+      cls.accent && `:root[data-exp-colored-bg="1"][data-exp-mode="classic"]  { --deep-peach: ${cls.accent}; --accent: ${cls.accent}; }`,
+      soy.bg     && `:root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]   { --cream: ${soy.bg}; }`,
+      soy.accent && `:root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]   { --deep-sage: ${soy.accent}; --accent: ${soy.accent}; }`,
+      tt.bg      && `:root[data-exp-colored-bg="1"][data-exp-mode="thisthat"] { --cream: ${tt.bg}; }`,
+      tt.accent  && `:root[data-exp-colored-bg="1"][data-exp-mode="thisthat"] { --deep-blue: ${tt.accent}; --accent: ${tt.accent}; }`,
     ].filter(Boolean).join('\n');
     localStorage.setItem('colorOverrides', JSON.stringify(colorOverrides));
   }, [colorOverrides]);
