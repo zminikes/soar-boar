@@ -3813,6 +3813,10 @@ function DebugBadge({ onToggle }) {
    The colored-bg color picker lives in a floating panel rendered at the
    App root (not here) so it stays visible while scrolling. */
 function ExperimentsPanel({ debug, setDebug }) {
+  const experiments = [
+    // No experiments currently — colored bg is now canonical.
+  ];
+  if (!experiments.length) return null;
   return (
     <>
       <div style={{
@@ -3824,9 +3828,7 @@ function ExperimentsPanel({ debug, setDebug }) {
       }}>
         Design experiments
       </div>
-      {[
-        { key: 'coloredBg',     label: 'Colored background', sub: 'Orange-pink classic · green soyboy' },
-      ].map(({ key, label, sub }) => (
+      {experiments.map(({ key, label, sub }) => (
         <div key={key} className="prefs-row" style={{ marginTop: 12 }}>
           <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
           <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
@@ -4421,9 +4423,6 @@ function App() {
     streakRule:    true,
     foreverMode:   false,
     darkMode:      localStorage.getItem('darkMode') === 'true',
-    /* Design experiments — flip these to A/B compare directions.
-       Default ON (colored bgs) — falls back to localStorage only if set. */
-    coloredBg:     localStorage.getItem('exp:coloredBg') !== 'false',
   }));
   const [modeId,  setModeId]  = useState('classic');
 
@@ -4503,9 +4502,9 @@ function App() {
   // Persist experiments + apply body-level classes that drive CSS variables.
   // Colored bg is intentionally scoped to the start screen only — game/end keep cream.
   useEffect(() => {
-    localStorage.setItem('exp:coloredBg',     String(debug.coloredBg));
-    // Colored bg is a light-mode-only treatment — dark mode stays neutral.
-    const coloredBgActive = debug.coloredBg && !debug.darkMode && (screen === 'start' || screen === 'tutorial');
+    // Colored bg is now the canonical default — light-mode only,
+    // scoped to start + tutorial screens (game/end keep neutral cream).
+    const coloredBgActive = !debug.darkMode && (screen === 'start' || screen === 'tutorial');
     document.documentElement.dataset.expColoredBg = coloredBgActive ? '1' : '';
     document.documentElement.dataset.expMode = modeId;
     // Keep iOS status-bar color in sync with whatever bg is showing
@@ -4524,7 +4523,7 @@ function App() {
         tc.setAttribute('content', '#F8F1E5');
       }
     }
-  }, [debug.coloredBg, debug.darkMode, modeId, screen]);
+  }, [debug.darkMode, modeId, screen]);
 
   return (
     <ColorOverrideContext.Provider value={colorOverrides}>
@@ -4581,7 +4580,7 @@ function App() {
           onHome={() => setScreen('start')}
         />
       )}
-      {debugMode && debug.coloredBg && !debug.darkMode && (screen === 'start' || screen === 'tutorial') && (
+      {debugMode && !debug.darkMode && (screen === 'start' || screen === 'tutorial') && (
         <FloatingColorPicker
           colorOverrides={colorOverrides}
           setColorOverrides={setColorOverrides}
