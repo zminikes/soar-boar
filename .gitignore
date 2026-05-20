@@ -12,5 +12,16 @@ design/
 *.swp
 *.swo
 
+# Node / Vite
+node_modules/
+dist/
+coverage/
+.vite/
+.eslintcache
+*.tsbuildinfo
+
 # Misc
 *.log
+.env
+.env.local
+.env.*.local
