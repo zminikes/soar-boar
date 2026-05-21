@@ -20,7 +20,30 @@ import hair6 from '../assets/hair-6.svg?raw';
 import hair7 from '../assets/hair-7.svg?raw';
 import hair8 from '../assets/hair-8.svg?raw';
 
-export const SVG_DATA: Readonly<Record<string, string>> = {
+export type MascotName =
+  | 'pig-open.svg'
+  | 'pig-closed.svg'
+  | 'pig-open-dark.svg'
+  | 'pig-closed-dark.svg'
+  | 'bean-open.svg'
+  | 'bean-closed.svg'
+  | 'bean-open-dark.svg'
+  | 'bean-closed-dark.svg'
+  | 'big-soar-boar.svg'
+  | 'big-pig-1.svg'
+  | 'big-pig-2.svg'
+  | 'pig-tt-open.svg'
+  | 'pig-tt-closed.svg'
+  | 'hair-1.svg'
+  | 'hair-2.svg'
+  | 'hair-3.svg'
+  | 'hair-4.svg'
+  | 'hair-5.svg'
+  | 'hair-6.svg'
+  | 'hair-7.svg'
+  | 'hair-8.svg';
+
+export const SVG_DATA: Readonly<Record<MascotName, string>> = {
   'pig-open.svg': pigOpen,
   'pig-closed.svg': pigClosed,
   'pig-open-dark.svg': pigOpenDark,
