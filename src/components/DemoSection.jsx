@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MODES } from '../game/modes';
+import { MODE_CONFIGS } from '../lib/modes';
 
 /* DemoSection (scroll-jacked, sticky scene).
    Outer wrapper is N viewport-heights tall.
@@ -8,7 +8,7 @@ import { MODES } from '../game/modes';
    Each new step re-mounts via React `key`, so the entrance
    animations replay (tile snap-in + points float). */
 export function DemoSection({ modeId, onStart, onStartForever }) {
-  const cfg = MODES[modeId];
+  const cfg = MODE_CONFIGS[modeId];
   const isLadder = !!cfg.isLadder;
 
   // 4 scenes per mode. The last is a CTA finale.

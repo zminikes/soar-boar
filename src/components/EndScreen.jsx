@@ -1,12 +1,12 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
-import { MODES } from '../game/modes';
+import { MODE_CONFIGS } from '../lib/modes';
 import { generateShareText } from '../game/helpers';
 import { getBestScore, setBestScore } from '../platform/dom';
 import { MascotIcon } from './MascotIcon';
 import { ChainRows } from './ChainRows';
 
 export function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = 'classic', win, target, par }) {
-  const cfg = MODES[modeId];
+  const cfg = MODE_CONFIGS[modeId];
   const isLadder = !!cfg.isLadder;
   const [copied, setCopied] = useState(false);
   const wordsPlayed = chain.length - 1;

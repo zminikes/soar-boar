@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MODES } from '../game/modes';
+import { MODE_CONFIGS } from '../lib/modes';
 import { getBestScore } from '../platform/dom';
 import { AnimatedMascot } from './AnimatedMascot';
 import { Toggle } from './Toggle';
@@ -12,7 +12,7 @@ import { EmailSignup } from './EmailSignup';
    Mode switcher is a pill-shaped segmented control with both mascots
    visible at once — you "peek" into each mode just by seeing the tabs. */
 export function StartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, modeId, setModeId, debugMode }) {
-  const cfg = MODES[modeId];
+  const cfg = MODE_CONFIGS[modeId];
   const [showPrefs, setShowPrefs] = useState(false);
   const bestScore = getBestScore(modeId);
 
@@ -24,7 +24,7 @@ export function StartScreen({ onStart, onStartForever, onTutorial, debug, setDeb
       {/* Segmented pill — both modes always visible, text-only */}
       <div className="simple-segmented-wrap">
         <div className="mode-segmented" role="tablist" aria-label="Choose mode">
-          {Object.values(MODES).map(m => (
+          {Object.values(MODE_CONFIGS).map(m => (
             <button
               key={m.id}
               role="tab"

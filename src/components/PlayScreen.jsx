@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { MODES } from '../game/modes';
+import { MODE_CONFIGS } from '../lib/modes';
+import { getWords } from '../data/modeData';
 import { HEAD_START, MSG_DURATION } from '../game/constants';
 import { bfsPath, diffPos, getValidMoves, pickLadderPair, pickStarter } from '../game/helpers';
 import { isTouchDevice } from '../platform/dom';
@@ -8,7 +9,7 @@ import { ChainRows } from './ChainRows';
 import { Keyboard } from './Keyboard';
 
 export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, debug, modeId = 'classic' }) {
-  const cfg = MODES[modeId];
+  const cfg = MODE_CONFIGS[modeId];
   const isLadder = !!cfg.isLadder;
   // Ladder mode skips countdown/timer entirely
   const [phase,       setPhase]       = useState(isLadder ? 'playing' : 'countdown');
@@ -54,7 +55,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
       // Pick which letter position to highlight
       let idx = null;
       if (isLadder && targetRef.current) {
-        const path = bfsPath(currentRef.current, targetRef.current, cfg.getWords());
+        const path = bfsPath(currentRef.current, targetRef.current, getWords(modeId));
         if (path && path.length > 1) {
           const next = path[1];
           for (let i = 0; i < next.length; i++) {
@@ -66,7 +67,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
         const moves = getValidMoves(
           currentRef.current, usedRef.current,
           streakPosRef.current, streakCntRef.current,
-          debug.streakRule, cfg.getWords()
+          debug.streakRule, getWords(modeId)
         );
         if (moves.length) {
           const counts = new Array(cfg.wordLen).fill(0);
@@ -81,7 +82,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
       if (idx != null) setWiggleIdx(idx);
     }, 15000);
     return () => clearTimeout(t);
-  }, [hintOn, phase, typed, currentWord, acceptKey, isLadder, debug.streakRule, cfg]);
+  }, [hintOn, phase, typed, currentWord, acceptKey, isLadder, debug.streakRule, modeId, cfg]);
 
   useEffect(() => {
     let start, target = '', parVal = null;
@@ -150,7 +151,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
     if (gameOverRef.current) return;
     const upper = word.toUpperCase();
     const cur   = currentRef.current;
-    if (!cfg.getWords().has(upper)) { showMsg('Not a word', 'error'); triggerShake(); return; }
+    if (!getWords(modeId).has(upper)) { showMsg('Not a word', 'error'); triggerShake(); return; }
     const diffs = diffPos(cur, upper);
     if (diffs.length !== 1) {
       showMsg(diffs.length === 0 ? 'Same as current word' : 'Change exactly one letter', 'error');
@@ -200,7 +201,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
 
     // Dead-end detection (skipped in ladder — backtracking is fine there)
     if (!isLadder) {
-      const moves = getValidMoves(upper, newUsed, pos, newStreakCnt, debug.streakRule, cfg.getWords());
+      const moves = getValidMoves(upper, newUsed, pos, newStreakCnt, debug.streakRule, getWords(modeId));
       if (moves.length === 0) {
         setDeadEnd(true);
         if (debug.foreverMode) {
@@ -209,7 +210,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
         }
       }
     }
-  }, [isLadder, par, debug.streakRule, debug.foreverMode, showMsg, triggerShake, onEnd, cfg]);
+  }, [isLadder, par, debug.streakRule, debug.foreverMode, showMsg, triggerShake, onEnd, modeId, cfg]);
 
   const handleKeyDown = useCallback((e) => {
     if (gameOverRef.current) return;
