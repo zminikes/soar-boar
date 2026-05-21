@@ -90,23 +90,47 @@ Goal: get the new Vite build running the actual game with the same UX as `game/i
 
 ### Phase 2 — Extract pure logic to TypeScript
 
-Create `src/lib/` with **zero React/DOM imports** (enforced by the ESLint rule from Phase 0). This is the layer that ports straight to React Native later.
+Create `src/lib/` with **zero React/DOM imports** (enforced by the ESLint rule from Phase 0 — boundary validated in Phase 1.5 with a deliberate broken import). This is the layer that ports straight to React Native later.
 
-Files (functions already DI-clean — they all take `words` as a `Set<string>` parameter):
+Files:
 
-- `src/lib/types.ts` — `Mode`, `ModeId`, `ChainEntry`, `Move`, `StreakRule`, etc.
-- `src/lib/moves.ts` — `diffPos`, `getValidMoves` (logic lives at `game/index.html` near the helper block at ~2370)
-- `src/lib/bfs.ts` — `bfsPath`
-- `src/lib/puzzle.ts` — `pickStarter`, `pickLadderPair` (**already accept optional `seed` parameter** — see `game/index.html:2390, 2398` — no RNG refactor needed; tests pass a fixed seed in `[0, 1)`)
+- `src/lib/types.ts` — `ChainEntry`, `Move`, `StreakRule`, etc. (`ModeId` already lives in `src/lib/modes.ts` from Phase 1.5)
+- `src/lib/moves.ts` — `diffPos`, `getValidMoves` (currently `src/game/helpers.ts`)
+- `src/lib/bfs.ts` — `bfsPath` (currently `src/game/helpers.ts`)
+- `src/lib/puzzle.ts` — `pickStarter`, `pickLadderPair` (currently `src/game/helpers.ts`)
 - `src/lib/scoring.ts` — position weights, score calc
-- `src/lib/share.ts` — `generateShareText` (decouples from `MODES` via the Phase 1.5 split)
-- `src/lib/modes.ts` (from Phase 1.5)
+- `src/lib/share.ts` — `generateShareText` (currently `src/game/helpers.ts`)
+- `src/lib/modes.ts` (already exists from Phase 1.5)
+
+**Signature decision for `src/lib/puzzle.ts` and `src/lib/share.ts`** (these currently read data via `getStarters`/`getWords`/`getPairs` from `src/data/modeData`, which `src/lib/` cannot import):
+
+Pass data as parameters; call sites resolve via `src/data/modeData` and `src/lib/modes`. Verbose but RN-clean, no presenter indirection.
+
+```ts
+// src/lib/puzzle.ts
+export function pickStarter(
+  starters: readonly string[],
+  words: ReadonlySet<string>,
+  tutorialStart: string,
+  seed?: number,
+): string { ... }
+
+// PlayScreen.jsx
+const start = pickStarter(
+  getStarters(modeId),
+  getWords(modeId),
+  MODE_CONFIGS[modeId].tutorialStart,
+  puzzleSeed,
+);
+```
+
+Same shape for `pickLadderPair` (takes `pairs`, `tutorialPair`, `seed`) and `generateShareText` (takes `wordLen`, `name`, `duration`, `shareUrl`, plus the chain/score). Rejected the alternative of keeping wrapper functions in `src/game/` that do the data resolution — adds an indirection layer with no separation-of-concerns payoff. Components that read both config and data already touch both modules; they can also call `src/lib/` directly.
 
 JSX components are refactored to import from `src/lib/` instead of having logic inline. Components stay `.jsx`.
 
 `Math.random()` calls that are presentational (confetti angles ~4293, mascot blinking ~2903, initial puzzle seed ~4441) stay in components — not in `src/lib/`.
 
-**Verify**: game plays unchanged; `npm run typecheck` clean for `src/lib/`; ESLint flags any accidental `react` import in `src/lib/`.
+**Verify**: game plays unchanged; `npm run typecheck` clean for `src/lib/`; ESLint flags any accidental `react` or `src/data/` import in `src/lib/`.
 
 ### Phase 3 — Tests for pure logic
 

@@ -1,4 +1,5 @@
-import { MODES, type ModeId } from './modes';
+import { MODE_CONFIGS, type ModeId } from '../lib/modes';
+import { getPairs, getStarters, getWords } from '../data/modeData';
 import { POS_EMOJI, SHARE_URL } from './constants';
 import type { ThisThatPair } from '../data/pairs';
 
@@ -9,16 +10,14 @@ export function diffPos(a: string, b: string): number[] {
 }
 
 export function getStarterPool(modeId: ModeId = 'classic'): string[] {
-  const cfg = MODES[modeId];
-  const words = cfg.getWords();
-  return cfg
-    .getStarters()
+  const words = getWords(modeId);
+  return getStarters(modeId)
     .map((w) => w.toUpperCase())
     .filter((w) => words.has(w));
 }
 
 export function pickStarter(modeId: ModeId, seed?: number): string {
-  const cfg = MODES[modeId];
+  const cfg = MODE_CONFIGS[modeId];
   const pool = getStarterPool(modeId);
   if (!pool.length) return cfg.tutorialStart;
   const s = typeof seed === 'number' ? seed : Math.random();
@@ -26,8 +25,8 @@ export function pickStarter(modeId: ModeId, seed?: number): string {
 }
 
 export function pickLadderPair(modeId: ModeId, seed?: number): ThisThatPair {
-  const cfg = MODES[modeId];
-  const pairs = cfg.getPairs ? cfg.getPairs() : [];
+  const cfg = MODE_CONFIGS[modeId];
+  const pairs = getPairs(modeId);
   if (!pairs.length) {
     return {
       start: cfg.tutorialStart,
@@ -100,7 +99,7 @@ export function generateShareText(
   score: number,
   modeId: ModeId = 'classic',
 ): string {
-  const cfg = MODES[modeId];
+  const cfg = MODE_CONFIGS[modeId];
   const neutral = '⬜';
   const rows = [neutral.repeat(cfg.wordLen)];
   for (let i = 1; i < chain.length; i++) {

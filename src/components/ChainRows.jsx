@@ -1,8 +1,8 @@
-import { MODES } from '../game/modes';
+import { MODE_CONFIGS } from '../lib/modes';
 import { diffPos } from '../game/helpers';
 
 export function ChainRows({ chain, maxHeight = 200, modeId = 'classic' }) {
-  const cfg = MODES[modeId];
+  const cfg = MODE_CONFIGS[modeId];
   return (
     <div className="chain-scroll" style={{ maxHeight }}>
       {chain.slice().reverse().map((entry, i) => {

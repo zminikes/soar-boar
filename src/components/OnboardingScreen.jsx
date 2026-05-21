@@ -1,5 +1,6 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
-import { MODES } from '../game/modes';
+import { MODE_CONFIGS } from '../lib/modes';
+import { getWords } from '../data/modeData';
 import { MSG_DURATION } from '../game/constants';
 import { diffPos } from '../game/helpers';
 import { isTouchDevice } from '../platform/dom';
@@ -7,7 +8,7 @@ import { Confetti } from './Confetti';
 import { Keyboard } from './Keyboard';
 
 export function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'classic' }) {
-  const cfg      = MODES[modeId];
+  const cfg      = MODE_CONFIGS[modeId];
   const isLadder = !!cfg.isLadder;
   const words = cfg.tutorialWords;   // e.g. ['SOAR','BOAR','BEAR']
   const hints = cfg.tutorialHints;   // typed words auto-submit, no enter prompt
@@ -35,7 +36,7 @@ export function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'clas
     const tryShake = () => { setShaking(true); setTimeout(() => setShaking(false), 280); };
     const attemptSubmit = (word) => {
       if (word.length !== cfg.wordLen) return;
-      if (!cfg.getWords().has(word)) { showMsg('Not a word', 'error'); tryShake(); return; }
+      if (!getWords(modeId).has(word)) { showMsg('Not a word', 'error'); tryShake(); return; }
       const diffs = diffPos(fromWord, word);
       if (diffs.length === 0) { showMsg('Same word — change one letter!', 'error'); tryShake(); return; }
       if (diffs.length > 1)  { showMsg('Change exactly one letter', 'error'); tryShake(); return; }
@@ -63,7 +64,7 @@ export function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'clas
       typedRef.current = next; setTyped(next);
       if (next.length === cfg.wordLen) attemptSubmit(next);
     }
-  }, [done, step, fromWord, completedSteps, showMsg, cfg, words.length]);
+  }, [done, step, fromWord, completedSteps, showMsg, cfg, modeId, words.length]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

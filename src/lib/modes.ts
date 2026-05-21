@@ -1,21 +1,18 @@
-import { WORDS } from '../data/wordlist';
-import { WORDS3 } from '../data/wordlist3';
-import { STARTER_WORDS } from '../data/starters';
-import { STARTER_WORDS3 } from '../data/starters3';
-import { THIS_THAT_PAIRS, type ThisThatPair } from '../data/pairs';
+// Pure mode config — no data imports, no React. Safe to import from
+// src/lib/ (enforced by the eslint no-restricted-imports rule).
+//
+// Data-bound lookups (getWords, getStarters, getPairs) live in
+// src/data/modeData.ts and consume MODE_CONFIGS for tutorial fallbacks.
 
 export type ModeId = 'classic' | 'soyboy' | 'thisthat';
 
-export interface Mode {
+export interface ModeConfig {
   id: ModeId;
   name: string;
   sub: string;
   wordLen: number;
   duration: number | null;
   isLadder?: boolean;
-  getWords: () => ReadonlySet<string>;
-  getStarters: () => readonly string[];
-  getPairs?: () => readonly ThisThatPair[];
   posPts: number[];
   posLabels: string[];
   tutorialStart: string;
@@ -24,15 +21,13 @@ export interface Mode {
   tutorialHints: string[];
 }
 
-export const MODES: Record<ModeId, Mode> = {
+export const MODE_CONFIGS: Record<ModeId, ModeConfig> = {
   classic: {
     id: 'classic',
     name: 'Soar Boar',
     sub: '4-letter words',
     wordLen: 4,
     duration: 60,
-    getWords: () => WORDS,
-    getStarters: () => STARTER_WORDS,
     posPts: [1, 4, 3, 2],
     posLabels: ['1st', '2nd', '3rd', '4th'],
     tutorialStart: 'SOAR',
@@ -46,8 +41,6 @@ export const MODES: Record<ModeId, Mode> = {
     sub: '3-letter words',
     wordLen: 3,
     duration: 45,
-    getWords: () => WORDS3,
-    getStarters: () => STARTER_WORDS3,
     posPts: [1, 3, 2],
     posLabels: ['1st', '2nd', '3rd'],
     tutorialStart: 'SOY',
@@ -62,9 +55,6 @@ export const MODES: Record<ModeId, Mode> = {
     wordLen: 4,
     duration: null,
     isLadder: true,
-    getWords: () => WORDS,
-    getStarters: () => [],
-    getPairs: () => THIS_THAT_PAIRS,
     posPts: [1, 4, 3, 2],
     posLabels: ['1st', '2nd', '3rd', '4th'],
     tutorialStart: 'THIS',
