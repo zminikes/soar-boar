@@ -1159,7 +1159,6 @@
       font-size: 13px;
       color: var(--accent);
       margin-top: 10px;
-      min-height: 1em;
     }
     .signup-honeypot {
       position: absolute;
@@ -3728,7 +3727,7 @@ const APPS_SCRIPT_URL = '';
 
 function EmailSignup() {
   const [email, setEmail] = useState('');
-  const [website, setWebsite] = useState(''); // honeypot
+  const [website, setWebsite] = useState('');
   const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'done' | 'error'
 
   const submit = async (e) => {
@@ -3741,11 +3740,12 @@ function EmailSignup() {
       if (!APPS_SCRIPT_URL) throw new Error('APPS_SCRIPT_URL is not configured');
       // text/plain avoids the CORS preflight that Apps Script Web Apps
       // don't handle — see NEWSLETTER_PLAN.md.
-      await fetch(APPS_SCRIPT_URL, {
+      const res = await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ email, source: 'homepage', website }),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setStatus('done');
     } catch (err) {
       setStatus('error');
