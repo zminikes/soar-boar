@@ -1,5 +1,5 @@
 import { SVG_URLS } from '../data/svgData';
-import { useIsDark } from '../game/themeContext';
+import { useIsDark } from '../game/appContext';
 
 export function MascotIcon({ size = 48, modeId = 'classic', className = '' }) {
   const isDark = useIsDark();

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { SVG_DATA } from '../data/svgData';
 import { scopeSvgStyles } from '../game/svgUtils';
-import { useIsDark } from '../game/themeContext';
+import { useIsDark } from '../game/appContext';
 
 export function FlyingPig() {
   const isDark = useIsDark();

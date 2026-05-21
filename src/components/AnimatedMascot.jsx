@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { SVG_DATA } from '../data/svgData';
-import { ColorOverrideContext, scopeSvgStyles } from '../game/svgUtils';
-import { useColoredBgActive, useIsDark } from '../game/themeContext';
+import { ColorOverrideContext, useColoredBgActive, useIsDark } from '../game/appContext';
+import { scopeSvgStyles } from '../game/svgUtils';
 
 /* AnimatedMascot — two SVG frames cross-faded between "open" and "closed"
    when eyes are "closed" (random ambient blink OR hover). Hover also

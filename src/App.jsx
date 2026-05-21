@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ColorOverrideContext } from './game/svgUtils';
-import { ColoredBgContext, ThemeContext } from './game/themeContext';
+import { ColoredBgContext, ColorOverrideContext, ThemeContext } from './game/appContext';
 import { StartScreen } from './components/StartScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { PlayScreen } from './components/PlayScreen';
@@ -95,12 +94,12 @@ export function App() {
   // Derived theme state — also threaded into React Context so the mascot
   // components don't have to set up their own MutationObservers on
   // documentElement[data-theme] / [data-exp-colored-bg].
-  const isDark = !!debug.darkMode;
+  const isDark = debug.darkMode;
   const coloredBgActive = !isDark && (screen === 'start' || screen === 'tutorial');
 
   useEffect(() => {
     document.documentElement.dataset.theme = isDark ? 'dark' : '';
-    localStorage.setItem('darkMode', isDark);
+    localStorage.setItem('darkMode', String(isDark));
     // Keep browser chrome (status bar / address bar) in sync with app background.
     // Adjusted further below when coloredBg is on.
     const tc = document.querySelector('meta[name="theme-color"]');
