@@ -1,7 +1,14 @@
-import { MODE_CONFIGS } from '../lib/modes';
+import { MODE_CONFIGS, type ModeId } from '../lib/modes';
 import { diffPos } from '../lib/moves';
+import type { ChainEntry } from '../lib/types';
 
-export function ChainRows({ chain, maxHeight = 200, modeId = 'classic' }) {
+interface ChainRowsProps {
+  chain: ChainEntry[];
+  maxHeight?: number;
+  modeId?: ModeId;
+}
+
+export function ChainRows({ chain, maxHeight = 200, modeId = 'classic' }: ChainRowsProps) {
   const cfg = MODE_CONFIGS[modeId];
   return (
     <div className="chain-scroll" style={{ maxHeight }}>

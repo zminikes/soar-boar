@@ -1,4 +1,8 @@
-export function PigSVG({ size = 180 }) {
+interface PigSVGProps {
+  size?: number;
+}
+
+export function PigSVG({ size = 180 }: PigSVGProps) {
   return (
     <svg width={size} height={size * 0.7} viewBox="0 0 240 168" fill="none">
       <ellipse cx="105" cy="108" rx="72" ry="46" fill="#F0B8C8" stroke="#1A1514" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>

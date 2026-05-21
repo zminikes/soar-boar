@@ -1,17 +1,24 @@
 import { isTouchDevice } from '../platform/dom';
 
 const KB_ROWS = [
-  ['Q','W','E','R','T','Y','U','I','O','P'],
-  ['A','S','D','F','G','H','J','K','L'],
-  ['ENTER','Z','X','C','V','B','N','M','⌫'],
+  ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+  ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+  ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫'],
 ];
 
-export function Keyboard({ onKey, visible = true }) {
+interface KeyboardProps {
+  // Receives KeyboardEvent.key-shaped strings: 'Enter', 'Backspace',
+  // or a single letter (A-Z, already uppercase).
+  onKey: (key: string) => void;
+  visible?: boolean;
+}
+
+export function Keyboard({ onKey, visible = true }: KeyboardProps) {
   if (!isTouchDevice || !visible) return null;
-  const dispatch = (k) => {
-    if (k === 'ENTER')      onKey('Enter');
-    else if (k === '⌫')      onKey('Backspace');
-    else                     onKey(k);
+  const dispatch = (k: string): void => {
+    if (k === 'ENTER') onKey('Enter');
+    else if (k === '⌫') onKey('Backspace');
+    else onKey(k);
   };
   return (
     <div className="kb" role="group" aria-label="On-screen keyboard">

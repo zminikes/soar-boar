@@ -1,4 +1,8 @@
-export function PeaPodSVG({ size = 180 }) {
+interface PeaPodSVGProps {
+  size?: number;
+}
+
+export function PeaPodSVG({ size = 180 }: PeaPodSVGProps) {
   return (
     <svg width={size} height={size * 0.7} viewBox="0 0 240 168" fill="none">
       {/* Pod body — fat curved banana shape */}

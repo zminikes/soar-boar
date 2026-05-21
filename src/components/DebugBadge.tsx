@@ -1,4 +1,8 @@
-export function DebugBadge({ onToggle }) {
+interface DebugBadgeProps {
+  onToggle: () => void;
+}
+
+export function DebugBadge({ onToggle }: DebugBadgeProps) {
   return (
     <button
       type="button"
