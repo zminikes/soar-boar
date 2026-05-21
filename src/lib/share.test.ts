@@ -32,11 +32,18 @@ describe('generateShareText', () => {
       { word: 'BAY', pts: 3 },
     ];
     const out = generateShareText(chain, 4, MODE_CONFIGS.soyboy, 'soarboar.com');
-    expect(out).toContain('🫛 Soy Boy');
-    expect(out).toContain('⏱ 45 sec · 4 pts · 2 words');
-    expect(out).toContain('⬜⬜⬜'); // 3-cell neutral row
-    expect(out).toContain('🟧⬜⬜'); // BOY — position 0 changed
-    expect(out).toContain('⬜🟪⬜'); // BAY — position 1 changed
+    expect(out).toBe(
+      [
+        '🫛 Soy Boy',
+        '⏱ 45 sec · 4 pts · 2 words',
+        '',
+        '⬜⬜⬜', // 3 cells (not 4) — would catch a soyboy → 4-letter wordLen regression
+        '🟧⬜⬜', // BOY — position 0 changed
+        '⬜🟪⬜', // BAY — position 1 changed
+        '',
+        '▶ Beat my score → soarboar.com',
+      ].join('\n'),
+    );
   });
 
   it('uses singular "word" when the chain has exactly one move', () => {

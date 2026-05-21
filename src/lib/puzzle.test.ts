@@ -29,6 +29,15 @@ describe('pickStarter', () => {
     expect(pickStarter(STARTER_WORDS, WORDS, 'TUTORIAL', seed)).toBe(expected);
   });
 
+  it('wraps seed=0 and seed=1 both to pool[0]', () => {
+    // seed=0 → Math.floor(0) = 0
+    // seed=1 → Math.floor(pool.length) = pool.length → % pool.length = 0
+    // Catches a refactor that drops the % wrap and uses (pool.length - 1).
+    const pool = STARTER_WORDS.map((w) => w.toUpperCase()).filter((w) => WORDS.has(w));
+    expect(pickStarter(STARTER_WORDS, WORDS, 'TUTORIAL', 0)).toBe(pool[0]);
+    expect(pickStarter(STARTER_WORDS, WORDS, 'TUTORIAL', 1)).toBe(pool[0]);
+  });
+
   it('falls back to tutorialStart when the starter pool is empty', () => {
     expect(pickStarter([], WORDS, 'FALLBACK', 0.5)).toBe('FALLBACK');
   });
@@ -67,6 +76,11 @@ describe('pickLadderPair', () => {
     const seed = 0.5;
     const expected = THIS_THAT_PAIRS[Math.floor(seed * THIS_THAT_PAIRS.length) % THIS_THAT_PAIRS.length];
     expect(pickLadderPair(THIS_THAT_PAIRS, fallback, seed)).toBe(expected);
+  });
+
+  it('wraps seed=0 and seed=1 both to pairs[0]', () => {
+    expect(pickLadderPair(THIS_THAT_PAIRS, fallback, 0)).toBe(THIS_THAT_PAIRS[0]);
+    expect(pickLadderPair(THIS_THAT_PAIRS, fallback, 1)).toBe(THIS_THAT_PAIRS[0]);
   });
 
   it('falls back to the provided fallback when pairs is empty', () => {
