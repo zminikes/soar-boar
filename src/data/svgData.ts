@@ -1,24 +1,46 @@
-import pigOpen from '../assets/pig-open.svg?raw';
-import pigClosed from '../assets/pig-closed.svg?raw';
-import pigOpenDark from '../assets/pig-open-dark.svg?raw';
-import pigClosedDark from '../assets/pig-closed-dark.svg?raw';
-import beanOpen from '../assets/bean-open.svg?raw';
-import beanClosed from '../assets/bean-closed.svg?raw';
-import beanOpenDark from '../assets/bean-open-dark.svg?raw';
-import beanClosedDark from '../assets/bean-closed-dark.svg?raw';
-import bigSoarBoar from '../assets/big-soar-boar.svg?raw';
-import bigPig1 from '../assets/big-pig-1.svg?raw';
-import bigPig2 from '../assets/big-pig-2.svg?raw';
-import pigTtOpen from '../assets/pig-tt-open.svg?raw';
-import pigTtClosed from '../assets/pig-tt-closed.svg?raw';
-import hair1 from '../assets/hair-1.svg?raw';
-import hair2 from '../assets/hair-2.svg?raw';
-import hair3 from '../assets/hair-3.svg?raw';
-import hair4 from '../assets/hair-4.svg?raw';
-import hair5 from '../assets/hair-5.svg?raw';
-import hair6 from '../assets/hair-6.svg?raw';
-import hair7 from '../assets/hair-7.svg?raw';
-import hair8 from '../assets/hair-8.svg?raw';
+import pigOpenUrl from '../assets/pig-open.svg';
+import pigClosedUrl from '../assets/pig-closed.svg';
+import pigOpenDarkUrl from '../assets/pig-open-dark.svg';
+import pigClosedDarkUrl from '../assets/pig-closed-dark.svg';
+import beanOpenUrl from '../assets/bean-open.svg';
+import beanClosedUrl from '../assets/bean-closed.svg';
+import beanOpenDarkUrl from '../assets/bean-open-dark.svg';
+import beanClosedDarkUrl from '../assets/bean-closed-dark.svg';
+import bigSoarBoarUrl from '../assets/big-soar-boar.svg';
+import bigPig1Url from '../assets/big-pig-1.svg';
+import bigPig2Url from '../assets/big-pig-2.svg';
+import pigTtOpenUrl from '../assets/pig-tt-open.svg';
+import pigTtClosedUrl from '../assets/pig-tt-closed.svg';
+import hair1Url from '../assets/hair-1.svg';
+import hair2Url from '../assets/hair-2.svg';
+import hair3Url from '../assets/hair-3.svg';
+import hair4Url from '../assets/hair-4.svg';
+import hair5Url from '../assets/hair-5.svg';
+import hair6Url from '../assets/hair-6.svg';
+import hair7Url from '../assets/hair-7.svg';
+import hair8Url from '../assets/hair-8.svg';
+
+import pigOpenRaw from '../assets/pig-open.svg?raw';
+import pigClosedRaw from '../assets/pig-closed.svg?raw';
+import pigOpenDarkRaw from '../assets/pig-open-dark.svg?raw';
+import pigClosedDarkRaw from '../assets/pig-closed-dark.svg?raw';
+import beanOpenRaw from '../assets/bean-open.svg?raw';
+import beanClosedRaw from '../assets/bean-closed.svg?raw';
+import beanOpenDarkRaw from '../assets/bean-open-dark.svg?raw';
+import beanClosedDarkRaw from '../assets/bean-closed-dark.svg?raw';
+import bigSoarBoarRaw from '../assets/big-soar-boar.svg?raw';
+import bigPig1Raw from '../assets/big-pig-1.svg?raw';
+import bigPig2Raw from '../assets/big-pig-2.svg?raw';
+import pigTtOpenRaw from '../assets/pig-tt-open.svg?raw';
+import pigTtClosedRaw from '../assets/pig-tt-closed.svg?raw';
+import hair1Raw from '../assets/hair-1.svg?raw';
+import hair2Raw from '../assets/hair-2.svg?raw';
+import hair3Raw from '../assets/hair-3.svg?raw';
+import hair4Raw from '../assets/hair-4.svg?raw';
+import hair5Raw from '../assets/hair-5.svg?raw';
+import hair6Raw from '../assets/hair-6.svg?raw';
+import hair7Raw from '../assets/hair-7.svg?raw';
+import hair8Raw from '../assets/hair-8.svg?raw';
 
 export type MascotName =
   | 'pig-open.svg'
@@ -43,26 +65,53 @@ export type MascotName =
   | 'hair-7.svg'
   | 'hair-8.svg';
 
+// Vite-resolved URLs (content-hashed) for <img src=...> consumption.
+export const SVG_URLS: Readonly<Record<MascotName, string>> = {
+  'pig-open.svg': pigOpenUrl,
+  'pig-closed.svg': pigClosedUrl,
+  'pig-open-dark.svg': pigOpenDarkUrl,
+  'pig-closed-dark.svg': pigClosedDarkUrl,
+  'bean-open.svg': beanOpenUrl,
+  'bean-closed.svg': beanClosedUrl,
+  'bean-open-dark.svg': beanOpenDarkUrl,
+  'bean-closed-dark.svg': beanClosedDarkUrl,
+  'big-soar-boar.svg': bigSoarBoarUrl,
+  'big-pig-1.svg': bigPig1Url,
+  'big-pig-2.svg': bigPig2Url,
+  'pig-tt-open.svg': pigTtOpenUrl,
+  'pig-tt-closed.svg': pigTtClosedUrl,
+  'hair-1.svg': hair1Url,
+  'hair-2.svg': hair2Url,
+  'hair-3.svg': hair3Url,
+  'hair-4.svg': hair4Url,
+  'hair-5.svg': hair5Url,
+  'hair-6.svg': hair6Url,
+  'hair-7.svg': hair7Url,
+  'hair-8.svg': hair8Url,
+};
+
+// Raw SVG strings for in-place recoloring (useColoredSvg) and direct
+// dangerouslySetInnerHTML render (AnimatedMascot body).
 export const SVG_DATA: Readonly<Record<MascotName, string>> = {
-  'pig-open.svg': pigOpen,
-  'pig-closed.svg': pigClosed,
-  'pig-open-dark.svg': pigOpenDark,
-  'pig-closed-dark.svg': pigClosedDark,
-  'bean-open.svg': beanOpen,
-  'bean-closed.svg': beanClosed,
-  'bean-open-dark.svg': beanOpenDark,
-  'bean-closed-dark.svg': beanClosedDark,
-  'big-soar-boar.svg': bigSoarBoar,
-  'big-pig-1.svg': bigPig1,
-  'big-pig-2.svg': bigPig2,
-  'pig-tt-open.svg': pigTtOpen,
-  'pig-tt-closed.svg': pigTtClosed,
-  'hair-1.svg': hair1,
-  'hair-2.svg': hair2,
-  'hair-3.svg': hair3,
-  'hair-4.svg': hair4,
-  'hair-5.svg': hair5,
-  'hair-6.svg': hair6,
-  'hair-7.svg': hair7,
-  'hair-8.svg': hair8,
+  'pig-open.svg': pigOpenRaw,
+  'pig-closed.svg': pigClosedRaw,
+  'pig-open-dark.svg': pigOpenDarkRaw,
+  'pig-closed-dark.svg': pigClosedDarkRaw,
+  'bean-open.svg': beanOpenRaw,
+  'bean-closed.svg': beanClosedRaw,
+  'bean-open-dark.svg': beanOpenDarkRaw,
+  'bean-closed-dark.svg': beanClosedDarkRaw,
+  'big-soar-boar.svg': bigSoarBoarRaw,
+  'big-pig-1.svg': bigPig1Raw,
+  'big-pig-2.svg': bigPig2Raw,
+  'pig-tt-open.svg': pigTtOpenRaw,
+  'pig-tt-closed.svg': pigTtClosedRaw,
+  'hair-1.svg': hair1Raw,
+  'hair-2.svg': hair2Raw,
+  'hair-3.svg': hair3Raw,
+  'hair-4.svg': hair4Raw,
+  'hair-5.svg': hair5Raw,
+  'hair-6.svg': hair6Raw,
+  'hair-7.svg': hair7Raw,
+  'hair-8.svg': hair8Raw,
 };

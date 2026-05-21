@@ -37,6 +37,11 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      // The project uses TypeScript for prop type safety once Phase 4
+      // converts components to .tsx. JSX components in phase 1b are
+      // minimal-edit ports of the legacy inline-script components,
+      // which never used PropTypes.
+      'react/prop-types': 'off',
     },
   },
   {
