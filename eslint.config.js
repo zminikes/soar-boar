@@ -71,5 +71,10 @@ export default tseslint.config(
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
     },
+    rules: {
+      // Tests need to wire concrete data + React into the pure modules
+      // they're exercising — the production boundary doesn't apply here.
+      'no-restricted-imports': 'off',
+    },
   },
 );
