@@ -1120,6 +1120,20 @@
       color: var(--accent);
       animation: fadeIn 280ms var(--ease-out);
     }
+    .signup-error {
+      font-family: var(--ff-sans);
+      font-size: 13px;
+      color: var(--accent);
+      margin-top: 10px;
+    }
+    .signup-honeypot {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
 
     /* ── Old (small) whimsy demo styles — kept for any leftover refs ── */
     .demo-section {

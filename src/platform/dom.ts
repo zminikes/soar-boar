@@ -12,5 +12,3 @@ export function getBestScore(modeId: string): number {
 export function setBestScore(modeId: string, score: number): void {
   localStorage.setItem(BEST_KEY(modeId), String(score));
 }
-
-export const SHARE_URL = 'soarboar.com';
