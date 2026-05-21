@@ -1,36 +1,19 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { SVG_DATA } from '../data/svgData';
-import { ColorOverrideContext, scopeSvgStyles } from '../game/svgUtils';
+import { ColorOverrideContext, useColoredBgActive, useIsDark } from '../game/appContext';
+import { scopeSvgStyles } from '../game/svgUtils';
 
 /* AnimatedMascot — two SVG frames cross-faded between "open" and "closed"
    when eyes are "closed" (random ambient blink OR hover). Hover also
    plays a single subtle bounce animation. All styles are scoped via
    scopeSvgStyles so multiple inline SVGs don't fight over class names. */
 export function AnimatedMascot({ size = 120, modeId = 'classic' }) {
-  const [isDark, setIsDark] = useState(
-    () => document.documentElement.dataset.theme === 'dark'
-  );
-  const [coloredBgActive, setColoredBgActive] = useState(
-    () => document.documentElement.dataset.expColoredBg === '1'
-  );
+  const isDark = useIsDark();
+  const coloredBgActive = useColoredBgActive();
   const [ambientBlink, setAmbientBlink] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isBouncing, setIsBouncing] = useState(false);
   const overrides = useContext(ColorOverrideContext);
-
-  useEffect(() => {
-    const check = () => {
-      setIsDark(document.documentElement.dataset.theme === 'dark');
-      setColoredBgActive(document.documentElement.dataset.expColoredBg === '1');
-    };
-    check();
-    const obs = new MutationObserver(check);
-    obs.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme', 'data-exp-colored-bg'],
-    });
-    return () => obs.disconnect();
-  }, []);
 
   // Ambient blink — random ~35% every 2.5s
   useEffect(() => {

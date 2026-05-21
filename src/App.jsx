@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ColorOverrideContext } from './game/svgUtils';
+import { ColoredBgContext, ColorOverrideContext, ThemeContext } from './game/appContext';
 import { StartScreen } from './components/StartScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { PlayScreen } from './components/PlayScreen';
@@ -91,28 +91,31 @@ export function App() {
     localStorage.setItem('colorOverrides', JSON.stringify(colorOverrides));
   }, [colorOverrides]);
 
+  // Derived theme state — also threaded into React Context so the mascot
+  // components don't have to set up their own MutationObservers on
+  // documentElement[data-theme] / [data-exp-colored-bg].
+  const isDark = debug.darkMode;
+  const coloredBgActive = !isDark && (screen === 'start' || screen === 'tutorial');
+
   useEffect(() => {
-    document.documentElement.dataset.theme = debug.darkMode ? 'dark' : '';
-    localStorage.setItem('darkMode', debug.darkMode);
+    document.documentElement.dataset.theme = isDark ? 'dark' : '';
+    localStorage.setItem('darkMode', String(isDark));
     // Keep browser chrome (status bar / address bar) in sync with app background.
     // Adjusted further below when coloredBg is on.
     const tc = document.querySelector('meta[name="theme-color"]');
-    if (tc) tc.setAttribute('content', debug.darkMode ? '#141413' : '#F8F1E5');
-  }, [debug.darkMode]);
+    if (tc) tc.setAttribute('content', isDark ? '#141413' : '#F8F1E5');
+  }, [isDark]);
 
   // Persist experiments + apply body-level classes that drive CSS variables.
   // Colored bg is intentionally scoped to the start screen only — game/end keep cream.
   useEffect(() => {
-    // Colored bg is now the canonical default — light-mode only,
-    // scoped to start + tutorial screens (game/end keep neutral cream).
-    const coloredBgActive = !debug.darkMode && (screen === 'start' || screen === 'tutorial');
     document.documentElement.dataset.expColoredBg = coloredBgActive ? '1' : '';
     document.documentElement.dataset.expMode = modeId;
     // Keep iOS status-bar color in sync with whatever bg is showing
     const tc = document.querySelector('meta[name="theme-color"]');
     if (tc) {
       // Dark mode always uses the neutral cream — colored bg is light-only.
-      if (debug.darkMode) {
+      if (isDark) {
         tc.setAttribute('content', '#141413');
       } else if (coloredBgActive) {
         tc.setAttribute('content',
@@ -124,9 +127,11 @@ export function App() {
         tc.setAttribute('content', '#F8F1E5');
       }
     }
-  }, [debug.darkMode, modeId, screen]);
+  }, [isDark, coloredBgActive, modeId]);
 
   return (
+    <ThemeContext.Provider value={isDark}>
+    <ColoredBgContext.Provider value={coloredBgActive}>
     <ColorOverrideContext.Provider value={colorOverrides}>
     <div className={modeId === 'soyboy' ? 'soyboy' : (modeId === 'thisthat' ? 'thisthat' : '')}>
       {screen === 'start' && (
@@ -194,5 +199,7 @@ export function App() {
       <BoilDefs />
     </div>
     </ColorOverrideContext.Provider>
+    </ColoredBgContext.Provider>
+    </ThemeContext.Provider>
   );
 }

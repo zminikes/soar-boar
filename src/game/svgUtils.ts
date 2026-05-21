@@ -1,13 +1,5 @@
-import { createContext, useMemo } from 'react';
+import { useMemo } from 'react';
 import { SVG_DATA, SVG_URLS, type MascotName } from '../data/svgData';
-
-// Provided by App, consumed by AnimatedMascot so the pig/bean SVG body
-// can be re-colored live from the floating color picker.
-export interface ColorOverrides {
-  body?: string;
-  hair?: string;
-}
-export const ColorOverrideContext = createContext<ColorOverrides>({});
 
 // Scopes an SVG's internal <style> rules to a wrapper class so multiple
 // inlined SVGs on the same page don't fight each other for the same

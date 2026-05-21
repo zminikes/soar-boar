@@ -1,16 +1,8 @@
-import { useEffect, useState } from 'react';
 import { SVG_URLS } from '../data/svgData';
+import { useIsDark } from '../game/appContext';
 
 export function MascotIcon({ size = 48, modeId = 'classic', className = '' }) {
-  const [isDark, setIsDark] = useState(() =>
-    document.documentElement.dataset.theme === 'dark'
-  );
-  useEffect(() => {
-    const check = () => setIsDark(document.documentElement.dataset.theme === 'dark');
-    const obs = new MutationObserver(check);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => obs.disconnect();
-  }, []);
+  const isDark = useIsDark();
   const dm  = isDark ? '-dark' : '';
   const src =
     modeId === 'soyboy'   ? `bean-open${dm}.svg` :
