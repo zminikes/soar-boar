@@ -3,12 +3,16 @@ Soar Boar — Word Pair Difficulty Calculator
 ============================================
 For the "This That" word-ladder mode: compute the difficulty of getting
 from every word A to every other word B in the 4- and 3-letter wordlists.
+The graph is undirected (A is one letter from B iff B is one letter from A),
+so difficulty is symmetric — each unordered pair is emitted once, with the
+alphabetically-smaller word in the `word_a` column. The level generator
+can pick either direction when building a level.
 
 Mechanics modeled:
   - At each step you change exactly one letter to form another valid word.
   - The wordlist defines the graph (nodes = words, edges = one-letter-different).
 
-Per (start, end) we compute three components:
+Per pair we compute three components:
   distance      — shortest path length (BFS hops)
   path_count    — number of distinct shortest paths
   avg_branching — mean degree of the nodes on the shortest-path DAG
@@ -25,7 +29,7 @@ different weights on the CLI once you've eyeballed the output.
 
 Output: one TSV per wordlist. Run once, then derive ranked levels from the TSV.
 
-Memory: peaks around 1 GB on the 4-letter run (all ~6.3M result rows are
+Memory: peaks around ~500 MB on the 4-letter run (~3.15M unordered pairs
 held in memory before sorting). Tractable on a dev laptop; if you run on
 a constrained box, do one wordlist at a time with --only.
 """
@@ -118,7 +122,9 @@ def compute(words: list[str], out_path: Path,
             print(f"  BFS {i + 1}/{n}  ({elapsed:.1f}s, {len(rows):,} pairs so far)")
         dist, paths, parents = bfs(s, adj)
         for e, d in dist.items():
-            if d == 0:
+            # Graph is undirected → difficulty is symmetric. Emit each
+            # unordered pair once, keyed by the alphabetically-smaller word.
+            if e <= s:
                 continue
             nodes = dag_nodes(e, parents)
             ab = sum(len(adj[v]) for v in nodes) / len(nodes)
@@ -135,15 +141,16 @@ def compute(words: list[str], out_path: Path,
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w") as f:
-        f.write("rank\tstart\tend\tdistance\tpath_count\tavg_branching\tdifficulty\n")
+        f.write("rank\tword_a\tword_b\tdistance\tpath_count\tavg_branching\tdifficulty\n")
         for rank, (score, d, pc, ab, s, e) in enumerate(rows, 1):
             f.write(f"{rank}\t{s}\t{e}\t{d}\t{pc}\t{ab:.3f}\t{score:.4f}\n")
 
     hist = Counter(r[1] for r in rows)
-    print(f"  distance histogram:")
+    print(f"  distance histogram (unordered pairs):")
     for d in sorted(hist):
         print(f"    {d:>2}: {hist[d]:>10,}")
-    unreachable = len(playable) * (len(playable) - 1) - len(rows)
+    total_unordered = len(playable) * (len(playable) - 1) // 2
+    unreachable = total_unordered - len(rows)
     print(f"  unreachable pairs (different components): {unreachable:,}")
     print(f"  wrote {len(rows):,} pairs → {out_path}  ({time.time() - t0:.1f}s)")
 
