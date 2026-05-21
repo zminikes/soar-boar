@@ -1,5 +1,5 @@
 import { MODE_CONFIGS } from '../lib/modes';
-import { diffPos } from '../game/helpers';
+import { diffPos } from '../lib/moves';
 
 export function ChainRows({ chain, maxHeight = 200, modeId = 'classic' }) {
   const cfg = MODE_CONFIGS[modeId];

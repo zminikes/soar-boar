@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { MODE_CONFIGS } from '../lib/modes';
-import { generateShareText } from '../game/helpers';
+import { generateShareText } from '../lib/share';
+import { SHARE_URL } from '../game/constants';
 import { getBestScore, setBestScore } from '../platform/dom';
 import { MascotIcon } from './MascotIcon';
 import { ChainRows } from './ChainRows';
@@ -44,7 +45,7 @@ export function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, mod
   }, [modeId]);
 
   const handleShare = useCallback(async () => {
-    const text = generateShareText(chain, score, modeId);
+    const text = generateShareText(chain, score, cfg, SHARE_URL);
     try {
       if (navigator.share) {
         await navigator.share({ text });
@@ -60,7 +61,7 @@ export function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, mod
         setTimeout(() => setCopied(false), 2500);
       } catch { /* clipboard unavailable */ }
     }
-  }, [chain, score, modeId]);
+  }, [chain, score, cfg]);
 
   return (
     <div className="stagger">
@@ -105,7 +106,7 @@ export function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, mod
             </div>
             {deadEnd && (
               <div className="dead-end-sub" style={{ fontSize: 13, textAlign: 'center', marginTop: 6 }}>
-                {`Hit a dead end ${modeId === 'soyboy' ? '🫛' : '🐷'}`}
+                {`Hit a dead end ${cfg.shareEmoji}`}
               </div>
             )}
           </>

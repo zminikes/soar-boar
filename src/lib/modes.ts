@@ -4,6 +4,8 @@
 // Data-bound lookups (getWords, getStarters, getPairs) live in
 // src/data/modeData.ts and consume MODE_CONFIGS for tutorial fallbacks.
 
+import type { ThisThatPair } from './types';
+
 export type ModeId = 'classic' | 'soyboy' | 'thisthat';
 
 export interface ModeConfig {
@@ -15,6 +17,8 @@ export interface ModeConfig {
   isLadder?: boolean;
   posPts: number[];
   posLabels: string[];
+  /** Emoji shown in share text and dead-end banner — bean for the soy mode, pig otherwise. */
+  shareEmoji: string;
   tutorialStart: string;
   tutorialTarget: string;
   tutorialWords: string[];
@@ -30,6 +34,7 @@ export const MODE_CONFIGS: Record<ModeId, ModeConfig> = {
     duration: 60,
     posPts: [1, 4, 3, 2],
     posLabels: ['1st', '2nd', '3rd', '4th'],
+    shareEmoji: '🐷',
     tutorialStart: 'SOAR',
     tutorialTarget: 'BOAR',
     tutorialWords: ['SOAR', 'BOAR', 'BEAR'],
@@ -43,6 +48,7 @@ export const MODE_CONFIGS: Record<ModeId, ModeConfig> = {
     duration: 45,
     posPts: [1, 3, 2],
     posLabels: ['1st', '2nd', '3rd'],
+    shareEmoji: '🫛',
     tutorialStart: 'SOY',
     tutorialTarget: 'BOY',
     tutorialWords: ['SOY', 'BOY', 'BAY'],
@@ -57,9 +63,21 @@ export const MODE_CONFIGS: Record<ModeId, ModeConfig> = {
     isLadder: true,
     posPts: [1, 4, 3, 2],
     posLabels: ['1st', '2nd', '3rd', '4th'],
+    shareEmoji: '🐷',
     tutorialStart: 'THIS',
     tutorialTarget: 'THAT',
     tutorialWords: ['THIS', 'THIN', 'THAN', 'THAT'],
     tutorialHints: ['Type THIN', 'Now type THAN', 'Now type THAT'],
   },
 };
+
+// Build a tutorial-fallback ThisThatPair from a mode config — used by
+// pickLadderPair when no real pairs are loaded for the mode.
+export function tutorialPair(mode: ModeConfig): ThisThatPair {
+  return {
+    start: mode.tutorialStart,
+    end: mode.tutorialTarget,
+    par: mode.tutorialWords.length - 1,
+    path: mode.tutorialWords,
+  };
+}
