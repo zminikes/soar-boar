@@ -1,21 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { SVG_DATA } from '../data/svgData';
 import { scopeSvgStyles } from '../game/svgUtils';
+import { useIsDark } from '../game/themeContext';
 
 export function FlyingPig() {
-  const [isDark, setIsDark] = useState(
-    () => document.documentElement.dataset.theme === 'dark'
-  );
-  useEffect(() => {
-    const check = () => setIsDark(document.documentElement.dataset.theme === 'dark');
-    check();
-    const obs = new MutationObserver(check);
-    obs.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    });
-    return () => obs.disconnect();
-  }, []);
+  const isDark = useIsDark();
 
   const svgMarkup = useMemo(() => {
     let raw = SVG_DATA['big-pig-1.svg'] || SVG_DATA['big-soar-boar.svg'] || '';
