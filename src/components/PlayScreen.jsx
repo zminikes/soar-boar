@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { MODE_CONFIGS } from '../lib/modes';
-import { getWords } from '../data/modeData';
+import { MODE_CONFIGS, tutorialPair } from '../lib/modes';
+import { getPairs, getStarters, getWords } from '../data/modeData';
 import { HEAD_START, MSG_DURATION } from '../game/constants';
-import { bfsPath, diffPos, getValidMoves, pickLadderPair, pickStarter } from '../game/helpers';
+import { bfsPath } from '../lib/bfs';
+import { diffPos, getValidMoves } from '../lib/moves';
+import { pickLadderPair, pickStarter } from '../lib/puzzle';
 import { isTouchDevice } from '../platform/dom';
 import { MascotIcon } from './MascotIcon';
 import { ChainRows } from './ChainRows';
@@ -87,7 +89,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
   useEffect(() => {
     let start, target = '', parVal = null;
     if (isLadder) {
-      const pair = pickLadderPair(modeId, puzzleSeed);
+      const pair = pickLadderPair(getPairs(modeId), tutorialPair(cfg), puzzleSeed);
       start  = pair.start;
       target = pair.end;
       parVal = pair.par;
@@ -95,7 +97,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
       setTargetWord(target);
       setPar(parVal);
     } else {
-      start = pickStarter(modeId, puzzleSeed);
+      start = pickStarter(getStarters(modeId), getWords(modeId), cfg.tutorialStart, puzzleSeed);
     }
     const s = new Set([start]);
     currentRef.current = start;

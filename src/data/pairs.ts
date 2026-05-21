@@ -1,9 +1,5 @@
-export interface ThisThatPair {
-  start: string;
-  end: string;
-  par: number;
-  path: string[];
-}
+import type { ThisThatPair } from '../lib/types';
+export type { ThisThatPair };
 
 export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
   {

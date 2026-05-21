@@ -2,7 +2,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { MODE_CONFIGS } from '../lib/modes';
 import { getWords } from '../data/modeData';
 import { MSG_DURATION } from '../game/constants';
-import { diffPos } from '../game/helpers';
+import { diffPos } from '../lib/moves';
 import { isTouchDevice } from '../platform/dom';
 import { Confetti } from './Confetti';
 import { Keyboard } from './Keyboard';

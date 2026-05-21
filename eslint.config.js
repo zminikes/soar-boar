@@ -45,7 +45,9 @@ export default tseslint.config(
     },
   },
   {
-    // RN-portable boundary: src/lib must not import React or DOM.
+    // RN-portable boundary: src/lib must not import React, DOM, or
+    // concrete data. Pure functions take data as parameters (decided
+    // in Phase 1.5 plan update, enforced here).
     files: ['src/lib/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [
@@ -58,6 +60,7 @@ export default tseslint.config(
           ],
           patterns: [
             { group: ['react/*', 'react-dom/*'], message: 'src/lib/ must be platform-agnostic.' },
+            { group: ['**/data/*', '../data/*', '../../data/*'], message: 'src/lib/ must not import concrete data — take it as a function parameter instead.' },
           ],
         },
       ],

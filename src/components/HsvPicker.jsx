@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { hexToHsv, hsvToHex } from '../game/colorMath';
+import { hexToHsv, hsvToHex } from '../lib/colorMath';
 
 /* Inline drag-to-pick color picker. 2D SL pad on top, hue slider below,
    hex input at the bottom. Pointer events with window-level capture
