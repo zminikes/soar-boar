@@ -19,10 +19,10 @@ export function pickStarter(
 
 export function pickLadderPair(
   pairs: readonly ThisThatPair[],
-  tutorialPair: ThisThatPair,
+  fallback: ThisThatPair,
   seed?: number,
 ): ThisThatPair {
-  if (!pairs.length) return tutorialPair;
+  if (!pairs.length) return fallback;
   const s = typeof seed === 'number' ? seed : Math.random();
   return pairs[Math.floor(s * pairs.length) % pairs.length];
 }

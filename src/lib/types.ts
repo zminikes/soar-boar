@@ -11,5 +11,4 @@ export interface ThisThatPair {
 export interface ChainEntry {
   word: string;
   pts?: number | null;
-  pos?: number | null;
 }

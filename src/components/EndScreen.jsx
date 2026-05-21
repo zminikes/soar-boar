@@ -106,7 +106,7 @@ export function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, mod
             </div>
             {deadEnd && (
               <div className="dead-end-sub" style={{ fontSize: 13, textAlign: 'center', marginTop: 6 }}>
-                {`Hit a dead end ${modeId === 'soyboy' ? '🫛' : '🐷'}`}
+                {`Hit a dead end ${cfg.shareEmoji}`}
               </div>
             )}
           </>

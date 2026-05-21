@@ -371,7 +371,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
 
       {deadEnd && (
         <div className="dead-end-banner">
-          <span style={{ fontSize: 20 }}>{modeId === 'soyboy' ? '🫛' : '🐷'}</span>
+          <span style={{ fontSize: 20 }}>{cfg.shareEmoji}</span>
           <div>
             <div className="dead-end-title" style={{ fontSize: 13, fontWeight: 800 }}>Dead end!</div>
             <div className="dead-end-sub" style={{ fontSize: 12, marginTop: 2 }}>
