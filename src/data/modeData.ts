@@ -23,7 +23,9 @@ const STARTERS: Record<ModeId, readonly string[]> = {
   thisthat: [], // pairs drive start words
 };
 
-const PAIRS: Partial<Record<ModeId, readonly ThisThatPair[]>> = {
+const PAIRS: Record<ModeId, readonly ThisThatPair[]> = {
+  classic: [],
+  soyboy: [],
   thisthat: THIS_THAT_PAIRS,
 };
 
@@ -36,5 +38,5 @@ export function getStarters(modeId: ModeId): readonly string[] {
 }
 
 export function getPairs(modeId: ModeId): readonly ThisThatPair[] {
-  return PAIRS[modeId] ?? [];
+  return PAIRS[modeId];
 }
