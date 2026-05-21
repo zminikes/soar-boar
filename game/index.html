@@ -1154,6 +1154,20 @@
       color: var(--accent);
       animation: fadeIn 280ms var(--ease-out);
     }
+    .signup-error {
+      font-family: var(--ff-sans);
+      font-size: 13px;
+      color: var(--accent);
+      margin-top: 10px;
+    }
+    .signup-honeypot {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
 
     /* ── Old (small) whimsy demo styles — kept for any leftover refs ── */
     .demo-section {
@@ -3706,17 +3720,39 @@ function FlyingPig() {
 }
 
 /* ── EmailSignup ──────────────────────────────────────── */
+// Public Apps Script Web App that appends signups to the "Soar Boar signups"
+// Google Sheet. Public-by-design URL; not a secret. See NEWSLETTER_PLAN.md
+// for the one-time deploy steps.
+const APPS_SCRIPT_URL = '';
+
 function EmailSignup() {
   const [email, setEmail] = useState('');
-  const [done, setDone] = useState(false);
-  const submit = (e) => {
+  const [website, setWebsite] = useState('');
+  const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'done' | 'error'
+
+  const submit = async (e) => {
     e.preventDefault();
+    if (status === 'submitting') return;
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return;
-    // No backend — just acknowledge.
-    setDone(true);
+
+    setStatus('submitting');
+    try {
+      if (!APPS_SCRIPT_URL) throw new Error('APPS_SCRIPT_URL is not configured');
+      // text/plain avoids the CORS preflight that Apps Script Web Apps
+      // don't handle — see NEWSLETTER_PLAN.md.
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ email, source: 'homepage', website }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setStatus('done');
+    } catch (err) {
+      setStatus('error');
+    }
   };
 
-  if (done) {
+  if (status === 'done') {
     return (
       <div className="signup-section">
         <div className="signup-success">You’re on the list. See you Saturday. 🐷</div>
@@ -3735,9 +3771,27 @@ function EmailSignup() {
           onChange={(e) => setEmail(e.target.value)}
           aria-label="Email address"
           required
+          disabled={status === 'submitting'}
         />
-        <button type="submit">Sign up →</button>
+        <input
+          type="text"
+          name="website"
+          className="signup-honeypot"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+          aria-hidden="true"
+        />
+        <button type="submit" disabled={status === 'submitting'}>
+          {status === 'submitting' ? 'Signing up…' : 'Sign up →'}
+        </button>
       </form>
+      {status === 'error' && (
+        <div className="signup-error" role="alert">
+          Something went wrong. Try again?
+        </div>
+      )}
     </div>
   );
 }
