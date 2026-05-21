@@ -42,9 +42,6 @@ export default tseslint.config(
       // minimal-edit ports of the legacy inline-script components,
       // which never used PropTypes.
       'react/prop-types': 'off',
-      // Pedantic; the original source uses bare apostrophes/quotes in JSX
-      // content and they render fine. Components stay minimal-edit ports.
-      'react/no-unescaped-entities': 'off',
     },
   },
   {

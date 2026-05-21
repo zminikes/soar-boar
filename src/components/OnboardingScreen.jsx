@@ -192,7 +192,7 @@ export function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'clas
             <Confetti />
             <div className="onboard-success">
               <div className="onboard-success-emoji">🎉</div>
-              <div className="onboard-success-title">You've got it!</div>
+              <div className="onboard-success-title">You’ve got it!</div>
               <div className="onboard-success-sub">
                 {isLadder
                   ? <>You reached <strong>{cfg.tutorialTarget}</strong> in {completedSteps.length} move{completedSteps.length !== 1 ? 's' : ''}. The real puzzles are tougher — try to find the shortest path.</>
@@ -201,7 +201,7 @@ export function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'clas
             </div>
             <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button className="btn btn-primary btn-full" onClick={onDone}>
-                Let's play!
+                Let’s play!
               </button>
               {!isLadder && (
                 <button className="btn btn-ghost btn-full" onClick={onDoneForever}>
