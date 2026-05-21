@@ -19,10 +19,15 @@ Composite score (sorted ascending = easiest → hardest):
         + PATH_WEIGHT   * (1 / log2(path_count + 1))   # fewer paths → bigger penalty
         + BRANCH_WEIGHT * (1 / avg_branching)          # tighter corridor → bigger penalty
 
-Distance dominates by design; path_count and branching break ties.
-Weights are tunable on the CLI so you can re-rank without recomputing the graph.
+Default weights (10 / 1 / 2) are starter values tuned by feel — distance
+dominates, path_count and branching break ties. Re-rank by passing
+different weights on the CLI once you've eyeballed the output.
 
 Output: one TSV per wordlist. Run once, then derive ranked levels from the TSV.
+
+Memory: peaks around 1 GB on the 4-letter run (all ~6.3M result rows are
+held in memory before sorting). Tractable on a dev laptop; if you run on
+a constrained box, do one wordlist at a time with --only.
 """
 
 import argparse
@@ -56,7 +61,7 @@ def build_graph(words: list[str]) -> dict[str, list[str]]:
             continue
         for w in bucket:
             for v in bucket:
-                if v is not w:
+                if v != w:
                     adj[w].append(v)
     return adj
 
@@ -84,7 +89,7 @@ def bfs(start: str, adj: dict[str, list[str]]):
     return dist, paths, parents
 
 
-def dag_nodes(end: str, parents: dict[str, list[str]]) -> list[str]:
+def dag_nodes(end: str, parents: dict[str, list[str]]) -> set[str]:
     """All nodes on any shortest path from start (implicit) to end."""
     seen = {end}
     stack = [end]
@@ -94,7 +99,7 @@ def dag_nodes(end: str, parents: dict[str, list[str]]) -> list[str]:
             if u not in seen:
                 seen.add(u)
                 stack.append(u)
-    return list(seen)
+    return seen
 
 
 def compute(words: list[str], out_path: Path,
@@ -154,12 +159,12 @@ def main():
     ap.add_argument("--only", choices=["3", "4"], help="only process one wordlist")
     args = ap.parse_args()
 
-    if args.only != "4":
+    if args.only in (None, "3"):
         print("3-letter wordlist:")
         compute(load_wordlist(GAME_DIR / "wordlist3.js"),
                 args.out_dir / "pairs_3.tsv",
                 args.dist_weight, args.path_weight, args.branch_weight)
-    if args.only != "3":
+    if args.only in (None, "4"):
         print("4-letter wordlist:")
         compute(load_wordlist(GAME_DIR / "wordlist.js"),
                 args.out_dir / "pairs_4.tsv",
