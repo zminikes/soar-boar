@@ -25,3 +25,6 @@ coverage/
 .env
 .env.local
 .env.*.local
+
+# Generated word-pair difficulty data (regenerate via scripts/word_pair_difficulty.py)
+scripts/output/

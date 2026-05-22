@@ -36,15 +36,15 @@
 
     :root {
       --cream:      #F8F1E5;
-      --orange:     #F88065;
-      --pink:       rgba(248,128,101,0.12);
+      --orange:     #D46247;
+      --pink:       rgba(212,98,71,0.12);
       --white:      #FFFFFF;
       --dark:       #0A0A0A;
       --muted:      #737373;
       --border:     rgba(0,0,0,0.08);
       --error:      #C0392B;
       --ok:         #27AE60;
-      --pos1:       #F88065;
+      --pos1:       #D46247;
       --pos2:       #9B59B6;
       --pos3:       #2E86C1;
       --pos4:       #27AE60;
@@ -54,13 +54,13 @@
       /* Brand "deep" colors — pig SVG fill, bean SVG fill, and the
          wordmark accent are all driven by these tokens so they
          can't drift apart. */
-      --deep-peach: #F88065;
-      --deep-sage:  #27885E;
-      --deep-blue:  #59a1d8;
+      --deep-peach: #D46247;
+      --deep-sage:  #247D57;
+      --deep-blue:  #2e83c5;
       --accent:     var(--deep-peach);
       /* Per-mode accent-soft — set on the mode class so tutorial highlights
          and chain pills always match the active hue, even without coloredBg. */
-      --accent-soft: rgba(248,128,101,0.30);
+      --accent-soft: rgba(212,98,71,0.30);
       /* Tutorial highlights inherit the mode accent so the ↓ arrow and the
          changed-ok pill stay on-brand across all modes. */
       --tutorial-accent:      var(--accent);
@@ -99,6 +99,17 @@
       display: block;
       position: relative;
       cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+    /* Prevent the wordmark + tag from getting highlighted when
+       the user rapidly taps the mascot above. */
+    .simple-wordmark,
+    .simple-tag {
+      -webkit-user-select: none;
+      user-select: none;
     }
     .animated-mascot .frame { display: block; }
     /* Instant frame swap — no transition, no overlap.
@@ -268,9 +279,9 @@
     .shake { animation: shake 240ms ease; }
 
     /* ── Soy Boy green theme ─────────────────────────────── */
-    .soyboy   { --orange: #27885E; --accent: var(--deep-sage); --accent-soft: rgba(39,136,94,0.22);  --pink: rgba(39,136,94,0.12); }
+    .soyboy   { --orange: #247D57; --accent: var(--deep-sage); --accent-soft: rgba(36,125,87,0.22);  --pink: rgba(36,125,87,0.12); }
     /* ── This That blue theme ────────────────────────────── */
-    .thisthat { --orange: #59a1d8; --accent: var(--deep-blue); --accent-soft: rgba(89,161,216,0.26); --pink: rgba(89,161,216,0.14); }
+    .thisthat { --orange: #2e83c5; --accent: var(--deep-blue); --accent-soft: rgba(46,131,197,0.26); --pink: rgba(46,131,197,0.14); }
 
     /* ── Design experiments — driven by data attrs on <html> ── */
 
@@ -278,25 +289,25 @@
        data-exp-colored-bg is only set when the start screen is active —
        game/end screens always render on cream. */
     :root[data-exp-colored-bg="1"][data-exp-mode="classic"] {
-      --cream: #F7F1E6;             /* warm neutral cream */
+      --cream: #FFE2C7;             /* peach */
       --muted: rgba(0,0,0,0.62);
       --border: rgba(0,0,0,0.16);
       --accent: var(--deep-peach);
-      --accent-soft: rgba(248,128,101,0.22);
+      --accent-soft: rgba(212,98,71,0.22);
     }
     :root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]  {
       --cream: #B7D197;             /* picked sage */
       --muted: rgba(0,0,0,0.62);
       --border: rgba(0,0,0,0.16);
       --accent: var(--deep-sage);
-      --accent-soft: rgba(39,136,94,0.14);
+      --accent-soft: rgba(36,125,87,0.14);
     }
     :root[data-exp-colored-bg="1"][data-exp-mode="thisthat"] {
-      --cream: #CCE1F2;             /* soft sky blue, derived from #59a1d8 */
+      --cream: #CCE1F2;             /* soft sky blue, derived from #2e83c5 */
       --muted: rgba(0,0,0,0.62);
       --border: rgba(0,0,0,0.16);
       --accent: var(--deep-blue);
-      --accent-soft: rgba(89,161,216,0.16);
+      --accent-soft: rgba(46,131,197,0.16);
     }
     /* Dark mode intentionally does NOT apply the colored bg —
        sticks with the neutral near-black cream for a calmer feel.
@@ -309,8 +320,8 @@
        Higher opacity = cleaner cream-on-color, less muddy mix. */
     :root[data-exp-colored-bg="1"] .info-card,
     :root[data-exp-colored-bg="1"] .mode-pill {
-      background: rgba(255,251,246,0.74);
-      border-color: rgba(0,0,0,0.10);
+      background: #FFFCF7;             /* warm near-white surface across all modes */
+      border-color: rgba(0,0,0,0.08);
       color: var(--dark);
     }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .info-card,
@@ -417,13 +428,9 @@
     :root[data-theme="dark"] .mode-segmented { background: rgba(255,255,255,0.08); }
     :root[data-theme="dark"] .seg-tab.active { background: var(--dark); color: var(--cream); }
     :root[data-theme="dark"] .seg-tab:not(.active) { color: var(--muted); }
-    :root[data-exp-colored-bg="1"] .mode-segmented { background: rgba(255,251,246,0.68); }
+    :root[data-exp-colored-bg="1"] .mode-segmented { background: #FFFCF7; }
     :root[data-exp-colored-bg="1"] .seg-tab.active { background: #1A1918; color: #fff; }
     :root[data-exp-colored-bg="1"] .seg-tab:not(.active) { color: rgba(0,0,0,0.62); }
-    /* Soar Boar light mode — flat warm-beige container instead of cream overlay */
-    :root[data-exp-colored-bg="1"][data-exp-mode="classic"]:not([data-theme="dark"]) .mode-segmented {
-      background: #EAE3D5;
-    }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .mode-segmented { background: rgba(0,0,0,0.32); }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .seg-tab.active { background: #F5F3F0; color: #1A1918; }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .seg-tab:not(.active) { color: rgba(255,255,255,0.72); }
@@ -436,17 +443,17 @@
     }
     .simple-wordmark {
       font-family: var(--ff-serif);
-      font-size: 56px;
+      font-size: 68px;
       font-weight: 600;
       letter-spacing: 0;
       line-height: 1;
       text-align: center;
-      margin-top: 4px;
+      margin-top: -8px;
       /* Instrument Serif only ships at weight 400 — iOS Safari skips bold
          synthesis, so add a tiny stroke to keep the wordmark feeling weighty
          and consistent across desktop / mobile. */
       font-synthesis: weight style;
-      -webkit-text-stroke: 0.5px currentColor;
+      -webkit-text-stroke: 0.3px currentColor;
     }
     .simple-wordmark .accent {
       color: var(--accent);
@@ -506,7 +513,7 @@
       opacity: 0.7;
     }
     @media (min-width: 640px) {
-      .simple-wordmark { font-size: 80px; }
+      .simple-wordmark { font-size: 96px; }
       .simple-tag { font-size: 20px; }
     }
 
@@ -641,6 +648,64 @@
       font-size: 11px; font-weight: 600;
       letter-spacing: -0.02em;
     }
+
+    /* WCAG contrast checker — shows ratio + level for current mode */
+    .cp-contrast {
+      display: flex; flex-direction: column;
+      gap: 4px;
+      padding: 10px;
+      background: rgba(0,0,0,0.03);
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+    :root[data-theme="dark"] .cp-contrast { background: rgba(255,255,255,0.04); }
+    .cp-contrast-title {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      opacity: 0.55;
+      margin-bottom: 2px;
+    }
+    .cp-contrast-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cp-contrast-preview {
+      width: 26px; height: 22px;
+      border-radius: 5px;
+      display: grid; place-items: center;
+      font-family: var(--ff-serif);
+      font-weight: 600;
+      font-size: 13px;
+      line-height: 1;
+      flex-shrink: 0;
+      border: 1px solid rgba(0,0,0,0.10);
+    }
+    .cp-contrast-label {
+      font-size: 11px; font-weight: 600;
+      opacity: 0.72;
+      flex: 1;
+      min-width: 0;
+    }
+    .cp-contrast-ratio {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .cp-contrast-badge {
+      font-size: 9px; font-weight: 800;
+      letter-spacing: 0.06em;
+      padding: 2px 6px;
+      border-radius: 999px;
+      min-width: 32px;
+      text-align: center;
+    }
+    .cp-contrast-badge.aaa  { background: rgba(39,174,96,0.16);  color: #1E7E3E; }
+    .cp-contrast-badge.aa   { background: rgba(39,174,96,0.12);  color: #2E8A50; }
+    .cp-contrast-badge.large{ background: rgba(212,148,33,0.18); color: #9A6B0F; min-width: 52px; }
+    .cp-contrast-badge.fail { background: rgba(192,57,43,0.16);  color: #B53A2B; }
+    :root[data-theme="dark"] .cp-contrast-badge.aaa   { color: #5DCB85; }
+    :root[data-theme="dark"] .cp-contrast-badge.aa    { color: #6AD494; }
+    :root[data-theme="dark"] .cp-contrast-badge.large { color: #E5B860; }
+    :root[data-theme="dark"] .cp-contrast-badge.fail  { color: #E07567; }
 
     /* HSV picker — drag-to-pick SL pad + hue slider + hex input */
     .hsv-pad {
@@ -810,7 +875,7 @@
     }
     :root[data-theme="dark"] .big-demo-tile { border-color: rgba(255,255,255,0.18); }
     .big-demo-tile.changed {
-      background: var(--accent-soft, rgba(248,128,101,0.16));
+      background: var(--accent-soft, rgba(212,98,71,0.16));
       border-color: var(--accent);
       color: var(--accent);
       animation: bigTileSnap 700ms var(--ease-spring);
@@ -973,6 +1038,11 @@
       margin: 0 auto;
       width: min(96vw, 880px);
       animation: pigSail 5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
     }
     .flying-pig svg {
       width: 100%; height: auto; display: block;
@@ -1381,11 +1451,26 @@
     }
 
     /* Dark pill primary used in simple landing */
-    .btn-dark { background: #1A1918; color: #fff; }
-    .btn-dark:hover { filter: brightness(1.18); }
-    .btn-dark:active { filter: brightness(0.95); }
+    .btn-dark {
+      background: #1A1918; color: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .btn-dark:hover {
+      filter: brightness(1.5);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.22);
+    }
+    .btn-dark:active {
+      filter: brightness(0.95);
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
     :root[data-theme="dark"] .btn-dark { background: #F5F3F0; color: #1A1918; }
-    :root[data-theme="dark"] .btn-dark:hover { filter: brightness(0.94); }
+    :root[data-theme="dark"] .btn-dark:hover {
+      filter: brightness(0.94);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.4);
+    }
 
     /* ── Root ────────────────────────────────────────────── */
     #root {
@@ -1510,7 +1595,7 @@
     .timer-label { font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: 0.01em; }
     .timer-secs  { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
     .timer-secs.urgent { color: var(--error); }
-    .timer-track { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+    .timer-track { height: 6px; background: rgba(0,0,0,0.18); border-radius: 999px; overflow: hidden; }
     .timer-fill {
       height: 100%;
       border-radius: 999px;
@@ -1531,31 +1616,44 @@
       width: 64px;
       height: 64px;
       border-radius: 16px;
-      border: 1.5px solid rgba(0,0,0,0.18); /* thinner + higher contrast for a contemporary feel */
-      background: var(--white);
+      border: none;
+      background: var(--accent);     /* filled tiles wear the mode accent */
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 28px;
       font-weight: 800;
-      color: var(--dark);
+      color: var(--white);
       user-select: none;
-      transition: border-color 100ms, background 100ms, color 100ms;
+      transition: background 120ms, color 120ms, box-shadow 120ms;
     }
-    .tile.cursor { border-color: var(--dark); }
+    /* next word — filled tiles are white with dark text (active typing area) */
+    .tile.next {
+      background: var(--white);
+      color: var(--dark);
+    }
+    /* empty slots — white pill, no letter */
+    .tile:empty {
+      background: var(--white);
+      color: transparent;
+    }
+    /* cursor — active empty slot gets an inset accent ring */
+    .tile.cursor:empty {
+      background: var(--white);
+      box-shadow: inset 0 0 0 2px var(--accent);
+    }
     .tile.accept { animation: tileAccept 280ms var(--ease-spring) both; }
     .tile.success-anim { animation: tileSuccess 500ms var(--ease-spring) both; }
-    /* wrong: too many letters changed */
+    /* wrong: too many letters changed — solid red fill */
     .tile.wrong {
-      border-color: var(--error);
-      background: #FEF0EE;
-      color: var(--error);
+      background: var(--error);
+      color: var(--white);
     }
-    /* success highlight on onboarding */
+    /* success highlight on onboarding — keep accent fill, add ring */
     .tile.changed-ok {
-      border-color: var(--tutorial-accent);
-      background: var(--tutorial-accent-bg);
-      color: var(--tutorial-accent);
+      background: var(--tutorial-accent);
+      color: var(--white);
+      box-shadow: 0 0 0 3px var(--tutorial-accent-soft);
     }
     /* Tutorial highlights inherit --accent/--accent-soft from the mode class,
        so no separate override needed here. */
@@ -1729,22 +1827,24 @@
       width: 100%;
       background: linear-gradient(135deg, var(--orange), #F9B68A);
       color: #fff;
-      padding: 14px 20px;
+      padding: 15px 24px;
       border-radius: 999px;
       border: none;
       font-family: var(--ff-sans);
-      font-weight: 800;
-      font-size: 14px;
-      letter-spacing: 0.04em;
+      font-weight: 600;
+      font-size: 17px;
+      letter-spacing: 0;
+      line-height: 1;
       text-align: center;
       margin-top: 14px;
+      min-height: 48px;
       cursor: pointer;
       touch-action: manipulation;
       transition: transform 120ms var(--ease-out), filter 150ms var(--ease-out), box-shadow 200ms var(--ease-out);
       box-shadow: 0 1px 0 rgba(0,0,0,0.04);
       animation: fadeIn 400ms var(--ease-out);
     }
-    .new-best-banner:hover  { filter: brightness(1.05); box-shadow: 0 6px 18px -8px rgba(248,128,101,0.55); }
+    .new-best-banner:hover  { filter: brightness(1.05); box-shadow: 0 6px 18px -8px rgba(212,98,71,0.55); }
     .new-best-banner:active { transform: scale(0.98); }
     .burst-emoji {
       position: absolute;
@@ -2102,8 +2202,8 @@
     .info-num {
       width: 26px; height: 26px;
       border-radius: 50%;
-      background: rgba(248,128,101,0.14);
-      color: #F88065;
+      background: rgba(212,98,71,0.14);
+      color: #D46247;
       font-size: 13px; font-weight: 700;
       display: inline-flex; align-items: center; justify-content: center;
       flex-shrink: 0;
@@ -2146,7 +2246,7 @@
     }
 
     /* ── Theme transitions ───────────────────────────────── */
-    body,
+    body, #root, .big-demo, .kb,
     .card, .info-card, .dead-end-banner, kbd,
     .chain-tile, .chain-tile.changed,
     .score-badge, .timer-track {
@@ -2176,7 +2276,7 @@
     :root[data-theme="dark"] .tile { border-color: rgba(255,255,255,0.18); }
     :root[data-theme="dark"] .tile.wrong { background: #3A1A16; }
     /* Boost accent-soft alpha on dark bg so highlights stay visible */
-    :root[data-theme="dark"]            { --accent-soft: rgba(248,128,101,0.22); }
+    :root[data-theme="dark"]            { --accent-soft: rgba(212,98,71,0.22); }
     :root[data-theme="dark"] .soyboy    { --accent-soft: rgba(88,187,139,0.22); }
     :root[data-theme="dark"] .thisthat  { --accent-soft: rgba(143,182,224,0.22); }
     :root[data-theme="dark"] .dead-end-banner { background: #252010; border-color: #5A4A18; color: #D4B860; }
@@ -2203,27 +2303,41 @@
     }
     .kb-row {
       display: flex;
-      gap: 4px;
+      gap: 3px;
       justify-content: center;
       max-width: 500px;
       margin: 0 auto;
       width: 100%;
     }
+    /* Visually indent the middle row by ~half a key, like a standard
+       phone keyboard. */
+    .kb-row:nth-child(2) {
+      padding: 0 5%;
+    }
     .kb-key {
+      position: relative;
       flex: 1 1 0;
       min-width: 0;
-      height: 58px;
+      height: 62px;
       border: none;
       border-radius: 8px;
       background: var(--white);
       color: var(--dark);
       font-family: var(--ff-sans);
-      font-size: 19px;
+      font-size: 22px;
       font-weight: 700;
       cursor: pointer;
       touch-action: manipulation;
       box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-      transition: transform 80ms ease, background 80ms ease, color 80ms ease;
+      transition: transform 30ms ease, background 30ms ease, color 30ms ease;
+    }
+    /* Invisible hit-area extension — claims the gaps between keys so taps
+       that land slightly off-center still register on the intended key. */
+    .kb-key::after {
+      content: '';
+      position: absolute;
+      top: -4px; bottom: -4px;
+      left: -2px; right: -2px;
     }
     .kb-key:active {
       background: var(--orange);
@@ -2235,12 +2349,29 @@
       font-size: 13px;
       letter-spacing: 0.05em;
     }
+    /* Bigger backspace glyph — easier to read than the default 13px. */
+    .kb-key.backspace {
+      font-size: 24px;
+      letter-spacing: 0;
+    }
     :root[data-theme="dark"] .kb { background: var(--cream); border-top-color: rgba(255,255,255,0.10); }
     :root[data-theme="dark"] .kb-key { background: #2A2826; color: var(--dark); box-shadow: none; }
     /* Reserve space below content ONLY when the on-screen keyboard is mounted.
-       Using :has() so the start/end screens don't get a phantom 230px gap. */
+       Also lock the viewport from scrolling while playing — on Safari mobile
+       the page would otherwise rubber-band / scroll, even though all the
+       content fits. The :has(.kb) selector keeps this scoped to playing. */
     @media (hover: none) and (pointer: coarse) {
-      body:has(.kb) { padding-bottom: 230px; }
+      html:has(.kb),
+      body:has(.kb) {
+        overflow: hidden;
+        overscroll-behavior: none;
+        height: 100%;
+        height: 100dvh;
+        touch-action: pan-y; /* still allow inner scroll containers */
+      }
+      body:has(.kb) {
+        padding-bottom: 230px;
+      }
     }
 
     /* ── Mobile polish ───────────────────────────────────── */
@@ -2599,7 +2730,7 @@ function ChainRows({ chain, maxHeight = 200, modeId = 'classic' }) {
               <div key={j} className={`chain-tile${diffs.includes(j) ? ' changed' : ''}`}>{l}</div>
             ))}
             {entry.pts != null && (
-              <span className="chain-pts">+{entry.pts} · {prev && diffs.length === 1 && cfg.posLabels[diffs[0]]} letter</span>
+              <span className="chain-pts">+{entry.pts}</span>
             )}
           </div>
         );
@@ -2645,23 +2776,51 @@ const KB_ROWS = [
 function Keyboard({ onKey, visible = true }) {
   if (!isTouchDevice || !visible) return null;
   const dispatch = (k) => {
-    if (k === 'ENTER')      onKey('Enter');
-    else if (k === '⌫')      onKey('Backspace');
-    else                     onKey(k);
+    if (k === 'ENTER') onKey('Enter');
+    else if (k === '⌫') onKey('Backspace');
+    else                onKey(k);
+  };
+  const classFor = (k) => {
+    if (k === 'ENTER') return 'kb-key wide';
+    if (k === '⌫')     return 'kb-key wide backspace';
+    return 'kb-key';
+  };
+  // Long-press backspace to repeat-delete. 350ms initial hold, then
+  // fires every 70ms until release.
+  const bsHoldTimer = useRef(null);
+  const bsRepeatInterval = useRef(null);
+  const startBackspaceRepeat = () => {
+    bsHoldTimer.current = setTimeout(() => {
+      bsRepeatInterval.current = setInterval(() => onKey('Backspace'), 70);
+    }, 350);
+  };
+  const stopBackspaceRepeat = () => {
+    if (bsHoldTimer.current) { clearTimeout(bsHoldTimer.current); bsHoldTimer.current = null; }
+    if (bsRepeatInterval.current) { clearInterval(bsRepeatInterval.current); bsRepeatInterval.current = null; }
   };
   return (
     <div className="kb" role="group" aria-label="On-screen keyboard">
       {KB_ROWS.map((row, ri) => (
         <div key={ri} className="kb-row">
-          {row.map(k => (
-            <button
-              key={k}
-              type="button"
-              className={`kb-key${k === 'ENTER' || k === '⌫' ? ' wide' : ''}`}
-              onPointerDown={e => { e.preventDefault(); dispatch(k); }}
-              aria-label={k === '⌫' ? 'Backspace' : k === 'ENTER' ? 'Enter' : k}
-            >{k}</button>
-          ))}
+          {row.map(k => {
+            const isBackspace = k === '⌫';
+            return (
+              <button
+                key={k}
+                type="button"
+                className={classFor(k)}
+                onPointerDown={e => {
+                  e.preventDefault();
+                  dispatch(k);
+                  if (isBackspace) startBackspaceRepeat();
+                }}
+                onPointerUp={isBackspace ? stopBackspaceRepeat : undefined}
+                onPointerCancel={isBackspace ? stopBackspaceRepeat : undefined}
+                onPointerLeave={isBackspace ? stopBackspaceRepeat : undefined}
+                aria-label={k === '⌫' ? 'Backspace' : k === 'ENTER' ? 'Enter' : k}
+              >{k}</button>
+            );
+          })}
         </div>
       ))}
     </div>
@@ -2880,6 +3039,158 @@ function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'classic' })
     </div>
   );
 }
+/* ── Mascot sound effects ─────────────────────────────── */
+/* Tiny synthesized blips via Web Audio. One AudioContext is lazily
+   created on first call (browsers block audio before user gesture).
+   Each mode has its own short profile so clicks feel distinct. */
+let _mascotAudioCtx = null;
+function getMascotAudioCtx() {
+  if (typeof window === 'undefined') return null;
+  if (!_mascotAudioCtx) {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      _mascotAudioCtx = new Ctx();
+    } catch (e) { return null; }
+  }
+  if (_mascotAudioCtx.state === 'suspended') {
+    _mascotAudioCtx.resume().catch(() => {});
+  }
+  return _mascotAudioCtx;
+}
+function playMascotSound(modeId) {
+  const ctx = getMascotAudioCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  if (modeId === 'soyboy') {
+    // Bean's squeaky non-verbal "hello" — two playful syllables (hel-lo)
+    // with a rising-falling-rising pitch and a brief envelope dip in the middle.
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 2600;
+    osc.type = 'triangle';
+    osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    // Syllable 1 "hel": rising
+    osc.frequency.setValueAtTime(560, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.09);
+    // Syllable 2 "lo": dip then up again
+    osc.frequency.exponentialRampToValueAtTime(700, now + 0.16);
+    osc.frequency.exponentialRampToValueAtTime(960, now + 0.28);
+    // Two-bump envelope so it reads as two syllables
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.014);
+    gain.gain.exponentialRampToValueAtTime(0.04, now + 0.11);
+    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.16);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+    osc.start(now); osc.stop(now + 0.34);
+
+  } else if (modeId === 'thisthat') {
+    // Squiggly slide-whistle with vibrato — pitch wobbles up-down-up-down,
+    // an LFO adds fine vibrato on top for that "squiggly line" quality.
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.connect(gain); gain.connect(ctx.destination);
+    // Wiggly pitch path
+    osc.frequency.setValueAtTime(420, now);
+    osc.frequency.exponentialRampToValueAtTime(760, now + 0.07);
+    osc.frequency.exponentialRampToValueAtTime(340, now + 0.15);
+    osc.frequency.exponentialRampToValueAtTime(680, now + 0.23);
+    osc.frequency.exponentialRampToValueAtTime(400, now + 0.32);
+    // Vibrato on top
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    lfo.frequency.value = 16;
+    lfoGain.gain.value = 28;
+    lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.16, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    osc.start(now);  osc.stop(now + 0.36);
+    lfo.start(now);  lfo.stop(now + 0.36);
+
+  } else {
+    // Pig oink — two-syllable "uh-OINK" with sawtooth body + lowpass for
+    // a buzzy, nasal grunt. Filter sweep opens up on the main hit so it
+    // pops, then closes back down for that snorty tail.
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.Q.value = 4;
+    filter.frequency.setValueAtTime(700, now);
+    filter.frequency.exponentialRampToValueAtTime(1800, now + 0.10);
+    filter.frequency.exponentialRampToValueAtTime(900, now + 0.26);
+    osc.type = 'sawtooth';
+    osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    // "uh" (short low) → gap → "OINK" (rising peak, settle)
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(190, now + 0.05);
+    osc.frequency.exponentialRampToValueAtTime(270, now + 0.13);
+    osc.frequency.exponentialRampToValueAtTime(220, now + 0.26);
+    // Envelope: short grunt, dip, main hit, decay
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.16, now + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.03, now + 0.07);
+    gain.gain.exponentialRampToValueAtTime(0.22, now + 0.11);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+    osc.start(now); osc.stop(now + 0.30);
+  }
+}
+
+/* Celebration sounds — ascending fanfare for personal-best,
+   sparkle chime for ladder shortest-path solves. */
+function playCelebrationSound(kind) {
+  const ctx = getMascotAudioCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  if (kind === 'shortest') {
+    // Magical sparkle — four ascending notes with an octave shimmer
+    const notes = [784, 988, 1175, 1568]; // G5, B5, D6, G6
+    notes.forEach((freq, i) => {
+      const t = now + i * 0.075;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.13, t + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+      osc.start(t); osc.stop(t + 0.4);
+      // Octave shimmer
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.frequency.value = freq * 2;
+      gain2.gain.setValueAtTime(0.0001, t);
+      gain2.gain.exponentialRampToValueAtTime(0.05, t + 0.012);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, t + 0.30);
+      osc2.start(t); osc2.stop(t + 0.35);
+    });
+  } else {
+    // Personal best — warm ascending fanfare (C major arpeggio)
+    const notes = [523, 659, 784, 1046]; // C5, E5, G5, C6
+    notes.forEach((freq, i) => {
+      const t = now + i * 0.08;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.16, t + 0.014);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+      osc.start(t); osc.stop(t + 0.32);
+    });
+  }
+}
+
 /* ── AnimatedMascot ───────────────────────────────────── */
 /* Renders open + closed SVG frames stacked. The closed frame fades in
    when eyes are "closed" (random ambient blink OR hover). Hover also
@@ -2922,12 +3233,36 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
     return () => clearInterval(id);
   }, []);
 
+  // Reusable bounce trigger that always restarts the animation cleanly,
+  // even if the mascot is already mid-bounce. Toggles off, waits one frame
+  // for React to commit, then toggles on so the CSS keyframes restart.
+  const bounceTimer1Ref = useRef(null);
+  const bounceTimer2Ref = useRef(null);
+  const triggerBounce = useCallback(() => {
+    if (bounceTimer1Ref.current) clearTimeout(bounceTimer1Ref.current);
+    if (bounceTimer2Ref.current) clearTimeout(bounceTimer2Ref.current);
+    setIsBouncing(false);
+    bounceTimer1Ref.current = setTimeout(() => {
+      setIsBouncing(true);
+      bounceTimer2Ref.current = setTimeout(() => setIsBouncing(false), 420);
+    }, 16);
+  }, []);
+
   const handleEnter = useCallback(() => {
     setIsHovered(true);
-    setIsBouncing(true);
-    setTimeout(() => setIsBouncing(false), 420);
-  }, []);
+    triggerBounce();
+  }, [triggerBounce]);
   const handleLeave = useCallback(() => setIsHovered(false), []);
+  // On touch devices, pointerleave never fires after a tap, so the mascot
+  // gets stuck eyes-closed. Auto-reopen eyes when the touch ends.
+  const handleTouchEnd = useCallback(() => {
+    setTimeout(() => setIsHovered(false), 420);
+  }, []);
+  // Click/tap = cute sound + retrigger bounce (even mid-animation).
+  const handleClick = useCallback(() => {
+    playMascotSound(modeId);
+    triggerBounce();
+  }, [modeId, triggerBounce]);
 
   const isSoyboy   = modeId === 'soyboy';
   const isThisThat = modeId === 'thisthat';
@@ -2942,9 +3277,9 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
     isThisThat ? `pig-tt-closed.svg`    :
     `pig-closed${dm}.svg`;
   const defaultColor =
-    isSoyboy   ? '#27885E' :
-    isThisThat ? '#59a1d8' :
-    '#F88065';
+    isSoyboy   ? '#247D57' :
+    isThisThat ? '#2e83c5' :
+    '#D46247';
   const modeKey = isSoyboy ? 'soyboy' : (isThisThat ? 'thisthat' : 'classic');
   const accent = coloredBgActive ? (overrides[modeKey] || {}).accent : null;
 
@@ -3018,6 +3353,9 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
       onMouseLeave={handleLeave}
       onFocus={handleEnter}
       onBlur={handleLeave}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      onClick={handleClick}
       role="img"
       aria-label={isClassic ? 'Flying pig mascot' : 'Soy bean mascot'}
     >
@@ -3042,7 +3380,7 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
 /* Tiles-style minimal landing.
    Mode switcher is a pill-shaped segmented control with both mascots
    visible at once — you "peek" into each mode just by seeing the tabs. */
-function StartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, modeId, setModeId, debugMode }) {
+function StartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, modeId, setModeId, debugMode, onDebugJump }) {
   const cfg = MODES[modeId];
   const [showPrefs, setShowPrefs] = useState(false);
   const bestScore = getBestScore(modeId);
@@ -3126,7 +3464,7 @@ function StartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, mod
                 <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
               </div>
             ))}
-            {debugMode && <ExperimentsPanel debug={debug} setDebug={setDebug} />}
+            {debugMode && <ExperimentsPanel debug={debug} setDebug={setDebug} onDebugJump={onDebugJump} />}
           </div>
         </div>
       </div>
@@ -3146,9 +3484,9 @@ function StartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, mod
 
 /* Default colors used by the floating color picker. */
 const DEFAULT_COLORS = {
-  classic:  { bg: '#F7F1E6', accent: '#F88065' },
-  soyboy:   { bg: '#B7D197', accent: '#27885E' },
-  thisthat: { bg: '#CCE1F2', accent: '#59a1d8' },
+  classic:  { bg: '#FFE2C7', accent: '#D46247' },
+  soyboy:   { bg: '#B7D197', accent: '#247D57' },
+  thisthat: { bg: '#CCE1F2', accent: '#2e83c5' },
 };
 
 /* ── Color math ───────────────────────────────────────── */
@@ -3160,6 +3498,27 @@ function hexToRgb(hex) {
     g: parseInt(h.slice(2,4), 16),
     b: parseInt(h.slice(4,6), 16),
   };
+}
+/* WCAG 2.1 relative luminance + contrast ratio. */
+function relLuminance(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  const lin = (c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+function contrastRatio(hexA, hexB) {
+  const lA = relLuminance(hexA);
+  const lB = relLuminance(hexB);
+  const [lighter, darker] = lA > lB ? [lA, lB] : [lB, lA];
+  return (lighter + 0.05) / (darker + 0.05);
+}
+function wcagLevel(ratio) {
+  if (ratio >= 7)   return 'AAA';
+  if (ratio >= 4.5) return 'AA';
+  if (ratio >= 3)   return 'AA Large';
+  return 'Fail';
 }
 function rgbToHex({ r, g, b }) {
   const c = (n) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2,'0');
@@ -3389,6 +3748,18 @@ This That — bg: ${get('thisthat','bg')} accent: ${get('thisthat','accent')}`;
   const [activeMode, activeKind] = activeKey.split('.');
   const currentValue = get(activeMode, activeKind);
 
+  // WCAG contrast for the currently active mode.
+  const cBg     = get(activeMode, 'bg');
+  const cAccent = get(activeMode, 'accent');
+  const cText   = '#0A0A0A'; // --dark text token
+  const contrastPairs = [
+    { label: 'Accent on BG', fg: cAccent, bg: cBg, glyph: 'Aa' },
+    { label: 'Text on BG',   fg: cText,   bg: cBg, glyph: 'Aa' },
+  ];
+  const modeLabel = activeMode === 'classic' ? 'Soar Boar'
+                  : activeMode === 'soyboy'  ? 'Soy Boy'
+                  : 'This That';
+
   return (
     <div className="cp-floating" role="dialog" aria-label="Color tool">
       <div className="cp-header">
@@ -3412,11 +3783,34 @@ This That — bg: ${get('thisthat','bg')} accent: ${get('thisthat','accent')}`;
               <span className="cp-swatch-text">
                 <span className="cp-swatch-label">{s.label}</span>
                 <span className="cp-swatch-hex" style={{
-                  color: isOverride(m, k) ? v : 'inherit',
                   fontWeight: isOverride(m, k) ? 700 : 600,
                 }}>{v.toUpperCase()}</span>
               </span>
             </button>
+          );
+        })}
+      </div>
+
+      <div className="cp-contrast" aria-label={`Contrast ratios for ${modeLabel}`}>
+        <div className="cp-contrast-title">{modeLabel} contrast</div>
+        {contrastPairs.map(p => {
+          const ratio = contrastRatio(p.fg, p.bg);
+          const level = wcagLevel(ratio);
+          const cls = level === 'AAA' ? 'aaa'
+                    : level === 'AA' ? 'aa'
+                    : level === 'AA Large' ? 'large'
+                    : 'fail';
+          return (
+            <div key={p.label} className="cp-contrast-row">
+              <span
+                className="cp-contrast-preview"
+                style={{ background: p.bg, color: p.fg }}
+                aria-hidden="true"
+              >{p.glyph}</span>
+              <span className="cp-contrast-label">{p.label}</span>
+              <span className="cp-contrast-ratio">{ratio.toFixed(2)}:1</span>
+              <span className={`cp-contrast-badge ${cls}`}>{level}</span>
+            </div>
           );
         })}
       </div>
@@ -3714,7 +4108,11 @@ function FlyingPig() {
 
   return (
     <div className="flying-section" aria-hidden="true">
-      <div className="flying-pig" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
+      <div
+        className="flying-pig"
+        onClick={() => playMascotSound('classic')}
+        dangerouslySetInnerHTML={{ __html: svgMarkup }}
+      />
     </div>
   );
 }
@@ -3723,7 +4121,7 @@ function FlyingPig() {
 // Public Apps Script Web App that appends signups to the "Soar Boar signups"
 // Google Sheet. Public-by-design URL; not a secret. See NEWSLETTER_PLAN.md
 // for the one-time deploy steps.
-const APPS_SCRIPT_URL = '';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxPfaASWLf5pj6CAX8lAIMOevASJEGqe2nx-FF5tPKHhTWHdspIowWomQBKHh9EohsW/exec';
 
 function EmailSignup() {
   const [email, setEmail] = useState('');
@@ -3892,28 +4290,118 @@ function DebugBadge({ onToggle }) {
 /* Design experiments — A/B compare directions.
    The colored-bg color picker lives in a floating panel rendered at the
    App root (not here) so it stays visible while scrolling. */
-function ExperimentsPanel({ debug, setDebug }) {
+function ExperimentsPanel({ debug, setDebug, onDebugJump }) {
   const experiments = [
     // No experiments currently — colored bg is now canonical.
   ];
-  if (!experiments.length) return null;
+
+  // Preset result data for each celebration variant.
+  // chain entries are objects { word, pts } — matches the real game shape.
+  const mkChain = (...words) =>
+    words.map((w, i) => ({ word: w, pts: i === 0 ? null : 12 }));
+  const mkLadderChain = (...words) =>
+    words.map((w) => ({ word: w, pts: null }));
+  const celebrationTests = [
+    {
+      label: 'Soar Boar · new PB',
+      modeId: 'classic',
+      result: {
+        score: 63, chain: mkChain('BOAR','BEAR','BEAD','BEND','MEND','MIND'),
+        deadEnd: false, forceNewBest: true,
+      },
+    },
+    {
+      label: 'Soy Boy · new PB',
+      modeId: 'soyboy',
+      result: {
+        score: 52, chain: mkChain('SOY','BOY','BAY','DAY','DAB'),
+        deadEnd: false, forceNewBest: true,
+      },
+    },
+    {
+      label: 'This That · matched par',
+      modeId: 'thisthat',
+      result: {
+        score: 3, chain: mkLadderChain('THIS','THIN','THAN','THAT'),
+        deadEnd: false, win: true, target: 'THAT', par: 3,
+      },
+    },
+    {
+      label: 'This That · beat par',
+      modeId: 'thisthat',
+      result: {
+        score: 2, chain: mkLadderChain('THIS','THAN','THAT'),
+        deadEnd: false, win: true, target: 'THAT', par: 3,
+      },
+    },
+    {
+      label: 'This That · over par (no banner)',
+      modeId: 'thisthat',
+      result: {
+        score: 5, chain: mkLadderChain('THIS','THIN','THAN','THAT','WHAT','WHIT'),
+        deadEnd: false, win: true, target: 'WHIT', par: 3,
+      },
+    },
+  ];
+
+  if (!experiments.length && !onDebugJump) return null;
   return (
     <>
-      <div style={{
-        marginTop: 16, paddingTop: 14,
-        borderTop: '1px solid var(--border)',
-        fontFamily: 'var(--ff-sans)', fontSize: 12, fontWeight: 700,
-        letterSpacing: '0.08em', textTransform: 'uppercase',
-        color: 'var(--muted)',
-      }}>
-        Design experiments
-      </div>
-      {experiments.map(({ key, label, sub }) => (
-        <div key={key} className="prefs-row" style={{ marginTop: 12 }}>
-          <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
-          <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
-        </div>
-      ))}
+      {experiments.length > 0 && (
+        <>
+          <div style={{
+            marginTop: 16, paddingTop: 14,
+            borderTop: '1px solid var(--border)',
+            fontFamily: 'var(--ff-sans)', fontSize: 12, fontWeight: 700,
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: 'var(--muted)',
+          }}>
+            Design experiments
+          </div>
+          {experiments.map(({ key, label, sub }) => (
+            <div key={key} className="prefs-row" style={{ marginTop: 12 }}>
+              <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
+              <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
+            </div>
+          ))}
+        </>
+      )}
+
+      {onDebugJump && (
+        <>
+          <div style={{
+            marginTop: 16, paddingTop: 14,
+            borderTop: '1px solid var(--border)',
+            fontFamily: 'var(--ff-sans)', fontSize: 12, fontWeight: 700,
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: 'var(--muted)',
+          }}>
+            Test celebration screens
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+            {celebrationTests.map(t => (
+              <button
+                key={t.label}
+                type="button"
+                onClick={() => onDebugJump(t.modeId, t.result)}
+                style={{
+                  fontFamily: 'var(--ff-sans)',
+                  fontSize: 13, fontWeight: 600,
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  color: 'var(--dark)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </>
   );
 }
@@ -4224,28 +4712,30 @@ function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, debug, 
           >
             New word
           </button>
-          <button
-            type="button"
-            className={`hint-btn${hintOn ? ' active' : ''}`}
-            onClick={() => setHintOn(h => !h)}
-            aria-label={hintOn ? 'Hide hint' : 'Show hint'}
-            aria-pressed={hintOn}
-          >
-            {hintOn ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a19.78 19.78 0 0 1 5.06-5.94"/>
-                <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a19.46 19.46 0 0 1-2.16 3.19"/>
-                <path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/>
-                <line x1="1" y1="1" x2="23" y2="23"/>
-              </svg>
-            )}
-            <span className="hint-tooltip">{hintOn ? 'Hide hint' : 'Show hint'}</span>
-          </button>
+          {isLadder && (
+            <button
+              type="button"
+              className={`hint-btn${hintOn ? ' active' : ''}`}
+              onClick={() => setHintOn(h => !h)}
+              aria-label={hintOn ? 'Hide hint' : 'Show hint'}
+              aria-pressed={hintOn}
+            >
+              {hintOn ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a19.78 19.78 0 0 1 5.06-5.94"/>
+                  <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a19.46 19.46 0 0 1-2.16 3.19"/>
+                  <path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              )}
+              <span className="hint-tooltip">{hintOn ? 'Hide hint' : 'Show hint'}</span>
+            </button>
+          )}
           <button
             type="button"
             className="restart-btn"
@@ -4298,7 +4788,7 @@ function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, debug, 
             const isCursor = i === typed.length && typed.length < cfg.wordLen;
             const isWrong  = (tooMany || noChange) && typedDiffs.includes(i);
             return (
-              <div key={i} className={`tile${isCursor ? ' cursor' : ''}${isWrong ? ' wrong' : ''}`}>{letter}</div>
+              <div key={i} className={`tile next${isCursor ? ' cursor' : ''}${isWrong ? ' wrong' : ''}`}>{letter}</div>
             );
           })}
         </div>
@@ -4321,7 +4811,7 @@ function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, debug, 
 }
 
 /* ── EndScreen ────────────────────────────────────────── */
-function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = 'classic', win, target, par }) {
+function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = 'classic', win, target, par, forceNewBest }) {
   const cfg = MODES[modeId];
   const isLadder = !!cfg.isLadder;
   const [copied, setCopied] = useState(false);
@@ -4330,17 +4820,28 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
   // Best score: only tracked for timed runs.
   // Ladder mode + forever mode don't write to personal-best.
   const previousBest = useRef(getBestScore(modeId)).current;
-  const isNewBest = !isLadder && !debug.foreverMode && score > 0 && score > previousBest;
+  const isNewBest = forceNewBest || (!isLadder && !debug.foreverMode && score > 0 && score > previousBest);
   useEffect(() => {
-    if (isNewBest) setBestScore(modeId, score);
-  }, [isNewBest, modeId, score]);
+    // Don't write debug-forced bests to localStorage.
+    if (isNewBest && !forceNewBest) setBestScore(modeId, score);
+  }, [isNewBest, forceNewBest, modeId, score]);
   const currentBest = isNewBest ? score : previousBest;
 
-  // Emoji burst on tapping the new-best banner
+  // Ladder par achievements (this-that shortest-path celebration)
+  const matchedPar = isLadder && win && par != null && score === par;
+  const beatPar    = isLadder && win && par != null && score < par;
+  const isParCelebration = matchedPar || beatPar;
+
+  // Play celebration sound once when the appropriate banner appears.
+  useEffect(() => {
+    if (isNewBest)         playCelebrationSound('best');
+    else if (isParCelebration) playCelebrationSound('shortest');
+  }, [isNewBest, isParCelebration]);
+
+  // Emoji burst on tapping a celebration banner. Emoji set varies by banner.
   const [bursts, setBursts] = useState([]);
   const burstId = useRef(0);
-  const handleBurst = useCallback(() => {
-    const emojis = modeId === 'soyboy' ? ['🫛'] : ['🐷', '🪽'];
+  const makeBurst = useCallback((emojis) => {
     const id = ++burstId.current;
     const N = 14;
     const particles = Array.from({ length: N }, (_, i) => {
@@ -4357,7 +4858,16 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
     });
     setBursts(prev => [...prev, { id, particles }]);
     setTimeout(() => setBursts(prev => prev.filter(b => b.id !== id)), 1500);
-  }, [modeId]);
+  }, []);
+  const handleBurst = useCallback(() => {
+    playCelebrationSound('best');
+    const emojis = modeId === 'soyboy' ? ['🫛'] : ['🐷', '🪽'];
+    makeBurst(emojis);
+  }, [modeId, makeBurst]);
+  const handleParBurst = useCallback(() => {
+    playCelebrationSound('shortest');
+    makeBurst(['🎯', '✨', '🪽']);
+  }, [makeBurst]);
 
   const handleShare = useCallback(async () => {
     const text = generateShareText(chain, score, modeId);
@@ -4402,11 +4912,7 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
             <div className="end-score-label">
               {win
                 ? (par != null
-                    ? (score === par
-                        ? `🎯 You matched the best path of ${par}!`
-                        : score < par
-                          ? `🏆 Beat the best path of ${par}!`
-                          : `Best path: ${par} move${par !== 1 ? 's' : ''}`)
+                    ? `Best path: ${par} move${par !== 1 ? 's' : ''}`
                     : 'Solved it!')
                 : (target ? `Was heading to ${target}` : '')}
             </div>
@@ -4425,6 +4931,33 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
               </div>
             )}
           </>
+        )}
+        {isParCelebration && (
+          <button
+            type="button"
+            className="new-best-banner"
+            onClick={handleParBurst}
+            aria-label={beatPar ? "Celebrate beating the best path" : "Celebrate matching the best path"}
+          >
+            {beatPar ? '🏆 Beat the best path!' : '🎯 Matched the best path!'}
+            {bursts.map(burst => (
+              <React.Fragment key={burst.id}>
+                {burst.particles.map((p, i) => (
+                  <span
+                    key={i}
+                    className="burst-emoji"
+                    aria-hidden="true"
+                    style={{
+                      '--burst-dx':  `${p.dx}px`,
+                      '--burst-dy':  `${p.dy}px`,
+                      '--burst-rot': `${p.rot}deg`,
+                      '--burst-dur': `${p.dur}ms`,
+                    }}
+                  >{p.emoji}</span>
+                ))}
+              </React.Fragment>
+            ))}
+          </button>
         )}
         {!debug.foreverMode && isNewBest && (
           <button
@@ -4621,6 +5154,11 @@ function App() {
           modeId={modeId}
           setModeId={setModeId}
           debugMode={debugMode}
+          onDebugJump={(testModeId, resultData) => {
+            setModeId(testModeId);
+            setResult(resultData);
+            setScreen('end');
+          }}
         />
       )}
       {screen === 'tutorial' && (
@@ -4654,6 +5192,7 @@ function App() {
           win={result.win}
           target={result.target}
           par={result.par}
+          forceNewBest={result.forceNewBest}
           debug={debug}
           modeId={modeId}
           onRestart={newPuzzle}
