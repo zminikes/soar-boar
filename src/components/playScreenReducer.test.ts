@@ -80,6 +80,19 @@ describe('gameReducer — TICK_COUNTDOWN', () => {
     expect(next.countdown).toBe(0);
     expect(next.phase).toBe('playing');
   });
+
+  // PlayScreen.handleKeyDown bug fix: when the player presses the first
+  // letter during countdown, it dispatches START_PLAYING and then falls
+  // through to dispatch TYPE_LETTER on the same keystroke. Both must
+  // land — previously the second dispatch was gated on a stale
+  // stateRef.current.phase read and the first letter was swallowed.
+  it('START_PLAYING followed by TYPE_LETTER applies both in sequence', () => {
+    let state = makeState({ phase: 'countdown', countdown: 3, typed: '' });
+    state = gameReducer(state, { type: 'START_PLAYING' });
+    state = gameReducer(state, { type: 'TYPE_LETTER', letter: 'b', wordLen: 4 });
+    expect(state.phase).toBe('playing');
+    expect(state.typed).toBe('B');
+  });
 });
 
 describe('gameReducer — TICK_TIMER', () => {
