@@ -26,7 +26,6 @@ import beanOpenRaw from '../assets/bean-open.svg?raw';
 import beanClosedRaw from '../assets/bean-closed.svg?raw';
 import beanOpenDarkRaw from '../assets/bean-open-dark.svg?raw';
 import beanClosedDarkRaw from '../assets/bean-closed-dark.svg?raw';
-import bigPig1Raw from '../assets/big-pig-1.svg?raw';
 import pigTtOpenRaw from '../assets/pig-tt-open.svg?raw';
 import pigTtClosedRaw from '../assets/pig-tt-closed.svg?raw';
 import hair1Raw from '../assets/hair-1.svg?raw';
@@ -37,6 +36,10 @@ import hair5Raw from '../assets/hair-5.svg?raw';
 import hair6Raw from '../assets/hair-6.svg?raw';
 import hair7Raw from '../assets/hair-7.svg?raw';
 import hair8Raw from '../assets/hair-8.svg?raw';
+
+// big-pig-1.svg ships as an asset URL only (no `?raw` import). FlyingPig
+// fetches the raw text at runtime — keeps the 80 KB out of the JS bundle.
+// Browser HTTP cache handles re-mounts. See FlyingPig.tsx.
 
 export type MascotName =
   | 'pig-open.svg'
@@ -58,6 +61,12 @@ export type MascotName =
   | 'hair-6.svg'
   | 'hair-7.svg'
   | 'hair-8.svg';
+
+// Subset of MascotName that has an inline raw-string available in
+// SVG_DATA. big-pig-1.svg is excluded — FlyingPig fetches it at runtime
+// to keep ~80 KB out of the JS bundle. TypeScript catches any consumer
+// that tries to look it up via SVG_DATA[name].
+export type InlinedMascotName = Exclude<MascotName, 'big-pig-1.svg'>;
 
 // Vite-resolved URLs (content-hashed) for <img src=...> consumption.
 export const SVG_URLS: Readonly<Record<MascotName, string>> = {
@@ -83,8 +92,9 @@ export const SVG_URLS: Readonly<Record<MascotName, string>> = {
 };
 
 // Raw SVG strings for in-place recoloring (useColoredSvg) and direct
-// dangerouslySetInnerHTML render (AnimatedMascot body, FlyingPig).
-export const SVG_DATA: Readonly<Record<MascotName, string>> = {
+// dangerouslySetInnerHTML render (AnimatedMascot body). Excludes
+// big-pig-1.svg which FlyingPig fetches at runtime.
+export const SVG_DATA: Readonly<Record<InlinedMascotName, string>> = {
   'pig-open.svg': pigOpenRaw,
   'pig-closed.svg': pigClosedRaw,
   'pig-open-dark.svg': pigOpenDarkRaw,
@@ -93,7 +103,6 @@ export const SVG_DATA: Readonly<Record<MascotName, string>> = {
   'bean-closed.svg': beanClosedRaw,
   'bean-open-dark.svg': beanOpenDarkRaw,
   'bean-closed-dark.svg': beanClosedDarkRaw,
-  'big-pig-1.svg': bigPig1Raw,
   'pig-tt-open.svg': pigTtOpenRaw,
   'pig-tt-closed.svg': pigTtClosedRaw,
   'hair-1.svg': hair1Raw,

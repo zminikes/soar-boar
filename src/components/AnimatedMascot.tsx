@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { SVG_DATA, type MascotName } from '../data/svgData';
+import { SVG_DATA, type InlinedMascotName } from '../data/svgData';
 import { useColorOverrides, useColoredBgActive, useIsDark } from '../game/appContext';
 import { DEFAULT_COLORS } from '../game/constants';
 import { scopeSvgStyles } from '../game/svgUtils';
@@ -11,9 +11,10 @@ interface AnimatedMascotProps {
 }
 
 // Per-mode mascot frames for the open + closed eye states. Explicit
-// literal returns so TypeScript verifies each branch against MascotName
-// — mirrors the iconPath helper in MascotIcon.
-function mascotFrames(modeId: ModeId, isDark: boolean): { open: MascotName; closed: MascotName } {
+// literal returns so TypeScript verifies each branch against
+// InlinedMascotName (the SVG_DATA-indexable subset — excludes big-pig-1
+// which FlyingPig fetches at runtime).
+function mascotFrames(modeId: ModeId, isDark: boolean): { open: InlinedMascotName; closed: InlinedMascotName } {
   if (modeId === 'soyboy') {
     return isDark
       ? { open: 'bean-open-dark.svg', closed: 'bean-closed-dark.svg' }
@@ -27,9 +28,10 @@ function mascotFrames(modeId: ModeId, isDark: boolean): { open: MascotName; clos
     : { open: 'pig-open.svg', closed: 'pig-closed.svg' };
 }
 
-// 8 hair frames used by the thisthat ping-pong animation. Typed array
-// so SVG_DATA[HAIR_KEYS[i]] is a MascotName lookup without an `as` cast.
-const HAIR_KEYS: readonly MascotName[] = [
+// 8 hair frames used by the thisthat ping-pong animation. Typed as
+// InlinedMascotName[] so SVG_DATA[HAIR_KEYS[i]] is type-correct
+// without an `as` cast.
+const HAIR_KEYS: readonly InlinedMascotName[] = [
   'hair-1.svg', 'hair-2.svg', 'hair-3.svg', 'hair-4.svg',
   'hair-5.svg', 'hair-6.svg', 'hair-7.svg', 'hair-8.svg',
 ];
