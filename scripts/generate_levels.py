@@ -1,8 +1,15 @@
 """
 Soar Boar — Level Pack Generator (level-generation pipeline, step 2)
 =====================================================================
-Produces a curated list of (start, end, par, path) levels for "This That"
-mode, formatted to match `game/pairs.js`.
+Produces a curated list of (start, end, par) levels for "This That"
+mode, drop-in shaped for `game/pairs.js`.
+
+The path field that the original pairs.js included is intentionally
+dropped — the game never reads pair.path at runtime (it computes
+shortest paths on the fly via bfsPath in game/index.html). Internally
+this script still materializes a canonical all-common path to *verify*
+each pair is solvable using recognizable words, but it's not written
+to the output.
 
 Inputs:
   - scripts/output/pairs_<N>.tsv   (from word_pair_difficulty.py)
@@ -134,16 +141,10 @@ def parse_distribution(spec: str) -> dict[int, int]:
 
 
 def format_level(c: dict) -> str:
-    path_lines = ",\n".join(f'      {json.dumps(w)}' for w in c["path"])
     return (
-        "  {\n"
-        f'    "start": {json.dumps(c["word_a"])},\n'
-        f'    "end": {json.dumps(c["word_b"])},\n'
-        f'    "par": {c["distance"]},\n'
-        f'    "path": [\n'
-        f'{path_lines}\n'
-        f'    ]\n'
-        "  }"
+        f'  {{ "start": {json.dumps(c["word_a"])}, '
+        f'"end": {json.dumps(c["word_b"])}, '
+        f'"par": {c["distance"]} }}'
     )
 
 
