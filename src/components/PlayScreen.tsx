@@ -1,17 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { MODE_CONFIGS, tutorialPair, type ModeId } from '../lib/modes';
-import { getPairs, getStarters, getWords } from '../data/modeData';
-import { HEAD_START, MSG_DURATION } from '../game/constants';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { MODE_CONFIGS, type ModeId } from '../lib/modes';
+import { getWords } from '../data/modeData';
+import { MSG_DURATION } from '../game/constants';
 import { bfsPath } from '../lib/bfs';
 import { diffPos, getValidMoves } from '../lib/moves';
-import { pickLadderPair, pickStarter } from '../lib/puzzle';
 import type { ChainEntry, DebugState, EndResult, KeyEvent, Msg, MsgKind } from '../lib/types';
 import { isTouchDevice } from '../platform/dom';
+import { gameReducer, initGameState } from './playScreenReducer';
 import { MascotIcon } from './MascotIcon';
 import { ChainRows } from './ChainRows';
 import { Keyboard } from './Keyboard';
-
-type GamePhase = 'countdown' | 'playing';
 
 interface PlayScreenProps {
   puzzleSeed: number;
@@ -28,68 +26,119 @@ export function PlayScreen({
 }: PlayScreenProps) {
   const cfg = MODE_CONFIGS[modeId];
   const isLadder = !!cfg.isLadder;
-  // Ladder mode skips countdown/timer entirely
-  const [phase,       setPhase]       = useState<GamePhase>(isLadder ? 'playing' : 'countdown');
-  const [countdown,   setCountdown]   = useState(HEAD_START);
-  const [currentWord, setCurrentWord] = useState('');
-  const [targetWord,  setTargetWord]  = useState(''); // ladder mode only
-  const [par,         setPar]         = useState<number | null>(null);
-  const [typed,       setTyped]       = useState('');
-  const [, setUsedWords]              = useState<Set<string>>(() => new Set());
-  const [chain,       setChain]       = useState<ChainEntry[]>([]);
-  const [score,       setScore]       = useState(0);
-  const [timeLeft,    setTimeLeft]    = useState(cfg.duration || 0);
-  const [msg,         setMsg]         = useState<Msg>({ text: '', type: '' });
-  const [shaking,     setShaking]     = useState(false);
-  const [acceptKey,   setAcceptKey]   = useState(0);
-  const [deadEnd,     setDeadEnd]     = useState(false);
+
+  const [state, dispatch] = useReducer(
+    gameReducer,
+    { isLadder, cfg, modeId, puzzleSeed },
+    initGameState,
+  );
+
+  // Ephemeral UI state — independent of the reducer'd game state.
+  const [msg, setMsg] = useState<Msg>({ text: '', type: '' });
+  const [shaking, setShaking] = useState(false);
+  const [wiggleIdx, setWiggleIdx] = useState<number | null>(null);
   const [hintOn, setHintOn] = useState<boolean>(() => localStorage.getItem('hintOn') === 'true');
-  const [wiggleIdx, setWiggleIdx] = useState<number | null>(null); // which tile letter to wiggle
   useEffect(() => { localStorage.setItem('hintOn', String(hintOn)); }, [hintOn]);
 
-  const typedRef     = useRef('');
-  const currentRef   = useRef('');
-  const targetRef    = useRef('');
-  const usedRef      = useRef<Set<string>>(new Set());
-  const streakPosRef = useRef<number | null>(null);
-  const streakCntRef = useRef(0);
-  const scoreRef     = useRef(0);
-  const chainRef     = useRef<ChainEntry[]>([]);
-  const phaseRef     = useRef<GamePhase>(isLadder ? 'playing' : 'countdown');
-  const gameOverRef  = useRef(false);
-  const msgTimer     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Mirror state into a ref so the interval callback can read fresh values
+  // without re-creating the interval every render. (One ref replaces the
+  // 9-ref mirror pattern from pre-reducer.)
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
-  useEffect(() => { currentRef.current = currentWord; }, [currentWord]);
-  useEffect(() => { targetRef.current  = targetWord; },  [targetWord]);
-  useEffect(() => { phaseRef.current   = phase; },       [phase]);
+  // Track all setTimeout IDs so they can be cleared on unmount — prevents
+  // "setState on unmounted component" warnings if the user navigates away
+  // during a triggerShake (320ms), msg auto-hide (2000ms), or end-of-game
+  // delay (300 / 700 / 1800ms).
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  useEffect(() => () => {
+    timersRef.current.forEach(id => clearTimeout(id));
+    timersRef.current.clear();
+  }, []);
+  const setTimer = useCallback((fn: () => void, ms: number): ReturnType<typeof setTimeout> => {
+    const id = setTimeout(() => { timersRef.current.delete(id); fn(); }, ms);
+    timersRef.current.add(id);
+    return id;
+  }, []);
+
+  const msgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showMsg = useCallback((text: string, type: MsgKind): void => {
+    if (msgTimerRef.current !== null) clearTimeout(msgTimerRef.current);
+    setMsg({ text, type });
+    msgTimerRef.current = setTimer(() => {
+      msgTimerRef.current = null;
+      setMsg({ text: '', type: '' });
+    }, MSG_DURATION);
+  }, [setTimer]);
+
+  const triggerShake = useCallback((): void => {
+    setShaking(true);
+    setTimer(() => setShaking(false), 320);
+  }, [setTimer]);
+
+  // Countdown — ticks once per second while in countdown phase.
+  useEffect(() => {
+    if (state.phase !== 'countdown') return;
+    const id = setInterval(() => dispatch({ type: 'TICK_COUNTDOWN' }), 1000);
+    return () => clearInterval(id);
+  }, [state.phase]);
+
+  // Timer — skipped for ladder mode and forever mode. The reducer's
+  // TICK_TIMER atomically transitions to gameOver when timeLeft hits 0;
+  // we watch that here to fire onEnd with the timeup payload.
+  useEffect(() => {
+    if (state.phase !== 'playing' || debug.foreverMode || isLadder || state.gameOver) return;
+    const id = setInterval(() => dispatch({ type: 'TICK_TIMER' }), 1000);
+    return () => clearInterval(id);
+  }, [state.phase, debug.foreverMode, isLadder, state.gameOver]);
+
+  // Time's-up side effect — fires once when the timer-driven gameOver
+  // latches. Win + dead-end-forever paths set gameOver imperatively from
+  // submitWord with their own onEnd payloads, both keeping timeLeft > 0,
+  // so the `timeLeft === 0` guard naturally excludes them. (A `!deadEnd`
+  // guard here would BREAK the non-forever dead-end-then-timer-expires
+  // path — the player needs onEnd to fire even if they dead-ended early
+  // and waited out the clock. Original code matched the behaviour
+  // here.)
+  const timeupHandledRef = useRef(false);
+  useEffect(() => {
+    if (timeupHandledRef.current) return;
+    if (state.gameOver && state.timeLeft === 0 && !isLadder) {
+      timeupHandledRef.current = true;
+      setTimer(() => onEnd({
+        score: stateRef.current.score,
+        chain: stateRef.current.chain,
+        deadEnd: false,
+      }), 300);
+    }
+  }, [state.gameOver, state.timeLeft, isLadder, onEnd, setTimer]);
 
   // ── Hint wiggle: after 15s idle, wiggle a useful tile letter ──
   // Resets whenever the player types, current word changes, or hint toggles.
   useEffect(() => {
     setWiggleIdx(null);
-    if (!hintOn || phase !== 'playing' || gameOverRef.current) return;
+    if (!hintOn || state.phase !== 'playing' || state.gameOver) return;
     const t = setTimeout(() => {
-      // Pick which letter position to highlight
       let idx: number | null = null;
-      if (isLadder && targetRef.current) {
-        const path = bfsPath(currentRef.current, targetRef.current, getWords(modeId));
+      if (isLadder && state.targetWord) {
+        const path = bfsPath(state.currentWord, state.targetWord, getWords(modeId));
         if (path && path.length > 1) {
           const next = path[1];
           for (let i = 0; i < next.length; i++) {
-            if (next[i] !== currentRef.current[i]) { idx = i; break; }
+            if (next[i] !== state.currentWord[i]) { idx = i; break; }
           }
         }
       } else {
         // Non-ladder: pick the position with the most valid moves
         const moves = getValidMoves(
-          currentRef.current, usedRef.current,
-          streakPosRef.current, streakCntRef.current,
+          state.currentWord, state.usedWords,
+          state.streakPos, state.streakCount,
           debug.streakRule, getWords(modeId),
         );
         if (moves.length) {
           const counts = new Array<number>(cfg.wordLen).fill(0);
           for (const m of moves) {
-            for (let i = 0; i < m.length; i++) if (m[i] !== currentRef.current[i]) { counts[i]++; break; }
+            for (let i = 0; i < m.length; i++) if (m[i] !== state.currentWord[i]) { counts[i]++; break; }
           }
           let best = 0;
           for (let i = 1; i < counts.length; i++) if (counts[i] > counts[best]) best = i;
@@ -99,119 +148,53 @@ export function PlayScreen({
       if (idx != null) setWiggleIdx(idx);
     }, 15000);
     return () => clearTimeout(t);
-  }, [hintOn, phase, typed, currentWord, acceptKey, isLadder, debug.streakRule, modeId, cfg]);
-
-  useEffect(() => {
-    let start: string;
-    let target = '';
-    let parVal: number | null = null;
-    if (isLadder) {
-      const pair = pickLadderPair(getPairs(modeId), tutorialPair(cfg), puzzleSeed);
-      start  = pair.start;
-      target = pair.end;
-      parVal = pair.par;
-      targetRef.current = target;
-      setTargetWord(target);
-      setPar(parVal);
-    } else {
-      start = pickStarter(getStarters(modeId), getWords(modeId), cfg.tutorialStart, puzzleSeed);
-    }
-    const s = new Set([start]);
-    currentRef.current = start;
-    usedRef.current    = s;
-    chainRef.current   = [{ word: start, pts: null }];
-    setCurrentWord(start);
-    setUsedWords(s);
-    setChain([{ word: start, pts: null }]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Countdown
-  useEffect(() => {
-    if (phase !== 'countdown') return;
-    const id = setInterval(() => {
-      setCountdown(c => {
-        if (c <= 1) { clearInterval(id); setPhase('playing'); phaseRef.current = 'playing'; return 0; }
-        return c - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [phase]);
-
-  // Timer — skipped for ladder mode and forever mode
-  useEffect(() => {
-    if (phase !== 'playing' || debug.foreverMode || isLadder) return;
-    const id = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(id);
-          gameOverRef.current = true;
-          setTimeout(() => onEnd({ score: scoreRef.current, chain: chainRef.current, deadEnd: false }), 300);
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [phase, debug.foreverMode, isLadder, onEnd]);
-
-  const showMsg = useCallback((text: string, type: MsgKind): void => {
-    if (msgTimer.current) clearTimeout(msgTimer.current);
-    setMsg({ text, type });
-    msgTimer.current = setTimeout(() => setMsg({ text: '', type: '' }), MSG_DURATION);
-  }, []);
-
-  const triggerShake = useCallback((): void => {
-    setShaking(true);
-    setTimeout(() => setShaking(false), 320);
-  }, []);
+  }, [
+    hintOn, state.phase, state.gameOver,
+    state.typed, state.currentWord, state.targetWord, state.acceptKey,
+    state.usedWords, state.streakPos, state.streakCount,
+    isLadder, debug.streakRule, modeId, cfg,
+  ]);
 
   const submitWord = useCallback((word: string): void => {
-    if (gameOverRef.current) return;
+    const s = stateRef.current;
+    if (s.gameOver) return;
     const upper = word.toUpperCase();
-    const cur   = currentRef.current;
     if (!getWords(modeId).has(upper)) { showMsg('Not a word', 'error'); triggerShake(); return; }
-    const diffs = diffPos(cur, upper);
+    const diffs = diffPos(s.currentWord, upper);
     if (diffs.length !== 1) {
       showMsg(diffs.length === 0 ? 'Same as current word' : 'Change exactly one letter', 'error');
       triggerShake(); return;
     }
-    if (usedRef.current.has(upper)) { showMsg('Already used', 'error'); triggerShake(); return; }
+    if (s.usedWords.has(upper)) { showMsg('Already used', 'error'); triggerShake(); return; }
     const pos = diffs[0];
     // Streak rule applies only to timed/forever (free-form) modes, not ladder.
-    const newStreakCnt = (streakPosRef.current === pos) ? streakCntRef.current + 1 : 1;
-    if (!isLadder && debug.streakRule && newStreakCnt >= 3) {
+    const newStreakCount = s.streakPos === pos ? s.streakCount + 1 : 1;
+    if (!isLadder && debug.streakRule && newStreakCount >= 3) {
       showMsg(`Can't change letter ${pos + 1} three times`, 'error');
       triggerShake(); return;
     }
-    const pts      = cfg.posPts[pos];
-    const newScore = scoreRef.current + pts;
-    const newUsed  = new Set([...usedRef.current, upper]);
-    const newChain: ChainEntry[] = [...chainRef.current, { word: upper, pts }];
-    scoreRef.current    = newScore;
-    usedRef.current     = newUsed;
-    chainRef.current    = newChain;
-    streakPosRef.current = pos;
-    streakCntRef.current = newStreakCnt;
-    typedRef.current = '';
-    setTyped('');
-    setCurrentWord(upper);
-    setUsedWords(newUsed);
-    setChain(newChain);
-    setScore(newScore);
-    setAcceptKey(k => k + 1);
+    const pts = cfg.posPts[pos];
+
+    // Apply the accepted move via reducer.
+    dispatch({ type: 'SUBMIT_ACCEPTED', word: upper, pos, pts });
+    // Compute the post-action shape locally so the onEnd payloads below
+    // see the new chain/score (stateRef.current is still pre-dispatch
+    // until the next render commits).
+    const newChain: ChainEntry[] = [...s.chain, { word: upper, pts }];
+    const newScore = s.score + pts;
+    const newUsed = new Set(s.usedWords).add(upper);
 
     // Ladder mode: check if we've hit the target → solved!
-    if (isLadder && upper === targetRef.current) {
-      gameOverRef.current = true;
+    if (isLadder && upper === s.targetWord) {
+      dispatch({ type: 'GAME_OVER' });
       showMsg('Solved!', 'ok');
-      setTimeout(() => onEnd({
+      setTimer(() => onEnd({
         score: newChain.length - 1, // moves taken
         chain: newChain,
         deadEnd: false,
         win: true,
-        target: targetRef.current,
-        par,
+        target: s.targetWord,
+        par: s.par,
       }), 700);
       return;
     }
@@ -220,33 +203,33 @@ export function PlayScreen({
 
     // Dead-end detection (skipped in ladder — backtracking is fine there)
     if (!isLadder) {
-      const moves = getValidMoves(upper, newUsed, pos, newStreakCnt, debug.streakRule, getWords(modeId));
+      const moves = getValidMoves(upper, newUsed, pos, newStreakCount, debug.streakRule, getWords(modeId));
       if (moves.length === 0) {
-        setDeadEnd(true);
+        dispatch({ type: 'SET_DEAD_END' });
         if (debug.foreverMode) {
-          gameOverRef.current = true;
-          setTimeout(() => onEnd({ score: newScore, chain: newChain, deadEnd: true }), 1800);
+          dispatch({ type: 'GAME_OVER' });
+          setTimer(() => onEnd({ score: newScore, chain: newChain, deadEnd: true }), 1800);
         }
       }
     }
-  }, [isLadder, par, debug.streakRule, debug.foreverMode, showMsg, triggerShake, onEnd, modeId, cfg]);
+  }, [isLadder, debug.streakRule, debug.foreverMode, showMsg, triggerShake, onEnd, modeId, cfg, setTimer]);
 
   const handleKeyDown = useCallback((e: KeyEvent): void => {
-    if (gameOverRef.current) return;
+    const s = stateRef.current;
+    if (s.gameOver) return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
-    if (phaseRef.current === 'countdown' && /^[a-zA-Z]$/.test(e.key)) {
-      setPhase('playing'); phaseRef.current = 'playing';
+    if (s.phase === 'countdown' && /^[a-zA-Z]$/.test(e.key)) {
+      dispatch({ type: 'START_PLAYING' });
     }
-    if (phaseRef.current !== 'playing') return;
+    if (s.phase !== 'playing') return;
     if (e.key === 'Enter') {
-      if (typedRef.current.length === cfg.wordLen) submitWord(typedRef.current);
+      if (s.typed.length === cfg.wordLen) submitWord(s.typed);
     } else if (e.key === 'Backspace') {
-      const next = typedRef.current.slice(0, -1);
-      typedRef.current = next; setTyped(next);
+      dispatch({ type: 'BACKSPACE' });
       setMsg({ text: '', type: '' });
-    } else if (/^[a-zA-Z]$/.test(e.key) && typedRef.current.length < cfg.wordLen) {
-      const next = typedRef.current + e.key.toUpperCase();
-      typedRef.current = next; setTyped(next);
+    } else if (/^[a-zA-Z]$/.test(e.key) && s.typed.length < cfg.wordLen) {
+      const next = s.typed + e.key.toUpperCase();
+      dispatch({ type: 'TYPE_LETTER', letter: e.key, wordLen: cfg.wordLen });
       if (next.length === cfg.wordLen) submitWord(next);
     }
   }, [submitWord, cfg]);
@@ -257,22 +240,22 @@ export function PlayScreen({
   }, [handleKeyDown]);
 
   // Real-time validation
-  const typedDiffs      = typed.length === cfg.wordLen ? diffPos(currentWord, typed) : [];
+  const typedDiffs      = state.typed.length === cfg.wordLen ? diffPos(state.currentWord, state.typed) : [];
   const tooMany         = typedDiffs.length > 1;
-  const noChange        = typedDiffs.length === 0 && typed.length === cfg.wordLen;
+  const noChange        = typedDiffs.length === 0 && state.typed.length === cfg.wordLen;
   const persistentError = tooMany
     ? `Changed ${typedDiffs.length} letters — change just 1`
     : noChange ? 'Same as current word' : '';
   const displayMsg: Msg = persistentError ? { text: persistentError, type: 'error' } : msg;
 
-  const urgent      = !isLadder && timeLeft <= 10 && !debug.foreverMode;
+  const urgent      = !isLadder && state.timeLeft <= 10 && !debug.foreverMode;
   // `?? 1` is a type-narrower placation, not runtime defense: the
   // surrounding ternary short-circuits when isLadder (the only mode
   // where cfg.duration is null), so the divisor is reached only when
   // cfg.duration is a number. TS can't follow the correlation back.
   const denom       = cfg.duration ?? 1;
-  const pct         = (debug.foreverMode || isLadder) ? 100 : (timeLeft / denom) * 100;
-  const wordsPlayed = chain.length - 1;
+  const pct         = (debug.foreverMode || isLadder) ? 100 : (state.timeLeft / denom) * 100;
+  const wordsPlayed = state.chain.length - 1;
 
   return (
     <div className="stagger">
@@ -290,16 +273,16 @@ export function PlayScreen({
       </div>
 
       {/* Goal banner for ladder mode */}
-      {isLadder && targetWord && (
+      {isLadder && state.targetWord && (
         <div className="ladder-goal">
           <span className="ladder-goal-label">Get to</span>
           <div className="ladder-goal-tiles">
-            {targetWord.split('').map((l, i) => (
+            {state.targetWord.split('').map((l, i) => (
               <div key={i} className="tile ladder-target-tile">{l}</div>
             ))}
           </div>
-          {hintOn && par != null && (
-            <div className="ladder-goal-par">Best path: {par} move{par !== 1 ? 's' : ''}</div>
+          {hintOn && state.par != null && (
+            <div className="ladder-goal-par">Best path: {state.par} move{state.par !== 1 ? 's' : ''}</div>
           )}
         </div>
       )}
@@ -308,14 +291,14 @@ export function PlayScreen({
         <div className="timer-wrap">
           <div className="timer-row">
             <span className="timer-label">
-              {phase === 'countdown' ? 'Starting in' : 'Time left'}
+              {state.phase === 'countdown' ? 'Starting in' : 'Time left'}
             </span>
             <span className={`timer-secs${urgent ? ' urgent' : ''}`}>
-              {phase === 'countdown' ? countdown : timeLeft}s
+              {state.phase === 'countdown' ? state.countdown : state.timeLeft}s
             </span>
           </div>
           <div className={`timer-track${urgent ? ' urgent' : ''}`}>
-            <div className={`timer-fill${urgent ? ' urgent' : ''}${phase === 'countdown' ? ' paused' : ''}`}
+            <div className={`timer-fill${urgent ? ' urgent' : ''}${state.phase === 'countdown' ? ' paused' : ''}`}
               style={{ width: `${pct}%` }} />
           </div>
         </div>
@@ -323,7 +306,7 @@ export function PlayScreen({
 
       <div className="score-row">
         <div className="score-display">
-          <div className="score-badge">{isLadder ? wordsPlayed : score}</div>
+          <div className="score-badge">{isLadder ? wordsPlayed : state.score}</div>
           <div className="score-sub">
             {isLadder
               ? `move${wordsPlayed !== 1 ? 's' : ''}`
@@ -378,11 +361,11 @@ export function PlayScreen({
       <div style={{ marginTop: 20 }}>
         <div className="section-label">Current word</div>
         <div className="tile-row">
-          {currentWord.split('').map((l, i) => {
-            const isWiggle = wiggleIdx === i && typed.length === 0;
+          {state.currentWord.split('').map((l, i) => {
+            const isWiggle = wiggleIdx === i && state.typed.length === 0;
             return (
               <div
-                key={`${acceptKey}-${i}`}
+                key={`${state.acceptKey}-${i}`}
                 className={`tile accept${isWiggle ? ' wiggle' : ''}`}
                 style={{ animationDelay: `${i * 40}ms` }}
               >{l}</div>
@@ -391,25 +374,25 @@ export function PlayScreen({
         </div>
       </div>
 
-      {deadEnd && (
+      {state.deadEnd && (
         <div className="dead-end-banner">
           <span style={{ fontSize: 20 }}>{cfg.shareEmoji}</span>
           <div>
             <div className="dead-end-title" style={{ fontSize: 13, fontWeight: 800 }}>Dead end!</div>
             <div className="dead-end-sub" style={{ fontSize: 12, marginTop: 2 }}>
-              No valid moves left from <strong>{currentWord}</strong>.
+              No valid moves left from <strong>{state.currentWord}</strong>.
               {debug.foreverMode ? ' Ending game…' : ' Wait for the timer.'}
             </div>
           </div>
         </div>
       )}
 
-      <div style={{ marginTop: 16, opacity: deadEnd ? 0.4 : 1, pointerEvents: deadEnd ? 'none' : 'auto' }}>
+      <div style={{ marginTop: 16, opacity: state.deadEnd ? 0.4 : 1, pointerEvents: state.deadEnd ? 'none' : 'auto' }}>
         <div className="section-label">Next word</div>
         <div className={`tile-row${shaking ? ' shake' : ''}`}>
           {Array.from({ length: cfg.wordLen }, (_, i) => {
-            const letter   = typed[i] || '';
-            const isCursor = i === typed.length && typed.length < cfg.wordLen;
+            const letter   = state.typed[i] || '';
+            const isCursor = i === state.typed.length && state.typed.length < cfg.wordLen;
             const isWrong  = (tooMany || noChange) && typedDiffs.includes(i);
             return (
               <div key={i} className={`tile${isCursor ? ' cursor' : ''}${isWrong ? ' wrong' : ''}`}>{letter}</div>
@@ -422,14 +405,14 @@ export function PlayScreen({
         )}
       </div>
 
-      {chain.length > 1 && (
+      {state.chain.length > 1 && (
         <div style={{ marginTop: 20 }}>
           <div className="section-label">Ladder</div>
-          <ChainRows chain={chain} modeId={modeId} />
+          <ChainRows chain={state.chain} modeId={modeId} />
         </div>
       )}
 
-      <Keyboard onKey={k => handleKeyDown({ key: k })} visible={!deadEnd} />
+      <Keyboard onKey={k => handleKeyDown({ key: k })} visible={!state.deadEnd} />
     </div>
   );
 }
