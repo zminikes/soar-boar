@@ -79,12 +79,31 @@ export interface MascotSvgs {
   hair?: readonly string[];
 }
 
+// Module-level cache so AnimatedMascot can render synchronously on
+// remount when the user switches back to a mode it has already loaded.
+// Vite's module cache dedupes the network fetch, but without a
+// synchronous getter the consumer still flashes through a null state
+// for one frame while useEffect re-runs.
+const mascotSvgsCache = new Map<ModeId, MascotSvgs>();
+
+export function getMascotSvgsSync(modeId: ModeId): MascotSvgs | null {
+  return mascotSvgsCache.get(modeId) ?? null;
+}
+
 // Lazy-loads the raw SVG strings AnimatedMascot needs for in-place
 // recoloring + dangerouslySetInnerHTML render. Each mode's strings
 // live in a separate chunk (src/data/svgSets/*.ts), so a classic-mode
 // session never downloads the bean or hair SVGs. Vite emits one chunk
-// per mode; subsequent loads are HTTP-cached.
+// per mode; the module cache + our own map dedupe re-requests.
 export async function loadMascotSvgs(modeId: ModeId): Promise<MascotSvgs> {
+  const cached = mascotSvgsCache.get(modeId);
+  if (cached) return cached;
+  const svgs = await loadModeChunk(modeId);
+  mascotSvgsCache.set(modeId, svgs);
+  return svgs;
+}
+
+async function loadModeChunk(modeId: ModeId): Promise<MascotSvgs> {
   if (modeId === 'soyboy') {
     const { soyboySvgs } = await import('./svgSets/soyboy');
     return soyboySvgs;
@@ -101,7 +120,7 @@ export async function loadMascotSvgs(modeId: ModeId): Promise<MascotSvgs> {
 // switches modes after the start screen has already mounted doesn't
 // see a loading frame. Fire-and-forget — failures don't matter here.
 export function prefetchOtherModeSvgs(activeModeId: ModeId): void {
-  if (activeModeId !== 'classic') void import('./svgSets/classic');
-  if (activeModeId !== 'soyboy') void import('./svgSets/soyboy');
-  if (activeModeId !== 'thisthat') void import('./svgSets/thisthat');
+  if (activeModeId !== 'classic') void loadMascotSvgs('classic');
+  if (activeModeId !== 'soyboy') void loadMascotSvgs('soyboy');
+  if (activeModeId !== 'thisthat') void loadMascotSvgs('thisthat');
 }

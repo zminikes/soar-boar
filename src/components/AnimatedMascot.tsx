@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { loadMascotSvgs, type MascotSvgs } from '../data/svgData';
+import { getMascotSvgsSync, loadMascotSvgs, type MascotSvgs } from '../data/svgData';
 import { useColorOverrides, useColoredBgActive, useIsDark } from '../game/appContext';
 import { DEFAULT_COLORS } from '../game/constants';
 import { scopeSvgStyles } from '../game/svgUtils';
@@ -11,10 +11,9 @@ interface AnimatedMascotProps {
 }
 
 // Picks the right open/closed pair from the loaded svgs for the
-// active mode + theme. Returns null if the loaded svgs don't have the
-// dark variants (shouldn't happen — classic + soyboy always carry all
-// four, thisthat carries open/closed only because its SVG looks the
-// same in dark mode).
+// active mode + theme. Falls back to the light variants when dark
+// versions aren't shipped (thisthat reuses one SVG across themes;
+// classic + soyboy always carry all four).
 function pickFrames(
   svgs: MascotSvgs,
   isDark: boolean,
@@ -40,12 +39,20 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
   const [ambientBlink, setAmbientBlink] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isBouncing, setIsBouncing] = useState(false);
-  const [svgs, setSvgs] = useState<MascotSvgs | null>(null);
+  // Initial state hits the module cache synchronously when the user
+  // has previously visited this mode (or the prefetch already ran),
+  // so a return-trip to a known mode renders the mascot on the first
+  // frame instead of flashing through a null placeholder.
+  const [svgs, setSvgs] = useState<MascotSvgs | null>(() => getMascotSvgsSync(modeId));
 
-  // Load the active mode's SVG payload. Cancellation guard prevents a
-  // late-resolving promise from clobbering newer state if the user
-  // rapid-switches modes.
+  // Async load fills the cache when the lazy initial state was a miss.
+  // Cancellation guard prevents a late-resolving promise from clobbering
+  // newer state if the user rapid-switches modes.
   useEffect(() => {
+    if (getMascotSvgsSync(modeId)) {
+      setSvgs(getMascotSvgsSync(modeId));
+      return;
+    }
     let cancelled = false;
     setSvgs(null);
     loadMascotSvgs(modeId).then((loaded) => {
