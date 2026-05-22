@@ -18,10 +18,10 @@ export function FlyingPig() {
            wind feels atmospheric, not solid.
          - Ear fills: white (kept). */
       raw = raw.replace(/fill:\s*#2e2b26/gi, 'fill: #5B453B');
-      raw = raw.replace(/<g id="air">([\s\S]*?)<\/g>/, (_, inner) => {
+      raw = raw.replace(/<g id="air">([\s\S]*?)<\/g>/, (_, inner: string) => {
         const updated = inner.replace(
           /<path class="cls-3"/g,
-          '<path class="cls-3" fill="#8C8884"'
+          '<path class="cls-3" fill="#8C8884"',
         );
         return `<g id="air">${updated}</g>`;
       });
