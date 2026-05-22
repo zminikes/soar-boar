@@ -1,10 +1,17 @@
+import type { Dispatch, SetStateAction } from 'react';
+import type { DebugState } from '../lib/types';
 import { Toggle } from './Toggle';
+
+interface ExperimentsPanelProps {
+  debug: DebugState;
+  setDebug: Dispatch<SetStateAction<DebugState>>;
+}
 
 /* Design experiments — A/B compare directions.
    The colored-bg color picker lives in a floating panel rendered at the
    App root (not here) so it stays visible while scrolling. */
-export function ExperimentsPanel({ debug, setDebug }) {
-  const experiments = [
+export function ExperimentsPanel({ debug, setDebug }: ExperimentsPanelProps) {
+  const experiments: { key: keyof DebugState; label: string; sub: string }[] = [
     // No experiments currently — colored bg is now canonical.
   ];
   if (!experiments.length) return null;

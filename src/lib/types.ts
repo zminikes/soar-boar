@@ -12,3 +12,11 @@ export interface ChainEntry {
   word: string;
   pts?: number | null;
 }
+
+// User-facing toggles owned by App and threaded through to StartScreen,
+// PlayScreen, EndScreen, ExperimentsPanel. Persisted via localStorage.
+export interface DebugState {
+  streakRule: boolean;
+  foreverMode: boolean;
+  darkMode: boolean;
+}

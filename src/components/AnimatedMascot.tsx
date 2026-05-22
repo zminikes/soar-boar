@@ -1,19 +1,49 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { SVG_DATA } from '../data/svgData';
-import { ColorOverrideContext, useColoredBgActive, useIsDark } from '../game/appContext';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { SVG_DATA, type MascotName } from '../data/svgData';
+import { useColorOverrides, useColoredBgActive, useIsDark } from '../game/appContext';
 import { scopeSvgStyles } from '../game/svgUtils';
+import type { ModeId } from '../lib/modes';
+
+interface AnimatedMascotProps {
+  size?: number;
+  modeId?: ModeId;
+}
+
+// Per-mode mascot frames for the open + closed eye states. Explicit
+// literal returns so TypeScript verifies each branch against MascotName
+// — mirrors the iconPath helper in MascotIcon.
+function mascotFrames(modeId: ModeId, isDark: boolean): { open: MascotName; closed: MascotName } {
+  if (modeId === 'soyboy') {
+    return isDark
+      ? { open: 'bean-open-dark.svg', closed: 'bean-closed-dark.svg' }
+      : { open: 'bean-open.svg', closed: 'bean-closed.svg' };
+  }
+  if (modeId === 'thisthat') {
+    return { open: 'pig-tt-open.svg', closed: 'pig-tt-closed.svg' };
+  }
+  return isDark
+    ? { open: 'pig-open-dark.svg', closed: 'pig-closed-dark.svg' }
+    : { open: 'pig-open.svg', closed: 'pig-closed.svg' };
+}
+
+// 8 hair frames used by the thisthat ping-pong animation. Typed array
+// so SVG_DATA[HAIR_KEYS[i]] is a MascotName lookup without an `as` cast.
+const HAIR_KEYS: readonly MascotName[] = [
+  'hair-1.svg', 'hair-2.svg', 'hair-3.svg', 'hair-4.svg',
+  'hair-5.svg', 'hair-6.svg', 'hair-7.svg', 'hair-8.svg',
+];
 
 /* AnimatedMascot — two SVG frames cross-faded between "open" and "closed"
    when eyes are "closed" (random ambient blink OR hover). Hover also
    plays a single subtle bounce animation. All styles are scoped via
    scopeSvgStyles so multiple inline SVGs don't fight over class names. */
-export function AnimatedMascot({ size = 120, modeId = 'classic' }) {
+export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMascotProps) {
   const isDark = useIsDark();
   const coloredBgActive = useColoredBgActive();
+  const overrides = useColorOverrides();
   const [ambientBlink, setAmbientBlink] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isBouncing, setIsBouncing] = useState(false);
-  const overrides = useContext(ColorOverrideContext);
 
   // Ambient blink — random ~35% every 2.5s
   useEffect(() => {
@@ -33,33 +63,24 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }) {
   }, []);
   const handleLeave = useCallback(() => setIsHovered(false), []);
 
-  const isSoyboy   = modeId === 'soyboy';
+  const isSoyboy = modeId === 'soyboy';
   const isThisThat = modeId === 'thisthat';
-  const isClassic  = !isSoyboy && !isThisThat;
-  const dm = isDark ? '-dark' : '';
-  const openPath =
-    isSoyboy   ? `bean-open${dm}.svg` :
-    isThisThat ? `pig-tt-open.svg`    :
-    `pig-open${dm}.svg`;
-  const closedPath =
-    isSoyboy   ? `bean-closed${dm}.svg` :
-    isThisThat ? `pig-tt-closed.svg`    :
-    `pig-closed${dm}.svg`;
+  const isClassic = !isSoyboy && !isThisThat;
+  const { open: openPath, closed: closedPath } = mascotFrames(modeId, isDark);
   const defaultColor =
-    isSoyboy   ? '#27885E' :
+    isSoyboy ? '#27885E' :
     isThisThat ? '#59a1d8' :
     '#F88065';
-  const modeKey = isSoyboy ? 'soyboy' : (isThisThat ? 'thisthat' : 'classic');
-  const accent = coloredBgActive ? (overrides[modeKey] || {}).accent : null;
+  const accent = coloredBgActive ? overrides[modeId]?.accent : undefined;
 
-  const recolor = (raw) => {
+  const recolor = (raw: string): string => {
     if (!raw) return '';
     let result = raw;
     // Accent color from picker
     if (accent && accent.toLowerCase() !== defaultColor.toLowerCase()) {
       result = result.replace(
         new RegExp(`fill\\s*:\\s*${defaultColor}`, 'gi'),
-        `fill: ${accent}`
+        `fill: ${accent}`,
       );
     }
     // Dark mode: all dark strokes (.cls-2 = #2e2b26) — outlines + facial
@@ -73,12 +94,12 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }) {
   const openSvg = useMemo(
     () => scopeSvgStyles(recolor(SVG_DATA[openPath]), 'animated-mascot'),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [openPath, defaultColor, accent, isDark]
+    [openPath, defaultColor, accent, isDark],
   );
   const closedSvg = useMemo(
     () => scopeSvgStyles(recolor(SVG_DATA[closedPath]), 'animated-mascot'),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [closedPath, defaultColor, accent, isDark]
+    [closedPath, defaultColor, accent, isDark],
   );
 
   // This That: build 8 hair frames + cycle them 1→8→1 (ping-pong).
@@ -87,8 +108,8 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }) {
   // In dark mode, force hair to white for contrast against the dark bg.
   const hairFrames = useMemo(() => {
     if (!isThisThat) return [];
-    return Array.from({ length: 8 }, (_, i) => {
-      let raw = SVG_DATA[`hair-${i + 1}.svg`] || '';
+    return HAIR_KEYS.map((key) => {
+      let raw = SVG_DATA[key] || '';
       if (isDark) {
         raw = raw.replace(/fill:\s*#2e2b26/gi, 'fill: #F5F3F0');
       }
@@ -99,7 +120,7 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }) {
   useEffect(() => {
     if (!isThisThat) return;
     // 14-step ping-pong: 0,1,2,3,4,5,6,7,6,5,4,3,2,1 → repeat
-    const seq = [0,1,2,3,4,5,6,7,6,5,4,3,2,1];
+    const seq = [0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1];
     let step = 0;
     const id = setInterval(() => {
       step = (step + 1) % seq.length;
@@ -126,7 +147,7 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }) {
       role="img"
       aria-label={isClassic ? 'Flying pig mascot' : 'Soy bean mascot'}
     >
-      <div className="frame frame-open"  dangerouslySetInnerHTML={{ __html: openSvg }} />
+      <div className="frame frame-open" dangerouslySetInnerHTML={{ __html: openSvg }} />
       <div className="frame frame-closed" dangerouslySetInnerHTML={{ __html: closedSvg }} />
       {isThisThat && (
         <div className="hair-anim" aria-hidden="true">

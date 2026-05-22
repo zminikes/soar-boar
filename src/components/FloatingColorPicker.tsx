@@ -1,39 +1,71 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { DEFAULT_COLORS } from '../game/constants';
+import type { ColorOverrides } from '../game/appContext';
+import type { ModeId } from '../lib/modes';
 import { HsvPicker } from './HsvPicker';
 
-export function FloatingColorPicker({ colorOverrides, setColorOverrides, modeId }) {
+type SwatchKind = 'bg' | 'accent';
+// Dotted "<mode>.<kind>" key used for swatch identity in the picker UI.
+type SwatchKey = `${ModeId}.${SwatchKind}`;
+
+interface Swatch {
+  key: SwatchKey;
+  label: string;
+}
+
+const SWATCHES: Swatch[] = [
+  { key: 'classic.bg',      label: 'Soar Boar BG' },
+  { key: 'classic.accent',  label: 'Soar Boar Accent' },
+  { key: 'soyboy.bg',       label: 'Soy Boy BG' },
+  { key: 'soyboy.accent',   label: 'Soy Boy Accent' },
+  { key: 'thisthat.bg',     label: 'This That BG' },
+  { key: 'thisthat.accent', label: 'This That Accent' },
+];
+
+function parseKey(key: SwatchKey): [ModeId, SwatchKind] {
+  // SwatchKey is the template-literal `${ModeId}.${SwatchKind}` so the
+  // split always yields exactly the right pair — the cast is honest.
+  return key.split('.') as [ModeId, SwatchKind];
+}
+
+interface FloatingColorPickerProps {
+  colorOverrides: ColorOverrides;
+  setColorOverrides: Dispatch<SetStateAction<ColorOverrides>>;
+  modeId: ModeId;
+}
+
+export function FloatingColorPicker({ colorOverrides, setColorOverrides, modeId }: FloatingColorPickerProps) {
   const [open, setOpen] = useState(true);
-  const [activeKey, setActiveKey] = useState(() => `${modeId}.bg`);
+  const [activeKey, setActiveKey] = useState<SwatchKey>(() => `${modeId}.bg`);
   const [copied, setCopied] = useState(false);
 
   // When mode changes, focus the active swatch on the new mode if helpful
   useEffect(() => {
     setActiveKey(prev => {
-      const [mm, kk] = prev.split('.');
+      const [mm, kk] = parseKey(prev);
       return mm === modeId ? prev : `${modeId}.${kk}`;
     });
   }, [modeId]);
 
-  const get = (m, k) =>
-    (colorOverrides[m] && colorOverrides[m][k]) || DEFAULT_COLORS[m][k];
-  const isOverride = (m, k) =>
-    !!(colorOverrides[m] && colorOverrides[m][k]);
+  const get = (m: ModeId, k: SwatchKind): string =>
+    colorOverrides[m]?.[k] ?? DEFAULT_COLORS[m][k];
+  const isOverride = (m: ModeId, k: SwatchKind): boolean =>
+    !!colorOverrides[m]?.[k];
 
-  const updateActive = (hex) => {
-    const [m, k] = activeKey.split('.');
+  const updateActive = (hex: string): void => {
+    const [m, k] = parseKey(activeKey);
     setColorOverrides(prev => ({
       ...prev,
-      [m]: { ...(prev[m] || {}), [k]: hex },
+      [m]: { ...(prev[m] ?? {}), [k]: hex },
     }));
   };
 
-  const reset = () => setColorOverrides({});
-  const copy = () => {
+  const reset = (): void => setColorOverrides({});
+  const copy = (): void => {
     const text =
-`Classic   — bg: ${get('classic','bg')}   accent: ${get('classic','accent')}
-Soyboy    — bg: ${get('soyboy','bg')}    accent: ${get('soyboy','accent')}
-This That — bg: ${get('thisthat','bg')} accent: ${get('thisthat','accent')}`;
+`Classic   — bg: ${get('classic', 'bg')}   accent: ${get('classic', 'accent')}
+Soyboy    — bg: ${get('soyboy', 'bg')}    accent: ${get('soyboy', 'accent')}
+This That — bg: ${get('thisthat', 'bg')} accent: ${get('thisthat', 'accent')}`;
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
@@ -53,15 +85,7 @@ This That — bg: ${get('thisthat','bg')} accent: ${get('thisthat','accent')}`;
     );
   }
 
-  const swatches = [
-    { key: 'classic.bg',      label: 'Soar Boar BG' },
-    { key: 'classic.accent',  label: 'Soar Boar Accent' },
-    { key: 'soyboy.bg',       label: 'Soy Boy BG' },
-    { key: 'soyboy.accent',   label: 'Soy Boy Accent' },
-    { key: 'thisthat.bg',     label: 'This That BG' },
-    { key: 'thisthat.accent', label: 'This That Accent' },
-  ];
-  const [activeMode, activeKind] = activeKey.split('.');
+  const [activeMode, activeKind] = parseKey(activeKey);
   const currentValue = get(activeMode, activeKind);
 
   return (
@@ -72,8 +96,8 @@ This That — bg: ${get('thisthat','bg')} accent: ${get('thisthat','accent')}`;
       </div>
 
       <div className="cp-swatches">
-        {swatches.map(s => {
-          const [m, k] = s.key.split('.');
+        {SWATCHES.map(s => {
+          const [m, k] = parseKey(s.key);
           const v = get(m, k);
           const isActive = s.key === activeKey;
           return (
