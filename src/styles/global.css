@@ -1445,7 +1445,7 @@
     /* ── Root ────────────────────────────────────────────── */
     #root {
       width: 100%;
-      max-width: 420px;
+      max-width: 380px;
       /* safe-area-inset-top handles notch/Dynamic Island; bottom handles home indicator */
       padding: env(safe-area-inset-top, 0) 20px calc(24px + env(safe-area-inset-bottom, 0));
       display: flex;
@@ -1453,8 +1453,17 @@
       /* Prevents dark/light background bleed-through during screen fade transitions */
       background: var(--cream);
     }
+    /* Width values match what legacy game/index.html renders. The legacy
+       app declared <div id="root"> in both the index.html placeholder AND
+       inside its <App> return value — React mounted into the outer one,
+       leaving the inner #root with the same CSS applied a second time, so
+       its 20px of horizontal padding stacked on top of the outer's. The
+       inner div's effective max-width was 380 (mobile) / 520 (desktop)
+       once the outer's content area constrained it. Migration mounts
+       cleanly into a single #root, so we shrink max-width by 40px here to
+       preserve the visible container size users are already used to. */
     @media (min-width: 640px) {
-      #root { max-width: 560px; }
+      #root { max-width: 520px; }
     }
 
     /* ── Header ──────────────────────────────────────────── */
