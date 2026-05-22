@@ -608,6 +608,64 @@
       letter-spacing: -0.02em;
     }
 
+    /* WCAG contrast checker — shows ratio + level for current mode */
+    .cp-contrast {
+      display: flex; flex-direction: column;
+      gap: 4px;
+      padding: 10px;
+      background: rgba(0,0,0,0.03);
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+    :root[data-theme="dark"] .cp-contrast { background: rgba(255,255,255,0.04); }
+    .cp-contrast-title {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      opacity: 0.55;
+      margin-bottom: 2px;
+    }
+    .cp-contrast-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cp-contrast-preview {
+      width: 26px; height: 22px;
+      border-radius: 5px;
+      display: grid; place-items: center;
+      font-family: var(--ff-serif);
+      font-weight: 600;
+      font-size: 13px;
+      line-height: 1;
+      flex-shrink: 0;
+      border: 1px solid rgba(0,0,0,0.10);
+    }
+    .cp-contrast-label {
+      font-size: 11px; font-weight: 600;
+      opacity: 0.72;
+      flex: 1;
+      min-width: 0;
+    }
+    .cp-contrast-ratio {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .cp-contrast-badge {
+      font-size: 9px; font-weight: 800;
+      letter-spacing: 0.06em;
+      padding: 2px 6px;
+      border-radius: 999px;
+      min-width: 32px;
+      text-align: center;
+    }
+    .cp-contrast-badge.aaa  { background: rgba(39,174,96,0.16);  color: #1E7E3E; }
+    .cp-contrast-badge.aa   { background: rgba(39,174,96,0.12);  color: #2E8A50; }
+    .cp-contrast-badge.large{ background: rgba(212,148,33,0.18); color: #9A6B0F; min-width: 52px; }
+    .cp-contrast-badge.fail { background: rgba(192,57,43,0.16);  color: #B53A2B; }
+    :root[data-theme="dark"] .cp-contrast-badge.aaa   { color: #5DCB85; }
+    :root[data-theme="dark"] .cp-contrast-badge.aa    { color: #6AD494; }
+    :root[data-theme="dark"] .cp-contrast-badge.large { color: #E5B860; }
+    :root[data-theme="dark"] .cp-contrast-badge.fail  { color: #E07567; }
+
     /* HSV picker — drag-to-pick SL pad + hue slider + hex input */
     .hsv-pad {
       position: relative;

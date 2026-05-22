@@ -1,7 +1,8 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { DEFAULT_COLORS } from '../game/constants';
 import type { ColorOverrides } from '../game/appContext';
-import type { ModeId } from '../lib/modes';
+import { MODE_CONFIGS, type ModeId } from '../lib/modes';
+import { contrastRatio, wcagLevel, type WcagLevel } from '../lib/colorMath';
 import { HsvPicker } from './HsvPicker';
 
 type SwatchKind = 'bg' | 'accent';
@@ -88,6 +89,20 @@ This That — bg: ${get('thisthat', 'bg')} accent: ${get('thisthat', 'accent')}`
   const [activeMode, activeKind] = parseKey(activeKey);
   const currentValue = get(activeMode, activeKind);
 
+  // WCAG contrast for the currently active mode — shows accent + text
+  // ratios against the bg so a designer tweaking the brand can see
+  // whether the pair clears AA without leaving the picker.
+  const cBg = get(activeMode, 'bg');
+  const cAccent = get(activeMode, 'accent');
+  const cText = '#0A0A0A'; // --dark text token
+  const contrastPairs: ReadonlyArray<{ label: string; fg: string; bg: string; glyph: string }> = [
+    { label: 'Accent on BG', fg: cAccent, bg: cBg, glyph: 'Aa' },
+    { label: 'Text on BG', fg: cText, bg: cBg, glyph: 'Aa' },
+  ];
+  const modeLabel = MODE_CONFIGS[activeMode].name;
+  const badgeClass = (level: WcagLevel): string =>
+    level === 'AAA' ? 'aaa' : level === 'AA' ? 'aa' : level === 'AA Large' ? 'large' : 'fail';
+
   return (
     <div className="cp-floating" role="dialog" aria-label="Color tool">
       <div className="cp-header">
@@ -111,11 +126,30 @@ This That — bg: ${get('thisthat', 'bg')} accent: ${get('thisthat', 'accent')}`
               <span className="cp-swatch-text">
                 <span className="cp-swatch-label">{s.label}</span>
                 <span className="cp-swatch-hex" style={{
-                  color: isOverride(m, k) ? v : 'inherit',
                   fontWeight: isOverride(m, k) ? 700 : 600,
                 }}>{v.toUpperCase()}</span>
               </span>
             </button>
+          );
+        })}
+      </div>
+
+      <div className="cp-contrast" aria-label={`Contrast ratios for ${modeLabel}`}>
+        <div className="cp-contrast-title">{modeLabel} contrast</div>
+        {contrastPairs.map(p => {
+          const ratio = contrastRatio(p.fg, p.bg);
+          const level = wcagLevel(ratio);
+          return (
+            <div key={p.label} className="cp-contrast-row">
+              <span
+                className="cp-contrast-preview"
+                style={{ background: p.bg, color: p.fg }}
+                aria-hidden="true"
+              >{p.glyph}</span>
+              <span className="cp-contrast-label">{p.label}</span>
+              <span className="cp-contrast-ratio">{ratio.toFixed(2)}:1</span>
+              <span className={`cp-contrast-badge ${badgeClass(level)}`}>{level}</span>
+            </div>
           );
         })}
       </div>
