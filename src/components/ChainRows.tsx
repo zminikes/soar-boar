@@ -3,7 +3,9 @@ import { diffPos } from '../lib/moves';
 import type { ChainEntry } from '../lib/types';
 
 interface ChainRowsProps {
-  chain: ChainEntry[];
+  // readonly: the component only calls chain.slice().reverse() which copies
+  // before iterating, so we never mutate. Documents the contract.
+  chain: readonly ChainEntry[];
   maxHeight?: number;
   modeId?: ModeId;
 }
