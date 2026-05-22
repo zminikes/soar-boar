@@ -13,7 +13,7 @@ A timed word-chaining game. Change exactly one letter per turn to make a new wor
 The Vite dev build is the primary path going forward.
 
 ```bash
-npm install
+npm ci      # use ci, not install — the lockfile is committed
 npm run dev
 ```
 
@@ -25,7 +25,7 @@ To exercise the email-signup form locally, also set:
 export VITE_APPS_SCRIPT_URL="https://script.google.com/macros/s/…/exec"
 ```
 
-`EmailSignup` throws on an empty URL by design — unconfigured deploys fail loud rather than silently faking success. See [`NEWSLETTER_PLAN.md`](./NEWSLETTER_PLAN.md) for the one-time Apps Script deploy steps.
+`EmailSignup` refuses to silently fake success when this URL is empty — it throws at form-submit time, which surfaces in the UI as the generic error state but produces no build-time signal. Verify the form posts to the staging Apps Script before promoting any deploy. See [`NEWSLETTER_PLAN.md`](./NEWSLETTER_PLAN.md) for the one-time Apps Script deploy steps.
 
 ### Legacy single-file build
 
@@ -36,7 +36,7 @@ cd game
 python3 -m http.server 8000
 ```
 
-Then open `http://localhost:8000`. The legacy build will be removed in the final cut-over (Phase 5g).
+Then open `http://localhost:8000`. The legacy build will be removed when the migration's deploy cut-over lands (see [`docs/migration/PLAN.md`](./docs/migration/PLAN.md)).
 
 ## Scripts
 
@@ -56,28 +56,32 @@ CI (`.github/workflows/ci.yml`) runs `typecheck`, `lint`, `test`, and `build` on
 ## Project structure
 
 ```
-src/
-  App.tsx               Top-level screen routing (start / tutorial / playing / end)
-  main.tsx              Vite entry — mounts <App/>, imports global CSS + fonts
-  components/           React components (one file per component)
-  lib/                  Pure logic — no React, no DOM. Portable to React Native.
-                          moves.ts, bfs.ts, puzzle.ts, share.ts, modes.ts, colorMath.ts, types.ts
-  data/                 Wordlists, starters, mascot SVG bundles
-  game/                 React-aware glue (constants, context, svg utils, env config)
-  platform/             Browser-only adapters (localStorage, share detection)
-  styles/global.css     Global CSS (splits per-component in Phase 5e)
-  assets/               Mascot SVGs (imported via Vite ?raw and url variants)
-  test/setup.ts         RTL + jest-dom + navigator stubs
-
-game/                   Legacy single-file build (deploys to soarboar.com today)
-docs/migration/         The phased migration plan
-public/                 Static assets served at site root (og-image.png, favicon)
+src/                    The Vite + TypeScript app
+  App.tsx                 Top-level screen routing (start / tutorial / playing / end)
+  main.tsx                Vite entry — mounts <App/>, imports global CSS + fonts
+  components/             React components (one file per component)
+  lib/                    Pure logic — no React, no DOM. Portable to React Native.
+                            moves.ts, bfs.ts, puzzle.ts, share.ts, modes.ts, colorMath.ts, types.ts
+  data/                   Wordlists, starters, mascot SVG bundles
+  game/                   React-aware glue (constants, context, svg utils, env config)
+  platform/               Browser-only adapters (localStorage, touch detection)
+  styles/global.css       Global CSS (splits per-component in Phase 5e)
+  assets/                 Mascot SVGs (imported via Vite ?raw and url variants)
+  test/setup.ts           RTL + jest-dom + navigator stubs
 ```
+
+Other top-level directories:
+
+- `game/` — legacy single-file build (currently serves soarboar.com)
+- `docs/migration/` — the phased migration plan
+- `public/` — static assets served at the site root (`og-image.png` is currently the only file; favicon is an inline SVG data-URI in `index.html`)
+- `scripts/` — word-list analysis utilities (not part of the app build)
+- `dist/` — Vite production output (created by `npm run build`, gitignored)
 
 The `src/lib/` boundary is enforced by ESLint's `no-restricted-imports` — anything inside `src/lib/**` may not import React or `src/data/*`, so the layer that ports to React Native stays clean.
 
 ## Deployment
 
-Vercel builds the Vite output from the repo root. Set `VITE_APPS_SCRIPT_URL` in the project's environment variables before promoting a build — the EmailSignup throw guards against shipping with it unset.
+Vercel builds the Vite output from the repo root. Set `VITE_APPS_SCRIPT_URL` in the project's environment variables before promoting a build, then submit the signup form against the staging URL once to confirm it lands in the Sheet — the build won't fail without the env var, so the form is the only end-to-end check.
 
 Until the cut-over, `soarboar.com` serves `game/`. The migration's final phase swaps the served directory to `dist/` (see [`docs/migration/PLAN.md`](./docs/migration/PLAN.md)).
