@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SVG_DATA, type MascotName } from '../data/svgData';
 import { useColorOverrides, useColoredBgActive, useIsDark } from '../game/appContext';
+import { DEFAULT_COLORS } from '../game/constants';
 import { scopeSvgStyles } from '../game/svgUtils';
 import type { ModeId } from '../lib/modes';
 
@@ -67,13 +68,16 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
   const isThisThat = modeId === 'thisthat';
   const isClassic = !isSoyboy && !isThisThat;
   const { open: openPath, closed: closedPath } = mascotFrames(modeId, isDark);
-  const defaultColor =
-    isSoyboy ? '#27885E' :
-    isThisThat ? '#59a1d8' :
-    '#F88065';
+  // Per-mode brand accent — single source of truth shared with the
+  // FloatingColorPicker swatches (DEFAULT_COLORS) so a designer changing
+  // the brand can't desync the mascot recolor from the swatch display.
+  const defaultColor = DEFAULT_COLORS[modeId].accent;
   const accent = coloredBgActive ? overrides[modeId]?.accent : undefined;
 
-  const recolor = (raw: string): string => {
+  // useCallback rather than a per-render arrow so the useMemo deps below
+  // can list `recolor` honestly. eslint-disable not needed — TypeScript
+  // and the rule both see a stable dep set.
+  const recolor = useCallback((raw: string): string => {
     if (!raw) return '';
     let result = raw;
     // Accent color from picker
@@ -90,16 +94,14 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
       result = result.replace(/fill:\s*#2e2b26/gi, 'fill: #1A1918');
     }
     return result;
-  };
+  }, [accent, defaultColor, isDark]);
   const openSvg = useMemo(
     () => scopeSvgStyles(recolor(SVG_DATA[openPath]), 'animated-mascot'),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [openPath, defaultColor, accent, isDark],
+    [openPath, recolor],
   );
   const closedSvg = useMemo(
     () => scopeSvgStyles(recolor(SVG_DATA[closedPath]), 'animated-mascot'),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [closedPath, defaultColor, accent, isDark],
+    [closedPath, recolor],
   );
 
   // This That: build 8 hair frames + cycle them 1→8→1 (ping-pong).
@@ -109,7 +111,7 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
   const hairFrames = useMemo(() => {
     if (!isThisThat) return [];
     return HAIR_KEYS.map((key) => {
-      let raw = SVG_DATA[key] || '';
+      let raw = SVG_DATA[key];
       if (isDark) {
         raw = raw.replace(/fill:\s*#2e2b26/gi, 'fill: #F5F3F0');
       }

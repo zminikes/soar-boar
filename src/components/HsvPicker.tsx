@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent, type PointerEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type PointerEvent } from 'react';
 import { hexToHsv, hsvToHex, type Hsv } from '../lib/colorMath';
 
 interface HsvPickerProps {
@@ -20,6 +20,15 @@ export function HsvPicker({ value, onChange }: HsvPickerProps) {
   const dragRef = useRef<DragTarget>(null);
   const internalHexRef = useRef(safe.toUpperCase());
 
+  // Latest-value refs so handlePad / handleHue can be stable useCallbacks
+  // without re-attaching window listeners on every render. (Original code
+  // re-attached on every render — preserved-style perf cost we're paying
+  // down now that the file is being typed.)
+  const hsvRef = useRef(hsv);
+  hsvRef.current = hsv;
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
   // Sync from external value when it changes (e.g. swatch switch).
   useEffect(() => {
     if (value && value.toUpperCase() !== internalHexRef.current) {
@@ -31,27 +40,27 @@ export function HsvPicker({ value, onChange }: HsvPickerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  const commitHsv = (next: Hsv): void => {
+  const commitHsv = useCallback((next: Hsv): void => {
     setHsv(next);
     const hex = hsvToHex(next).toUpperCase();
     setHexDraft(hex);
     internalHexRef.current = hex;
-    onChange(hex);
-  };
+    onChangeRef.current(hex);
+  }, []);
 
-  const handlePad = (clientX: number, clientY: number): void => {
+  const handlePad = useCallback((clientX: number, clientY: number): void => {
     const r = padRef.current?.getBoundingClientRect();
     if (!r) return;
     const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
     const y = Math.max(0, Math.min(1, (clientY - r.top) / r.height));
-    commitHsv({ ...hsv, s: x * 100, v: (1 - y) * 100 });
-  };
-  const handleHue = (clientX: number): void => {
+    commitHsv({ ...hsvRef.current, s: x * 100, v: (1 - y) * 100 });
+  }, [commitHsv]);
+  const handleHue = useCallback((clientX: number): void => {
     const r = hueRef.current?.getBoundingClientRect();
     if (!r) return;
     const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
-    commitHsv({ ...hsv, h: x * 360 });
-  };
+    commitHsv({ ...hsvRef.current, h: x * 360 });
+  }, [commitHsv]);
 
   useEffect(() => {
     const onMove = (e: globalThis.PointerEvent): void => {
@@ -69,7 +78,7 @@ export function HsvPicker({ value, onChange }: HsvPickerProps) {
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
     };
-  });
+  }, [handlePad, handleHue]);
 
   const padDown = (e: PointerEvent<HTMLDivElement>): void => {
     e.preventDefault();
