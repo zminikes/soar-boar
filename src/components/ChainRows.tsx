@@ -1,4 +1,4 @@
-import { MODE_CONFIGS, type ModeId } from '../lib/modes';
+import type { ModeId } from '../lib/modes';
 import { diffPos } from '../lib/moves';
 import type { ChainEntry } from '../lib/types';
 
@@ -7,11 +7,13 @@ interface ChainRowsProps {
   // before iterating, so we never mutate. Documents the contract.
   chain: readonly ChainEntry[];
   maxHeight?: number;
+  // modeId is currently unused (main simplified the chain-pts label to
+  // just '+N pts' — no per-position label) but kept on the prop type
+  // so callers don't have to change. Drop on the next breaking pass.
   modeId?: ModeId;
 }
 
-export function ChainRows({ chain, maxHeight = 200, modeId = 'classic' }: ChainRowsProps) {
-  const cfg = MODE_CONFIGS[modeId];
+export function ChainRows({ chain, maxHeight = 200 }: ChainRowsProps) {
   return (
     <div className="chain-scroll" style={{ maxHeight }}>
       {chain.slice().reverse().map((entry, i) => {
@@ -31,7 +33,7 @@ export function ChainRows({ chain, maxHeight = 200, modeId = 'classic' }: ChainR
               );
             })}
             {entry.pts != null && (
-              <span className="chain-pts">+{entry.pts} · {prev && diffs.length === 1 && cfg.posLabels[diffs[0]]} letter</span>
+              <span className="chain-pts">+{entry.pts}</span>
             )}
           </div>
         );

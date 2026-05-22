@@ -1569,7 +1569,7 @@
     .timer-label { font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: 0.01em; }
     .timer-secs  { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
     .timer-secs.urgent { color: var(--error); }
-    .timer-track { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+    .timer-track { height: 6px; background: rgba(0,0,0,0.18); border-radius: 999px; overflow: hidden; }
     .timer-fill {
       height: 100%;
       border-radius: 999px;
@@ -1590,31 +1590,44 @@
       width: 64px;
       height: 64px;
       border-radius: 16px;
-      border: 1.5px solid rgba(0,0,0,0.18); /* thinner + higher contrast for a contemporary feel */
-      background: var(--white);
+      border: none;
+      background: var(--accent);     /* filled tiles wear the mode accent */
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 28px;
       font-weight: 800;
-      color: var(--dark);
+      color: var(--white);
       user-select: none;
-      transition: border-color 100ms, background 100ms, color 100ms;
+      transition: background 120ms, color 120ms, box-shadow 120ms;
     }
-    .tile.cursor { border-color: var(--dark); }
+    /* next word — filled tiles are white with dark text (active typing area) */
+    .tile.next {
+      background: var(--white);
+      color: var(--dark);
+    }
+    /* empty slots — white pill, no letter */
+    .tile:empty {
+      background: var(--white);
+      color: transparent;
+    }
+    /* cursor — active empty slot gets an inset accent ring */
+    .tile.cursor:empty {
+      background: var(--white);
+      box-shadow: inset 0 0 0 2px var(--accent);
+    }
     .tile.accept { animation: tileAccept 280ms var(--ease-spring) both; }
     .tile.success-anim { animation: tileSuccess 500ms var(--ease-spring) both; }
-    /* wrong: too many letters changed */
+    /* wrong: too many letters changed — solid red fill */
     .tile.wrong {
-      border-color: var(--error);
-      background: #FEF0EE;
-      color: var(--error);
+      background: var(--error);
+      color: var(--white);
     }
-    /* success highlight on onboarding */
+    /* success highlight on onboarding — keep accent fill, add ring */
     .tile.changed-ok {
-      border-color: var(--tutorial-accent);
-      background: var(--tutorial-accent-bg);
-      color: var(--tutorial-accent);
+      background: var(--tutorial-accent);
+      color: var(--white);
+      box-shadow: 0 0 0 3px var(--tutorial-accent-soft);
     }
     /* Tutorial highlights inherit --accent/--accent-soft from the mode class,
        so no separate override needed here. */
@@ -2205,7 +2218,7 @@
     }
 
     /* ── Theme transitions ───────────────────────────────── */
-    body,
+    body, #root, .big-demo, .kb,
     .card, .info-card, .dead-end-banner, kbd,
     .chain-tile, .chain-tile.changed,
     .score-badge, .timer-track {

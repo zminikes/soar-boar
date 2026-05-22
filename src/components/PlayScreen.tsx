@@ -405,7 +405,7 @@ export function PlayScreen({
             const isCursor = i === state.typed.length && state.typed.length < cfg.wordLen;
             const isWrong  = (tooMany || noChange) && typedDiffs.includes(i);
             return (
-              <div key={i} className={`tile${isCursor ? ' cursor' : ''}${isWrong ? ' wrong' : ''}`}>{letter}</div>
+              <div key={i} className={`tile next${isCursor ? ' cursor' : ''}${isWrong ? ' wrong' : ''}`}>{letter}</div>
             );
           })}
         </div>

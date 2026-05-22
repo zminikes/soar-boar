@@ -36,9 +36,8 @@ describe('ChainRows', () => {
       { word: 'BOAR', pts: 1 },
     ];
     render(<ChainRows chain={chain} />);
-    // "+1 · 1st letter" — classic mode default labels.
-    expect(screen.getByText(/\+1/)).toBeInTheDocument();
-    expect(screen.getByText(/1st/)).toBeInTheDocument();
+    // Annotation simplified on main to just '+N' — no per-position label.
+    expect(screen.getByText(/^\+1$/)).toBeInTheDocument();
   });
 
   it('omits the pts annotation when pts is null', () => {
@@ -49,16 +48,5 @@ describe('ChainRows', () => {
     render(<ChainRows chain={chain} />);
     // No "+N" text anywhere → annotation was skipped.
     expect(screen.queryByText(/\+\d/)).toBeNull();
-  });
-
-  it('uses mode-specific position labels', () => {
-    const chain: ChainEntry[] = [
-      { word: 'SOY' },
-      { word: 'BOY', pts: 1 },
-    ];
-    // Soyboy is 3-letter; labels are ['1st', '2nd', '3rd'] — same as classic
-    // for position 0. The test pins the mode-config plumbing, not a unique label.
-    render(<ChainRows chain={chain} modeId="soyboy" />);
-    expect(screen.getByText(/1st/)).toBeInTheDocument();
   });
 });
