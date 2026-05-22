@@ -218,10 +218,18 @@ export function PlayScreen({
     const s = stateRef.current;
     if (s.gameOver) return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
-    if (s.phase === 'countdown' && /^[a-zA-Z]$/.test(e.key)) {
+    if (s.phase === 'countdown') {
+      // Only a letter press starts the game — Enter / Backspace during the
+      // pre-roll are ignored. Dispatch START_PLAYING and fall through so
+      // the same keystroke also lands as the first typed letter. The
+      // reducer processes both dispatches sequentially (START_PLAYING
+      // first, then TYPE_LETTER on the now-playing state), so this works
+      // without waiting for stateRef to reflect the phase change.
+      if (!/^[a-zA-Z]$/.test(e.key)) return;
       dispatch({ type: 'START_PLAYING' });
+    } else if (s.phase !== 'playing') {
+      return;
     }
-    if (s.phase !== 'playing') return;
     if (e.key === 'Enter') {
       if (s.typed.length === cfg.wordLen) submitWord(s.typed);
     } else if (e.key === 'Backspace') {
