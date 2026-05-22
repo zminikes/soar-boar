@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties 
 import { MODE_CONFIGS, type ModeId } from '../lib/modes';
 import { generateShareText } from '../lib/share';
 import { SHARE_URL } from '../game/constants';
+import { playCelebrationSound } from '../game/sounds';
 import type { ChainEntry, DebugState } from '../lib/types';
 import { getBestScore, setBestScore } from '../platform/dom';
 import { MascotIcon } from './MascotIcon';
@@ -57,17 +58,33 @@ export function EndScreen({
   }, [isNewBest, modeId, score]);
   const currentBest = isNewBest ? score : previousBest;
 
-  // Emoji burst on tapping the new-best banner
+  // Ladder par celebration — matched or beat the BFS-shortest path.
+  // Win-only (a dead-end ladder is not a celebration). Par null falls
+  // through silently — some pairs lack a precomputed par.
+  const matchedPar = !!isLadder && !!win && par != null && score === par;
+  const beatPar = !!isLadder && !!win && par != null && score < par;
+  const isParCelebration = matchedPar || beatPar;
+
+  // Auto-play the celebration sound once when the appropriate banner
+  // mounts. PB takes precedence over par (can't really co-occur — ladder
+  // doesn't track PB — but the priority is explicit anyway).
+  useEffect(() => {
+    if (isNewBest) playCelebrationSound('personalBest');
+    else if (isParCelebration) playCelebrationSound('shortest');
+  }, [isNewBest, isParCelebration]);
+
+  // Emoji burst on tapping a celebration banner. The two callsites pass
+  // their own emoji set + celebration sound so the burst feels different
+  // for PB vs ladder-par.
   const [bursts, setBursts] = useState<Burst[]>([]);
   const burstId = useRef(0);
-  const handleBurst = useCallback((): void => {
-    const emojis = modeId === 'soyboy' ? ['🫛'] : ['🐷', '🪽'];
+  const makeBurst = useCallback((emojis: readonly string[]): void => {
     const id = ++burstId.current;
     const N = 14;
     const particles: BurstParticle[] = Array.from({ length: N }, (_, i) => {
       const angle = (i / N) * 360 + (Math.random() * 24 - 12);
-      const dist  = 130 + Math.random() * 110;
-      const rad   = (angle * Math.PI) / 180;
+      const dist = 130 + Math.random() * 110;
+      const rad = (angle * Math.PI) / 180;
       return {
         emoji: emojis[i % emojis.length],
         dx: Math.cos(rad) * dist,
@@ -78,7 +95,15 @@ export function EndScreen({
     });
     setBursts(prev => [...prev, { id, particles }]);
     setTimeout(() => setBursts(prev => prev.filter(b => b.id !== id)), 1500);
-  }, [modeId]);
+  }, []);
+  const handleBurst = useCallback((): void => {
+    playCelebrationSound('personalBest');
+    makeBurst(modeId === 'soyboy' ? ['🫛'] : ['🐷', '🪽']);
+  }, [modeId, makeBurst]);
+  const handleParBurst = useCallback((): void => {
+    playCelebrationSound('shortest');
+    makeBurst(['🎯', '✨', '🪽']);
+  }, [makeBurst]);
 
   const handleShare = useCallback(async (): Promise<void> => {
     const text = generateShareText(chain, score, cfg, SHARE_URL);
@@ -146,6 +171,33 @@ export function EndScreen({
               </div>
             )}
           </>
+        )}
+        {isParCelebration && (
+          <button
+            type="button"
+            className="new-best-banner"
+            onClick={handleParBurst}
+            aria-label={beatPar ? 'Celebrate beating the best path' : 'Celebrate matching the best path'}
+          >
+            {beatPar ? '🏆 Beat the best path!' : '🎯 Matched the best path!'}
+            {bursts.map(burst => (
+              <Fragment key={burst.id}>
+                {burst.particles.map((p, i) => (
+                  <span
+                    key={i}
+                    className="burst-emoji"
+                    aria-hidden="true"
+                    style={{
+                      '--burst-dx': `${p.dx}px`,
+                      '--burst-dy': `${p.dy}px`,
+                      '--burst-rot': `${p.rot}deg`,
+                      '--burst-dur': `${p.dur}ms`,
+                    } as CSSProperties}
+                  >{p.emoji}</span>
+                ))}
+              </Fragment>
+            ))}
+          </button>
         )}
         {!debug.foreverMode && isNewBest && (
           <button
