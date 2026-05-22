@@ -3,6 +3,7 @@ import { MODE_CONFIGS, type ModeId } from '../lib/modes';
 import { getWords } from '../data/modeData';
 import { MSG_DURATION } from '../game/constants';
 import { diffPos } from '../lib/moves';
+import type { KeyEvent } from '../lib/types';
 import { isTouchDevice } from '../platform/dom';
 import { Confetti } from './Confetti';
 import { Keyboard } from './Keyboard';
@@ -17,15 +18,6 @@ type MsgKind = '' | 'error' | 'ok';
 interface Msg {
   text: string;
   type: MsgKind;
-}
-
-// Minimal KeyboardEvent-shaped object — only the fields the handler reads.
-// Lets the Keyboard component dispatch a synthetic key event via the same path.
-interface KeyEvent {
-  key: string;
-  metaKey?: boolean;
-  ctrlKey?: boolean;
-  altKey?: boolean;
 }
 
 interface OnboardingScreenProps {

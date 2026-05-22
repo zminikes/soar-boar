@@ -7,6 +7,12 @@ import { getBestScore, setBestScore } from '../platform/dom';
 import { MascotIcon } from './MascotIcon';
 import { ChainRows } from './ChainRows';
 
+// Feature support is stable per page load — evaluate once at module
+// load and read everywhere. Modern lib.dom types `share` as required
+// on Navigator, so `typeof === 'function'` is the honest runtime
+// check (older browsers may not have it).
+const HAS_NATIVE_SHARE = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+
 interface BurstParticle {
   emoji: string;
   dx: number;
@@ -76,12 +82,8 @@ export function EndScreen({
 
   const handleShare = useCallback(async (): Promise<void> => {
     const text = generateShareText(chain, score, cfg, SHARE_URL);
-    // typeof check rather than `'share' in navigator` — modern lib.dom
-    // types `share` as always-present, so the `in` form narrows to never
-    // in the else branch even though the runtime check is honest.
-    const canNativeShare = typeof navigator.share === 'function';
     try {
-      if (canNativeShare) {
+      if (HAS_NATIVE_SHARE) {
         await navigator.share({ text });
       } else {
         await navigator.clipboard.writeText(text);
@@ -197,7 +199,7 @@ export function EndScreen({
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
             </svg>
-            {typeof navigator.share === 'function' ? 'Share ladder' : 'Copy ladder'}
+            {HAS_NATIVE_SHARE ? 'Share ladder' : 'Copy ladder'}
           </button>
         )}
         {copied && <div className="share-copied">Copied to clipboard! ✓</div>}
