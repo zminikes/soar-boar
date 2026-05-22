@@ -40,7 +40,7 @@ Copy `.env.example` to `.env.local` and fill in any values you want for local de
 cp .env.example .env.local
 ```
 
-- `VITE_APPS_SCRIPT_URL` — Apps Script Web App that appends newsletter signups to a Google Sheet. Empty value is fine for local dev (the signup form surfaces an explicit error state). **Required in production** — an unconfigured deploy fails every signup attempt; the form shows its error UI but nothing surfaces server-side, so the breakage is invisible without active testing. See `NEWSLETTER_PLAN.md` for the one-time deploy steps.
+- `VITE_APPS_SCRIPT_URL` — Apps Script Web App that appends newsletter signups to a Google Sheet. Empty value is fine for local dev (the signup form surfaces an explicit error state). **Required in production** — an unconfigured deploy fails every signup attempt; the form shows its error UI but nothing surfaces server-side, so the breakage is invisible without active testing. See `.claude/plans/NEWSLETTER_PLAN.md` for the one-time deploy steps.
 
 ## Project structure
 

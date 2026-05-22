@@ -2,15 +2,15 @@
 
     :root {
       --cream:      #F8F1E5;
-      --orange:     #F88065;
-      --pink:       rgba(248,128,101,0.12);
+      --orange:     #D46247;
+      --pink:       rgba(212,98,71,0.12);
       --white:      #FFFFFF;
       --dark:       #0A0A0A;
       --muted:      #737373;
       --border:     rgba(0,0,0,0.08);
       --error:      #C0392B;
       --ok:         #27AE60;
-      --pos1:       #F88065;
+      --pos1:       #D46247;
       --pos2:       #9B59B6;
       --pos3:       #2E86C1;
       --pos4:       #27AE60;
@@ -20,13 +20,13 @@
       /* Brand "deep" colors — pig SVG fill, bean SVG fill, and the
          wordmark accent are all driven by these tokens so they
          can't drift apart. */
-      --deep-peach: #F88065;
-      --deep-sage:  #27885E;
-      --deep-blue:  #59a1d8;
+      --deep-peach: #D46247;
+      --deep-sage:  #247D57;
+      --deep-blue:  #2e83c5;
       --accent:     var(--deep-peach);
       /* Per-mode accent-soft — set on the mode class so tutorial highlights
          and chain pills always match the active hue, even without coloredBg. */
-      --accent-soft: rgba(248,128,101,0.30);
+      --accent-soft: rgba(212,98,71,0.30);
       /* Tutorial highlights inherit the mode accent so the ↓ arrow and the
          changed-ok pill stay on-brand across all modes. */
       --tutorial-accent:      var(--accent);
@@ -65,6 +65,17 @@
       display: block;
       position: relative;
       cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+    /* Prevent the wordmark + tag from getting highlighted when
+       the user rapidly taps the mascot above. */
+    .simple-wordmark,
+    .simple-tag {
+      -webkit-user-select: none;
+      user-select: none;
     }
     .animated-mascot .frame { display: block; }
     /* Instant frame swap — no transition, no overlap.
@@ -234,9 +245,9 @@
     .shake { animation: shake 240ms ease; }
 
     /* ── Soy Boy green theme ─────────────────────────────── */
-    .soyboy   { --orange: #27885E; --accent: var(--deep-sage); --accent-soft: rgba(39,136,94,0.22);  --pink: rgba(39,136,94,0.12); }
+    .soyboy   { --orange: #247D57; --accent: var(--deep-sage); --accent-soft: rgba(36,125,87,0.22);  --pink: rgba(36,125,87,0.12); }
     /* ── This That blue theme ────────────────────────────── */
-    .thisthat { --orange: #59a1d8; --accent: var(--deep-blue); --accent-soft: rgba(89,161,216,0.26); --pink: rgba(89,161,216,0.14); }
+    .thisthat { --orange: #2e83c5; --accent: var(--deep-blue); --accent-soft: rgba(46,131,197,0.26); --pink: rgba(46,131,197,0.14); }
 
     /* ── Design experiments — driven by data attrs on <html> ── */
 
@@ -244,25 +255,25 @@
        data-exp-colored-bg is only set when the start screen is active —
        game/end screens always render on cream. */
     :root[data-exp-colored-bg="1"][data-exp-mode="classic"] {
-      --cream: #F7F1E6;             /* warm neutral cream */
+      --cream: #FFE2C7;             /* peach */
       --muted: rgba(0,0,0,0.62);
       --border: rgba(0,0,0,0.16);
       --accent: var(--deep-peach);
-      --accent-soft: rgba(248,128,101,0.22);
+      --accent-soft: rgba(212,98,71,0.22);
     }
     :root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]  {
       --cream: #B7D197;             /* picked sage */
       --muted: rgba(0,0,0,0.62);
       --border: rgba(0,0,0,0.16);
       --accent: var(--deep-sage);
-      --accent-soft: rgba(39,136,94,0.14);
+      --accent-soft: rgba(36,125,87,0.14);
     }
     :root[data-exp-colored-bg="1"][data-exp-mode="thisthat"] {
-      --cream: #CCE1F2;             /* soft sky blue, derived from #59a1d8 */
+      --cream: #CCE1F2;             /* soft sky blue, derived from #2e83c5 */
       --muted: rgba(0,0,0,0.62);
       --border: rgba(0,0,0,0.16);
       --accent: var(--deep-blue);
-      --accent-soft: rgba(89,161,216,0.16);
+      --accent-soft: rgba(46,131,197,0.16);
     }
     /* Dark mode intentionally does NOT apply the colored bg —
        sticks with the neutral near-black cream for a calmer feel.
@@ -275,8 +286,8 @@
        Higher opacity = cleaner cream-on-color, less muddy mix. */
     :root[data-exp-colored-bg="1"] .info-card,
     :root[data-exp-colored-bg="1"] .mode-pill {
-      background: rgba(255,251,246,0.74);
-      border-color: rgba(0,0,0,0.10);
+      background: #FFFCF7;             /* warm near-white surface across all modes */
+      border-color: rgba(0,0,0,0.08);
       color: var(--dark);
     }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .info-card,
@@ -383,13 +394,9 @@
     :root[data-theme="dark"] .mode-segmented { background: rgba(255,255,255,0.08); }
     :root[data-theme="dark"] .seg-tab.active { background: var(--dark); color: var(--cream); }
     :root[data-theme="dark"] .seg-tab:not(.active) { color: var(--muted); }
-    :root[data-exp-colored-bg="1"] .mode-segmented { background: rgba(255,251,246,0.68); }
+    :root[data-exp-colored-bg="1"] .mode-segmented { background: #FFFCF7; }
     :root[data-exp-colored-bg="1"] .seg-tab.active { background: #1A1918; color: #fff; }
     :root[data-exp-colored-bg="1"] .seg-tab:not(.active) { color: rgba(0,0,0,0.62); }
-    /* Soar Boar light mode — flat warm-beige container instead of cream overlay */
-    :root[data-exp-colored-bg="1"][data-exp-mode="classic"]:not([data-theme="dark"]) .mode-segmented {
-      background: #EAE3D5;
-    }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .mode-segmented { background: rgba(0,0,0,0.32); }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .seg-tab.active { background: #F5F3F0; color: #1A1918; }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .seg-tab:not(.active) { color: rgba(255,255,255,0.72); }
@@ -402,17 +409,17 @@
     }
     .simple-wordmark {
       font-family: var(--ff-serif);
-      font-size: 56px;
+      font-size: 68px;
       font-weight: 600;
       letter-spacing: 0;
       line-height: 1;
       text-align: center;
-      margin-top: 4px;
+      margin-top: -8px;
       /* Instrument Serif only ships at weight 400 — iOS Safari skips bold
          synthesis, so add a tiny stroke to keep the wordmark feeling weighty
          and consistent across desktop / mobile. */
       font-synthesis: weight style;
-      -webkit-text-stroke: 0.5px currentColor;
+      -webkit-text-stroke: 0.3px currentColor;
     }
     .simple-wordmark .accent {
       color: var(--accent);
@@ -472,7 +479,7 @@
       opacity: 0.7;
     }
     @media (min-width: 640px) {
-      .simple-wordmark { font-size: 80px; }
+      .simple-wordmark { font-size: 96px; }
       .simple-tag { font-size: 20px; }
     }
 
@@ -607,6 +614,64 @@
       font-size: 11px; font-weight: 600;
       letter-spacing: -0.02em;
     }
+
+    /* WCAG contrast checker — shows ratio + level for current mode */
+    .cp-contrast {
+      display: flex; flex-direction: column;
+      gap: 4px;
+      padding: 10px;
+      background: rgba(0,0,0,0.03);
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+    :root[data-theme="dark"] .cp-contrast { background: rgba(255,255,255,0.04); }
+    .cp-contrast-title {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      opacity: 0.55;
+      margin-bottom: 2px;
+    }
+    .cp-contrast-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cp-contrast-preview {
+      width: 26px; height: 22px;
+      border-radius: 5px;
+      display: grid; place-items: center;
+      font-family: var(--ff-serif);
+      font-weight: 600;
+      font-size: 13px;
+      line-height: 1;
+      flex-shrink: 0;
+      border: 1px solid rgba(0,0,0,0.10);
+    }
+    .cp-contrast-label {
+      font-size: 11px; font-weight: 600;
+      opacity: 0.72;
+      flex: 1;
+      min-width: 0;
+    }
+    .cp-contrast-ratio {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .cp-contrast-badge {
+      font-size: 9px; font-weight: 800;
+      letter-spacing: 0.06em;
+      padding: 2px 6px;
+      border-radius: 999px;
+      min-width: 32px;
+      text-align: center;
+    }
+    .cp-contrast-badge.aaa  { background: rgba(39,174,96,0.16);  color: #1E7E3E; }
+    .cp-contrast-badge.aa   { background: rgba(39,174,96,0.12);  color: #2E8A50; }
+    .cp-contrast-badge.large{ background: rgba(212,148,33,0.18); color: #9A6B0F; min-width: 52px; }
+    .cp-contrast-badge.fail { background: rgba(192,57,43,0.16);  color: #B53A2B; }
+    :root[data-theme="dark"] .cp-contrast-badge.aaa   { color: #5DCB85; }
+    :root[data-theme="dark"] .cp-contrast-badge.aa    { color: #6AD494; }
+    :root[data-theme="dark"] .cp-contrast-badge.large { color: #E5B860; }
+    :root[data-theme="dark"] .cp-contrast-badge.fail  { color: #E07567; }
 
     /* HSV picker — drag-to-pick SL pad + hue slider + hex input */
     .hsv-pad {
@@ -776,7 +841,7 @@
     }
     :root[data-theme="dark"] .big-demo-tile { border-color: rgba(255,255,255,0.18); }
     .big-demo-tile.changed {
-      background: var(--accent-soft, rgba(248,128,101,0.16));
+      background: var(--accent-soft, rgba(212,98,71,0.16));
       border-color: var(--accent);
       color: var(--accent);
       animation: bigTileSnap 700ms var(--ease-spring);
@@ -943,6 +1008,11 @@
          doesn't shift when FlyingPig finishes its fetch. */
       aspect-ratio: 3155.38 / 1458.63;
       animation: pigSail 5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
     }
     .flying-pig svg {
       width: 100%; height: auto; display: block;
@@ -1351,11 +1421,26 @@
     }
 
     /* Dark pill primary used in simple landing */
-    .btn-dark { background: #1A1918; color: #fff; }
-    .btn-dark:hover { filter: brightness(1.18); }
-    .btn-dark:active { filter: brightness(0.95); }
+    .btn-dark {
+      background: #1A1918; color: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .btn-dark:hover {
+      filter: brightness(1.5);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.22);
+    }
+    .btn-dark:active {
+      filter: brightness(0.95);
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
     :root[data-theme="dark"] .btn-dark { background: #F5F3F0; color: #1A1918; }
-    :root[data-theme="dark"] .btn-dark:hover { filter: brightness(0.94); }
+    :root[data-theme="dark"] .btn-dark:hover {
+      filter: brightness(0.94);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.4);
+    }
 
     /* ── Root ────────────────────────────────────────────── */
     #root {
@@ -1480,7 +1565,7 @@
     .timer-label { font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: 0.01em; }
     .timer-secs  { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
     .timer-secs.urgent { color: var(--error); }
-    .timer-track { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+    .timer-track { height: 6px; background: rgba(0,0,0,0.18); border-radius: 999px; overflow: hidden; }
     .timer-fill {
       height: 100%;
       border-radius: 999px;
@@ -1501,31 +1586,44 @@
       width: 64px;
       height: 64px;
       border-radius: 16px;
-      border: 1.5px solid rgba(0,0,0,0.18); /* thinner + higher contrast for a contemporary feel */
-      background: var(--white);
+      border: none;
+      background: var(--accent);     /* filled tiles wear the mode accent */
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 28px;
       font-weight: 800;
-      color: var(--dark);
+      color: var(--white);
       user-select: none;
-      transition: border-color 100ms, background 100ms, color 100ms;
+      transition: background 120ms, color 120ms, box-shadow 120ms;
     }
-    .tile.cursor { border-color: var(--dark); }
+    /* next word — filled tiles are white with dark text (active typing area) */
+    .tile.next {
+      background: var(--white);
+      color: var(--dark);
+    }
+    /* empty slots — white pill, no letter */
+    .tile:empty {
+      background: var(--white);
+      color: transparent;
+    }
+    /* cursor — active empty slot gets an inset accent ring */
+    .tile.cursor:empty {
+      background: var(--white);
+      box-shadow: inset 0 0 0 2px var(--accent);
+    }
     .tile.accept { animation: tileAccept 280ms var(--ease-spring) both; }
     .tile.success-anim { animation: tileSuccess 500ms var(--ease-spring) both; }
-    /* wrong: too many letters changed */
+    /* wrong: too many letters changed — solid red fill */
     .tile.wrong {
-      border-color: var(--error);
-      background: #FEF0EE;
-      color: var(--error);
+      background: var(--error);
+      color: var(--white);
     }
-    /* success highlight on onboarding */
+    /* success highlight on onboarding — keep accent fill, add ring */
     .tile.changed-ok {
-      border-color: var(--tutorial-accent);
-      background: var(--tutorial-accent-bg);
-      color: var(--tutorial-accent);
+      background: var(--tutorial-accent);
+      color: var(--white);
+      box-shadow: 0 0 0 3px var(--tutorial-accent-soft);
     }
     /* Tutorial highlights inherit --accent/--accent-soft from the mode class,
        so no separate override needed here. */
@@ -1714,7 +1812,7 @@
       box-shadow: 0 1px 0 rgba(0,0,0,0.04);
       animation: fadeIn 400ms var(--ease-out);
     }
-    .new-best-banner:hover  { filter: brightness(1.05); box-shadow: 0 6px 18px -8px rgba(248,128,101,0.55); }
+    .new-best-banner:hover  { filter: brightness(1.05); box-shadow: 0 6px 18px -8px rgba(212,98,71,0.55); }
     .new-best-banner:active { transform: scale(0.98); }
     .burst-emoji {
       position: absolute;
@@ -2072,8 +2170,8 @@
     .info-num {
       width: 26px; height: 26px;
       border-radius: 50%;
-      background: rgba(248,128,101,0.14);
-      color: #F88065;
+      background: rgba(212,98,71,0.14);
+      color: #D46247;
       font-size: 13px; font-weight: 700;
       display: inline-flex; align-items: center; justify-content: center;
       flex-shrink: 0;
@@ -2116,7 +2214,7 @@
     }
 
     /* ── Theme transitions ───────────────────────────────── */
-    body,
+    body, #root, .big-demo, .kb,
     .card, .info-card, .dead-end-banner, kbd,
     .chain-tile, .chain-tile.changed,
     .score-badge, .timer-track {
@@ -2146,7 +2244,7 @@
     :root[data-theme="dark"] .tile { border-color: rgba(255,255,255,0.18); }
     :root[data-theme="dark"] .tile.wrong { background: #3A1A16; }
     /* Boost accent-soft alpha on dark bg so highlights stay visible */
-    :root[data-theme="dark"]            { --accent-soft: rgba(248,128,101,0.22); }
+    :root[data-theme="dark"]            { --accent-soft: rgba(212,98,71,0.22); }
     :root[data-theme="dark"] .soyboy    { --accent-soft: rgba(88,187,139,0.22); }
     :root[data-theme="dark"] .thisthat  { --accent-soft: rgba(143,182,224,0.22); }
     :root[data-theme="dark"] .dead-end-banner { background: #252010; border-color: #5A4A18; color: #D4B860; }
@@ -2173,27 +2271,41 @@
     }
     .kb-row {
       display: flex;
-      gap: 4px;
+      gap: 3px;
       justify-content: center;
       max-width: 500px;
       margin: 0 auto;
       width: 100%;
     }
+    /* Visually indent the middle row by ~half a key, like a standard
+       phone keyboard. */
+    .kb-row:nth-child(2) {
+      padding: 0 5%;
+    }
     .kb-key {
+      position: relative;
       flex: 1 1 0;
       min-width: 0;
-      height: 58px;
+      height: 62px;
       border: none;
       border-radius: 8px;
       background: var(--white);
       color: var(--dark);
       font-family: var(--ff-sans);
-      font-size: 19px;
+      font-size: 22px;
       font-weight: 700;
       cursor: pointer;
       touch-action: manipulation;
       box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-      transition: transform 80ms ease, background 80ms ease, color 80ms ease;
+      transition: transform 30ms ease, background 30ms ease, color 30ms ease;
+    }
+    /* Invisible hit-area extension — claims the gaps between keys so taps
+       that land slightly off-center still register on the intended key. */
+    .kb-key::after {
+      content: '';
+      position: absolute;
+      top: -4px; bottom: -4px;
+      left: -2px; right: -2px;
     }
     .kb-key:active {
       background: var(--orange);
@@ -2205,12 +2317,29 @@
       font-size: 13px;
       letter-spacing: 0.05em;
     }
+    /* Bigger backspace glyph — the ⌫ char looks tiny at 13px. */
+    .kb-key.backspace {
+      font-size: 24px;
+      letter-spacing: 0;
+    }
     :root[data-theme="dark"] .kb { background: var(--cream); border-top-color: rgba(255,255,255,0.10); }
     :root[data-theme="dark"] .kb-key { background: #2A2826; color: var(--dark); box-shadow: none; }
     /* Reserve space below content ONLY when the on-screen keyboard is mounted.
-       Using :has() so the start/end screens don't get a phantom 230px gap. */
+       Also lock the viewport from scrolling while playing — on Safari mobile
+       the page would otherwise rubber-band / scroll, even though all the
+       content fits. The :has(.kb) selector keeps this scoped to playing. */
     @media (hover: none) and (pointer: coarse) {
-      body:has(.kb) { padding-bottom: 230px; }
+      html:has(.kb),
+      body:has(.kb) {
+        overflow: hidden;
+        overscroll-behavior: none;
+        height: 100%;
+        height: 100dvh;
+        touch-action: pan-y; /* still allow inner scroll containers */
+      }
+      body:has(.kb) {
+        padding-bottom: 230px;
+      }
     }
 
     /* ── Mobile polish ───────────────────────────────────── */

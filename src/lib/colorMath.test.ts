@@ -1,9 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { hexToHsv, hexToRgb, hsvToHex, hsvToRgb, rgbToHex, rgbToHsv } from './colorMath';
+import {
+  contrastRatio,
+  hexToHsv,
+  hexToRgb,
+  hsvToHex,
+  hsvToRgb,
+  relLuminance,
+  rgbToHex,
+  rgbToHsv,
+  wcagLevel,
+} from './colorMath';
 
 describe('hexToRgb', () => {
   it('parses a 6-digit hex string', () => {
-    expect(hexToRgb('#F88065')).toEqual({ r: 0xf8, g: 0x80, b: 0x65 });
+    expect(hexToRgb('#D46247')).toEqual({ r: 0xd4, g: 0x62, b: 0x47 });
     expect(hexToRgb('#000000')).toEqual({ r: 0, g: 0, b: 0 });
     expect(hexToRgb('#FFFFFF')).toEqual({ r: 255, g: 255, b: 255 });
   });
@@ -16,7 +26,7 @@ describe('hexToRgb', () => {
 
 describe('rgbToHex', () => {
   it('formats with leading # and zero-padded channels', () => {
-    expect(rgbToHex({ r: 0xf8, g: 0x80, b: 0x65 })).toBe('#f88065');
+    expect(rgbToHex({ r: 0xd4, g: 0x62, b: 0x47 })).toBe('#d46247');
     expect(rgbToHex({ r: 0, g: 0, b: 0 })).toBe('#000000');
     expect(rgbToHex({ r: 255, g: 255, b: 255 })).toBe('#ffffff');
   });
@@ -35,9 +45,9 @@ describe('hex -> hsv -> hex round-trip', () => {
   // picker: if the user types a hex, the pad moves to a position
   // whose backing HSV converts back to the same hex.
   const cases = [
-    '#F88065', // classic accent (peach)
-    '#27885E', // soyboy accent (sage)
-    '#59A1D8', // thisthat accent (blue)
+    '#D46247', // classic accent (peach)
+    '#247D57', // soyboy accent (sage)
+    '#2E83C5', // thisthat accent (blue)
     '#FF0000',
     '#00FF00',
     '#0000FF',
@@ -87,5 +97,34 @@ describe('hsvToRgb', () => {
     expect(rgbToHex(hsvToRgb({ h: 180, s: 100, v: 100 }))).toBe('#00ffff');
     expect(rgbToHex(hsvToRgb({ h: 240, s: 100, v: 100 }))).toBe('#0000ff');
     expect(rgbToHex(hsvToRgb({ h: 300, s: 100, v: 100 }))).toBe('#ff00ff');
+  });
+});
+
+describe('relLuminance / contrastRatio / wcagLevel', () => {
+  it('pure white luminance is 1 and pure black is 0', () => {
+    expect(relLuminance('#FFFFFF')).toBeCloseTo(1, 5);
+    expect(relLuminance('#000000')).toBe(0);
+  });
+
+  it('contrast ratio is symmetric (order of args does not matter)', () => {
+    expect(contrastRatio('#FFFFFF', '#000000')).toBe(contrastRatio('#000000', '#FFFFFF'));
+  });
+
+  it('white-on-black hits the spec ceiling of 21:1', () => {
+    expect(contrastRatio('#FFFFFF', '#000000')).toBeCloseTo(21, 1);
+  });
+
+  it('wcagLevel buckets follow the WCAG 2.1 thresholds', () => {
+    expect(wcagLevel(8.0)).toBe('AAA');
+    expect(wcagLevel(7.0)).toBe('AAA');
+    expect(wcagLevel(5.0)).toBe('AA');
+    expect(wcagLevel(4.5)).toBe('AA');
+    expect(wcagLevel(3.5)).toBe('AA Large');
+    expect(wcagLevel(2.9)).toBe('Fail');
+  });
+
+  it('classic brand peach on cream clears AA against body text', () => {
+    // Brand text token (--dark) on classic colored bg should be well above AA.
+    expect(contrastRatio('#0A0A0A', '#FFE2C7')).toBeGreaterThan(4.5);
   });
 });

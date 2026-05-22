@@ -188,7 +188,7 @@ export function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'clas
                 const isCursor = i === typed.length && typed.length < cfg.wordLen;
                 const isWrong  = tooMany && typedDiffs.includes(i);
                 return (
-                  <div key={i} className={`tile${isCursor ? ' cursor' : ''}${isWrong ? ' wrong' : ''}`}>
+                  <div key={i} className={`tile next${isCursor ? ' cursor' : ''}${isWrong ? ' wrong' : ''}`}>
                     {letter}
                   </div>
                 );

@@ -17,7 +17,7 @@ export function EmailSignup() {
     try {
       if (!APPS_SCRIPT_URL) throw new Error('APPS_SCRIPT_URL is not configured');
       // text/plain avoids the CORS preflight that Apps Script Web Apps
-      // don't handle — see NEWSLETTER_PLAN.md.
+      // don't handle — see .claude/plans/NEWSLETTER_PLAN.md.
       const res = await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },

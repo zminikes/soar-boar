@@ -80,3 +80,31 @@ export function hsvToRgb({ h, s, v }: Hsv): Rgb {
 
 export const hexToHsv = (hex: string): Hsv => rgbToHsv(hexToRgb(hex));
 export const hsvToHex = (hsv: Hsv): string => rgbToHex(hsvToRgb(hsv));
+
+// WCAG 2.1 relative luminance + contrast ratio. Powers the contrast
+// readout in FloatingColorPicker so a designer tweaking the brand can
+// see live whether the accent + bg pair clears AA / AAA against the
+// body text color.
+export function relLuminance(hex: string): number {
+  const { r, g, b } = hexToRgb(hex);
+  const lin = (c: number): number => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+export function contrastRatio(hexA: string, hexB: string): number {
+  const lA = relLuminance(hexA);
+  const lB = relLuminance(hexB);
+  const [lighter, darker] = lA > lB ? [lA, lB] : [lB, lA];
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+export type WcagLevel = 'AAA' | 'AA' | 'AA Large' | 'Fail';
+export function wcagLevel(ratio: number): WcagLevel {
+  if (ratio >= 7) return 'AAA';
+  if (ratio >= 4.5) return 'AA';
+  if (ratio >= 3) return 'AA Large';
+  return 'Fail';
+}

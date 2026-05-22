@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { SVG_URLS } from '../data/svgData';
 import { scopeSvgStyles } from '../game/svgUtils';
+import { playMascotSound } from '../game/sounds';
 import { useIsDark } from '../game/appContext';
 
 /* Lazy-fetches big-pig-1.svg at mount instead of inlining the ~80 KB
@@ -48,7 +49,11 @@ export function FlyingPig() {
 
   return (
     <div className="flying-section" aria-hidden="true">
-      <div className="flying-pig" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
+      <div
+        className="flying-pig"
+        onClick={() => playMascotSound('classic')}
+        dangerouslySetInnerHTML={{ __html: svgMarkup }}
+      />
     </div>
   );
 }
