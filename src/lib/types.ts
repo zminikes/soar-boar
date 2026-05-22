@@ -20,3 +20,11 @@ export interface DebugState {
   foreverMode: boolean;
   darkMode: boolean;
 }
+
+// Minimal KeyboardEvent shape used by tutorial / play handlers. Lets
+// components dispatch synthetic events (e.g. from the on-screen Keyboard
+// component) through the same code path as real `keydown` listeners.
+// Derived from the DOM type so future field needs surface naturally.
+export type KeyEvent =
+  & Pick<KeyboardEvent, 'key'>
+  & Partial<Pick<KeyboardEvent, 'metaKey' | 'ctrlKey' | 'altKey'>>;

@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { MODE_CONFIGS } from '../lib/modes';
+import { useState, type Dispatch, type SetStateAction } from 'react';
+import { MODE_CONFIGS, type ModeId } from '../lib/modes';
+import type { DebugState } from '../lib/types';
 import { getBestScore } from '../platform/dom';
 import { AnimatedMascot } from './AnimatedMascot';
 import { Toggle } from './Toggle';
@@ -8,10 +9,36 @@ import { DemoSection } from './DemoSection';
 import { FlyingPig } from './FlyingPig';
 import { EmailSignup } from './EmailSignup';
 
+interface PrefRow {
+  key: keyof DebugState;
+  label: string;
+  sub: string;
+}
+
+const PREF_ROWS: PrefRow[] = [
+  { key: 'streakRule',  label: 'Position streak rule', sub: 'Forces variety — no changing the same position 3 turns in a row' },
+  { key: 'foreverMode', label: 'Forever mode',         sub: 'No timer — play at your own pace' },
+  { key: 'darkMode',    label: 'Dark mode',            sub: 'Easy on the eyes' },
+];
+
+interface StartScreenProps {
+  onStart: () => void;
+  onStartForever: () => void;
+  onTutorial: () => void;
+  debug: DebugState;
+  setDebug: Dispatch<SetStateAction<DebugState>>;
+  modeId: ModeId;
+  setModeId: Dispatch<SetStateAction<ModeId>>;
+  debugMode: boolean;
+}
+
 /* Tiles-style minimal landing.
    Mode switcher is a pill-shaped segmented control with both mascots
    visible at once — you "peek" into each mode just by seeing the tabs. */
-export function StartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, modeId, setModeId, debugMode }) {
+export function StartScreen({
+  onStart, onStartForever, onTutorial,
+  debug, setDebug, modeId, setModeId, debugMode,
+}: StartScreenProps) {
   const cfg = MODE_CONFIGS[modeId];
   const [showPrefs, setShowPrefs] = useState(false);
   const bestScore = getBestScore(modeId);
@@ -85,16 +112,14 @@ export function StartScreen({ onStart, onStartForever, onTutorial, debug, setDeb
         <div>
           <div className="info-card" style={{ marginTop: 16 }}>
             <div className="info-card-title">Preferences</div>
-            {[
-              { key: 'streakRule',  label: 'Position streak rule', sub: 'Forces variety — no changing the same position 3 turns in a row' },
-              { key: 'foreverMode', label: 'Forever mode',         sub: 'No timer — play at your own pace' },
-              { key: 'darkMode',    label: 'Dark mode',            sub: 'Easy on the eyes' },
-            ].filter(p => !(modeId === 'thisthat' && p.key === 'foreverMode')).map(({ key, label, sub }) => (
-              <div key={key} className="prefs-row">
-                <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
-                <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
-              </div>
-            ))}
+            {PREF_ROWS
+              .filter(p => !(modeId === 'thisthat' && p.key === 'foreverMode'))
+              .map(({ key, label, sub }) => (
+                <div key={key} className="prefs-row">
+                  <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
+                  <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
+                </div>
+              ))}
             {debugMode && <ExperimentsPanel debug={debug} setDebug={setDebug} />}
           </div>
         </div>

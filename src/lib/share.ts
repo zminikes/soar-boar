@@ -10,7 +10,7 @@ import { diffPos } from './moves';
 const POS_EMOJI = ['🟧', '🟪', '🟦', '🟩'];
 
 export function generateShareText(
-  chain: ChainEntry[],
+  chain: readonly ChainEntry[],
   score: number,
   mode: ModeConfig,
   shareUrl: string,
