@@ -938,6 +938,10 @@
       display: block;
       margin: 0 auto;
       width: min(96vw, 880px);
+      /* Reserve height before the async SVG hydrates — matches the
+         intrinsic viewBox (3155.38 / 1458.63) so EmailSignup below
+         doesn't shift when FlyingPig finishes its fetch. */
+      aspect-ratio: 3155.38 / 1458.63;
       animation: pigSail 5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
     }
     .flying-pig svg {
