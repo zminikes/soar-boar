@@ -4,12 +4,11 @@ import userEvent from '@testing-library/user-event';
 
 // isTouchDevice is evaluated once at module load (src/platform/dom.ts).
 // Mock the module so Keyboard renders in jsdom — the real check uses
-// `'ontouchstart' in window` which is false in jsdom.
-vi.mock('../platform/dom', () => ({
+// `'ontouchstart' in window` which is false in jsdom. Spread the real
+// module so this doesn't silently drop any future export.
+vi.mock('../platform/dom', async (importActual) => ({
+  ...(await importActual<typeof import('../platform/dom')>()),
   isTouchDevice: true,
-  BEST_KEY: (m: string) => `bestScore:${m}`,
-  getBestScore: () => 0,
-  setBestScore: () => {},
 }));
 
 import { Keyboard } from './Keyboard';

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, within, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EndScreen } from './EndScreen';
 import type { ChainEntry, DebugState } from '../lib/types';
@@ -47,8 +47,9 @@ describe('EndScreen', () => {
 
   it('shows the score for a timed-mode run', () => {
     renderEndScreen({ score: 4 });
-    expect(screen.getByText('4')).toBeInTheDocument();
-    // chain.length - 1 = 4 transitions = "4 words · 4 points"
+    // chain.length - 1 = 4 transitions = "4 words · 4 points". This is
+    // more specific than the bare "4" and survives layout adjacency
+    // (e.g. a "4-letter words" subtitle wouldn't match).
     expect(screen.getByText(/4 words · 4 points/)).toBeInTheDocument();
   });
 
@@ -104,13 +105,12 @@ describe('EndScreen', () => {
 
   it('falls back to clipboard.writeText when navigator.share rejects', async () => {
     // setup.ts installed a resolving mock for navigator.share, so
-    // HAS_NATIVE_SHARE captured at module load is true. We replace
-    // share with a rejecting spy so the handler hits its catch branch
-    // and falls back to clipboard.writeText (the path that runs when
-    // a user cancels the native share sheet).
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    navigator.clipboard.writeText = writeText;
-    navigator.share = vi.fn().mockRejectedValue(new Error('user cancelled'));
+    // HAS_NATIVE_SHARE captured at module load is true. We spyOn both
+    // navigator.share and navigator.clipboard.writeText so afterEach's
+    // vi.restoreAllMocks() restores them — direct assignment would
+    // leak state to other test files that depend on the setup.ts mocks.
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
+    vi.spyOn(navigator, 'share').mockRejectedValue(new Error('user cancelled'));
 
     const user = userEvent.setup();
     renderEndScreen();
@@ -148,10 +148,14 @@ describe('EndScreen', () => {
     expect(screen.getByText(/Was heading to THAT/)).toBeInTheDocument();
   });
 
-  it('renders the chain ladder', () => {
-    const { container } = renderEndScreen();
-    // Section label + 5 chain rows (one per chain entry).
-    expect(within(container).getByText('Ladder')).toBeInTheDocument();
-    expect(container.querySelectorAll('.chain-row').length).toBe(5);
+  it('renders the chain ladder with every entry', () => {
+    renderEndScreen();
+    expect(screen.getByText('Ladder')).toBeInTheDocument();
+    // Chain tiles are single-uppercase-letter elements. Total count
+    // pins all entries got rendered — stable across the Phase 5e
+    // CSS-module class rename.
+    const tiles = screen.getAllByText(/^[A-Z]$/);
+    const expectedTiles = SAMPLE_CHAIN.reduce((sum, e) => sum + e.word.length, 0);
+    expect(tiles.length).toBe(expectedTiles);
   });
 });

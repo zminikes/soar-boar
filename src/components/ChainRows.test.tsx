@@ -4,28 +4,30 @@ import { ChainRows } from './ChainRows';
 import type { ChainEntry } from '../lib/types';
 
 describe('ChainRows', () => {
-  it('renders each chain entry as a row of tiles', () => {
+  it('renders one tile per letter across every chain entry', () => {
     const chain: ChainEntry[] = [
       { word: 'SOAR' },
       { word: 'BOAR', pts: 1 },
     ];
-    const { container } = render(<ChainRows chain={chain} />);
-    // Two rows, four tiles each (4-letter words).
-    expect(container.querySelectorAll('.chain-row').length).toBe(2);
-    expect(container.querySelectorAll('.chain-tile').length).toBe(8);
+    render(<ChainRows chain={chain} />);
+    // Each tile is a single-uppercase-letter element. Counting matches
+    // (rather than counting CSS classes) is stable across the Phase 5e
+    // CSS-module class rename.
+    const tiles = screen.getAllByText(/^[A-Z]$/);
+    expect(tiles.length).toBe(8); // 2 words × 4 letters
   });
 
-  it('marks the changed letter position with the "changed" class', () => {
+  it('marks only the changed letter position with data-changed', () => {
     const chain: ChainEntry[] = [
       { word: 'SOAR' },
       { word: 'BOAR', pts: 1 },
     ];
     const { container } = render(<ChainRows chain={chain} />);
-    // Rows are rendered in reverse order; BOAR is first in the DOM.
-    // Only position 0 differs (S→B).
-    const firstRowTiles = container.querySelectorAll('.chain-row')[0].querySelectorAll('.chain-tile');
-    expect(firstRowTiles[0]).toHaveClass('changed');
-    expect(firstRowTiles[1]).not.toHaveClass('changed');
+    // BOAR differs from SOAR at position 0 only. data-changed is a stable
+    // contract (not a CSS class, which would churn with CSS modules).
+    const changed = container.querySelectorAll('[data-changed="true"]');
+    expect(changed.length).toBe(1);
+    expect(changed[0]).toHaveTextContent('B');
   });
 
   it('renders the pts annotation when pts is set', () => {
@@ -44,8 +46,9 @@ describe('ChainRows', () => {
       { word: 'SOAR' },
       { word: 'BOAR', pts: null },
     ];
-    const { container } = render(<ChainRows chain={chain} />);
-    expect(container.querySelector('.chain-pts')).toBeNull();
+    render(<ChainRows chain={chain} />);
+    // No "+N" text anywhere → annotation was skipped.
+    expect(screen.queryByText(/\+\d/)).toBeNull();
   });
 
   it('uses mode-specific position labels', () => {
