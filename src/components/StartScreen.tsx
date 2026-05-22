@@ -1,7 +1,8 @@
-import { useState, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { MODE_CONFIGS, type ModeId } from '../lib/modes';
 import type { DebugState } from '../lib/types';
 import { getBestScore } from '../platform/dom';
+import { prefetchOtherModeSvgs } from '../data/svgData';
 import { AnimatedMascot } from './AnimatedMascot';
 import { Toggle } from './Toggle';
 import { ExperimentsPanel } from './ExperimentsPanel';
@@ -42,6 +43,13 @@ export function StartScreen({
   const cfg = MODE_CONFIGS[modeId];
   const [showPrefs, setShowPrefs] = useState(false);
   const bestScore = getBestScore(modeId);
+
+  // Background-fetch the other modes' SVG chunks while the user is on
+  // the start screen so a mode tile click feels instant. Idempotent —
+  // Vite's module cache dedupes repeat imports.
+  useEffect(() => {
+    prefetchOtherModeSvgs(modeId);
+  }, [modeId]);
 
   // Hero crossfade key — re-keys on mode change so the mascot+wordmark
   // gently fade rather than swap abruptly.
