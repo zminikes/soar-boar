@@ -7,7 +7,7 @@ export function FlyingPig() {
   const isDark = useIsDark();
 
   const svgMarkup = useMemo(() => {
-    let raw = SVG_DATA['big-pig-1.svg'] || SVG_DATA['big-soar-boar.svg'] || '';
+    let raw = SVG_DATA['big-pig-1.svg'];
     if (isDark) {
       /* Illustrator's dark palette for the big pig:
          - Body: peach (unchanged — the hero)

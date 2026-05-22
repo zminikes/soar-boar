@@ -6,9 +6,7 @@ import beanOpenUrl from '../assets/bean-open.svg';
 import beanClosedUrl from '../assets/bean-closed.svg';
 import beanOpenDarkUrl from '../assets/bean-open-dark.svg';
 import beanClosedDarkUrl from '../assets/bean-closed-dark.svg';
-import bigSoarBoarUrl from '../assets/big-soar-boar.svg';
 import bigPig1Url from '../assets/big-pig-1.svg';
-import bigPig2Url from '../assets/big-pig-2.svg';
 import pigTtOpenUrl from '../assets/pig-tt-open.svg';
 import pigTtClosedUrl from '../assets/pig-tt-closed.svg';
 import hair1Url from '../assets/hair-1.svg';
@@ -28,9 +26,7 @@ import beanOpenRaw from '../assets/bean-open.svg?raw';
 import beanClosedRaw from '../assets/bean-closed.svg?raw';
 import beanOpenDarkRaw from '../assets/bean-open-dark.svg?raw';
 import beanClosedDarkRaw from '../assets/bean-closed-dark.svg?raw';
-import bigSoarBoarRaw from '../assets/big-soar-boar.svg?raw';
 import bigPig1Raw from '../assets/big-pig-1.svg?raw';
-import bigPig2Raw from '../assets/big-pig-2.svg?raw';
 import pigTtOpenRaw from '../assets/pig-tt-open.svg?raw';
 import pigTtClosedRaw from '../assets/pig-tt-closed.svg?raw';
 import hair1Raw from '../assets/hair-1.svg?raw';
@@ -51,9 +47,7 @@ export type MascotName =
   | 'bean-closed.svg'
   | 'bean-open-dark.svg'
   | 'bean-closed-dark.svg'
-  | 'big-soar-boar.svg'
   | 'big-pig-1.svg'
-  | 'big-pig-2.svg'
   | 'pig-tt-open.svg'
   | 'pig-tt-closed.svg'
   | 'hair-1.svg'
@@ -75,9 +69,7 @@ export const SVG_URLS: Readonly<Record<MascotName, string>> = {
   'bean-closed.svg': beanClosedUrl,
   'bean-open-dark.svg': beanOpenDarkUrl,
   'bean-closed-dark.svg': beanClosedDarkUrl,
-  'big-soar-boar.svg': bigSoarBoarUrl,
   'big-pig-1.svg': bigPig1Url,
-  'big-pig-2.svg': bigPig2Url,
   'pig-tt-open.svg': pigTtOpenUrl,
   'pig-tt-closed.svg': pigTtClosedUrl,
   'hair-1.svg': hair1Url,
@@ -91,7 +83,7 @@ export const SVG_URLS: Readonly<Record<MascotName, string>> = {
 };
 
 // Raw SVG strings for in-place recoloring (useColoredSvg) and direct
-// dangerouslySetInnerHTML render (AnimatedMascot body).
+// dangerouslySetInnerHTML render (AnimatedMascot body, FlyingPig).
 export const SVG_DATA: Readonly<Record<MascotName, string>> = {
   'pig-open.svg': pigOpenRaw,
   'pig-closed.svg': pigClosedRaw,
@@ -101,9 +93,7 @@ export const SVG_DATA: Readonly<Record<MascotName, string>> = {
   'bean-closed.svg': beanClosedRaw,
   'bean-open-dark.svg': beanOpenDarkRaw,
   'bean-closed-dark.svg': beanClosedDarkRaw,
-  'big-soar-boar.svg': bigSoarBoarRaw,
   'big-pig-1.svg': bigPig1Raw,
-  'big-pig-2.svg': bigPig2Raw,
   'pig-tt-open.svg': pigTtOpenRaw,
   'pig-tt-closed.svg': pigTtClosedRaw,
   'hair-1.svg': hair1Raw,
