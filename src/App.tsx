@@ -75,6 +75,9 @@ export function App() {
       // sees null and the migration above already handled the "no key"
       // case for first-run users.
       const raw = localStorage.getItem('colorOverrides') ?? '{}';
+      // Trusted cast: single user per browser, no adversarial input
+      // path. If we ever sync overrides server-side, replace with a
+      // schema validator (zod / hand-written guard).
       return (JSON.parse(raw) as ColorOverrides) || {};
     } catch { return {}; }
   });

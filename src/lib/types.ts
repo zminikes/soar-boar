@@ -39,9 +39,12 @@ export interface Msg {
 
 // Result payload PlayScreen passes to App's onEnd callback. App stores
 // it as `result` state and forwards into EndScreen's props.
+// `chain` is readonly because EndScreen / ChainRows / generateShareText
+// all consume it read-only — mutable arrays satisfy via covariance so
+// PlayScreen's builder code doesn't change.
 export interface EndResult {
   score: number;
-  chain: ChainEntry[];
+  chain: readonly ChainEntry[];
   deadEnd: boolean;
   win?: boolean;
   target?: string;

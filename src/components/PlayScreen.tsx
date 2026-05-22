@@ -266,7 +266,12 @@ export function PlayScreen({
   const displayMsg: Msg = persistentError ? { text: persistentError, type: 'error' } : msg;
 
   const urgent      = !isLadder && timeLeft <= 10 && !debug.foreverMode;
-  const pct         = (debug.foreverMode || isLadder) ? 100 : (timeLeft / (cfg.duration ?? 1)) * 100;
+  // `?? 1` is a type-narrower placation, not runtime defense: the
+  // surrounding ternary short-circuits when isLadder (the only mode
+  // where cfg.duration is null), so the divisor is reached only when
+  // cfg.duration is a number. TS can't follow the correlation back.
+  const denom       = cfg.duration ?? 1;
+  const pct         = (debug.foreverMode || isLadder) ? 100 : (timeLeft / denom) * 100;
   const wordsPlayed = chain.length - 1;
 
   return (
