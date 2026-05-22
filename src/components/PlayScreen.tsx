@@ -1,48 +1,63 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { MODE_CONFIGS, tutorialPair } from '../lib/modes';
+import { MODE_CONFIGS, tutorialPair, type ModeId } from '../lib/modes';
 import { getPairs, getStarters, getWords } from '../data/modeData';
 import { HEAD_START, MSG_DURATION } from '../game/constants';
 import { bfsPath } from '../lib/bfs';
 import { diffPos, getValidMoves } from '../lib/moves';
 import { pickLadderPair, pickStarter } from '../lib/puzzle';
+import type { ChainEntry, DebugState, EndResult, KeyEvent, Msg, MsgKind } from '../lib/types';
 import { isTouchDevice } from '../platform/dom';
 import { MascotIcon } from './MascotIcon';
 import { ChainRows } from './ChainRows';
 import { Keyboard } from './Keyboard';
 
-export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, debug, modeId = 'classic' }) {
+type GamePhase = 'countdown' | 'playing';
+
+interface PlayScreenProps {
+  puzzleSeed: number;
+  onEnd: (result: EndResult) => void;
+  onHome: () => void;
+  onRestart: () => void;
+  onNewPuzzle: () => void;
+  debug: DebugState;
+  modeId?: ModeId;
+}
+
+export function PlayScreen({
+  puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, debug, modeId = 'classic',
+}: PlayScreenProps) {
   const cfg = MODE_CONFIGS[modeId];
   const isLadder = !!cfg.isLadder;
   // Ladder mode skips countdown/timer entirely
-  const [phase,       setPhase]       = useState(isLadder ? 'playing' : 'countdown');
+  const [phase,       setPhase]       = useState<GamePhase>(isLadder ? 'playing' : 'countdown');
   const [countdown,   setCountdown]   = useState(HEAD_START);
   const [currentWord, setCurrentWord] = useState('');
   const [targetWord,  setTargetWord]  = useState(''); // ladder mode only
-  const [par,         setPar]         = useState(null);
+  const [par,         setPar]         = useState<number | null>(null);
   const [typed,       setTyped]       = useState('');
-  const [, setUsedWords]              = useState(() => new Set());
-  const [chain,       setChain]       = useState([]);
+  const [, setUsedWords]              = useState<Set<string>>(() => new Set());
+  const [chain,       setChain]       = useState<ChainEntry[]>([]);
   const [score,       setScore]       = useState(0);
   const [timeLeft,    setTimeLeft]    = useState(cfg.duration || 0);
-  const [msg,         setMsg]         = useState({ text: '', type: '' });
+  const [msg,         setMsg]         = useState<Msg>({ text: '', type: '' });
   const [shaking,     setShaking]     = useState(false);
   const [acceptKey,   setAcceptKey]   = useState(0);
   const [deadEnd,     setDeadEnd]     = useState(false);
-  const [hintOn, setHintOn] = useState(() => localStorage.getItem('hintOn') === 'true');
-  const [wiggleIdx, setWiggleIdx] = useState(null); // which tile letter to wiggle
+  const [hintOn, setHintOn] = useState<boolean>(() => localStorage.getItem('hintOn') === 'true');
+  const [wiggleIdx, setWiggleIdx] = useState<number | null>(null); // which tile letter to wiggle
   useEffect(() => { localStorage.setItem('hintOn', String(hintOn)); }, [hintOn]);
 
   const typedRef     = useRef('');
   const currentRef   = useRef('');
   const targetRef    = useRef('');
-  const usedRef      = useRef(new Set());
-  const streakPosRef = useRef(null);
+  const usedRef      = useRef<Set<string>>(new Set());
+  const streakPosRef = useRef<number | null>(null);
   const streakCntRef = useRef(0);
   const scoreRef     = useRef(0);
-  const chainRef     = useRef([]);
-  const phaseRef     = useRef(isLadder ? 'playing' : 'countdown');
+  const chainRef     = useRef<ChainEntry[]>([]);
+  const phaseRef     = useRef<GamePhase>(isLadder ? 'playing' : 'countdown');
   const gameOverRef  = useRef(false);
-  const msgTimer     = useRef(null);
+  const msgTimer     = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { currentRef.current = currentWord; }, [currentWord]);
   useEffect(() => { targetRef.current  = targetWord; },  [targetWord]);
@@ -55,7 +70,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
     if (!hintOn || phase !== 'playing' || gameOverRef.current) return;
     const t = setTimeout(() => {
       // Pick which letter position to highlight
-      let idx = null;
+      let idx: number | null = null;
       if (isLadder && targetRef.current) {
         const path = bfsPath(currentRef.current, targetRef.current, getWords(modeId));
         if (path && path.length > 1) {
@@ -69,10 +84,10 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
         const moves = getValidMoves(
           currentRef.current, usedRef.current,
           streakPosRef.current, streakCntRef.current,
-          debug.streakRule, getWords(modeId)
+          debug.streakRule, getWords(modeId),
         );
         if (moves.length) {
-          const counts = new Array(cfg.wordLen).fill(0);
+          const counts = new Array<number>(cfg.wordLen).fill(0);
           for (const m of moves) {
             for (let i = 0; i < m.length; i++) if (m[i] !== currentRef.current[i]) { counts[i]++; break; }
           }
@@ -87,7 +102,9 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
   }, [hintOn, phase, typed, currentWord, acceptKey, isLadder, debug.streakRule, modeId, cfg]);
 
   useEffect(() => {
-    let start, target = '', parVal = null;
+    let start: string;
+    let target = '';
+    let parVal: number | null = null;
     if (isLadder) {
       const pair = pickLadderPair(getPairs(modeId), tutorialPair(cfg), puzzleSeed);
       start  = pair.start;
@@ -138,18 +155,18 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
     return () => clearInterval(id);
   }, [phase, debug.foreverMode, isLadder, onEnd]);
 
-  const showMsg = useCallback((text, type) => {
-    clearTimeout(msgTimer.current);
+  const showMsg = useCallback((text: string, type: MsgKind): void => {
+    if (msgTimer.current) clearTimeout(msgTimer.current);
     setMsg({ text, type });
-    msgTimer.current = setTimeout(() => setMsg({ text:'', type:'' }), MSG_DURATION);
+    msgTimer.current = setTimeout(() => setMsg({ text: '', type: '' }), MSG_DURATION);
   }, []);
 
-  const triggerShake = useCallback(() => {
+  const triggerShake = useCallback((): void => {
     setShaking(true);
     setTimeout(() => setShaking(false), 320);
   }, []);
 
-  const submitWord = useCallback((word) => {
+  const submitWord = useCallback((word: string): void => {
     if (gameOverRef.current) return;
     const upper = word.toUpperCase();
     const cur   = currentRef.current;
@@ -170,7 +187,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
     const pts      = cfg.posPts[pos];
     const newScore = scoreRef.current + pts;
     const newUsed  = new Set([...usedRef.current, upper]);
-    const newChain = [...chainRef.current, { word: upper, pts }];
+    const newChain: ChainEntry[] = [...chainRef.current, { word: upper, pts }];
     scoreRef.current    = newScore;
     usedRef.current     = newUsed;
     chainRef.current    = newChain;
@@ -214,7 +231,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
     }
   }, [isLadder, par, debug.streakRule, debug.foreverMode, showMsg, triggerShake, onEnd, modeId, cfg]);
 
-  const handleKeyDown = useCallback((e) => {
+  const handleKeyDown = useCallback((e: KeyEvent): void => {
     if (gameOverRef.current) return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (phaseRef.current === 'countdown' && /^[a-zA-Z]$/.test(e.key)) {
@@ -226,7 +243,7 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
     } else if (e.key === 'Backspace') {
       const next = typedRef.current.slice(0, -1);
       typedRef.current = next; setTyped(next);
-      setMsg({ text:'', type:'' });
+      setMsg({ text: '', type: '' });
     } else if (/^[a-zA-Z]$/.test(e.key) && typedRef.current.length < cfg.wordLen) {
       const next = typedRef.current + e.key.toUpperCase();
       typedRef.current = next; setTyped(next);
@@ -246,10 +263,15 @@ export function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, 
   const persistentError = tooMany
     ? `Changed ${typedDiffs.length} letters — change just 1`
     : noChange ? 'Same as current word' : '';
-  const displayMsg = persistentError ? { text: persistentError, type: 'error' } : msg;
+  const displayMsg: Msg = persistentError ? { text: persistentError, type: 'error' } : msg;
 
   const urgent      = !isLadder && timeLeft <= 10 && !debug.foreverMode;
-  const pct         = (debug.foreverMode || isLadder) ? 100 : (timeLeft / cfg.duration) * 100;
+  // `?? 1` is a type-narrower placation, not runtime defense: the
+  // surrounding ternary short-circuits when isLadder (the only mode
+  // where cfg.duration is null), so the divisor is reached only when
+  // cfg.duration is a number. TS can't follow the correlation back.
+  const denom       = cfg.duration ?? 1;
+  const pct         = (debug.foreverMode || isLadder) ? 100 : (timeLeft / denom) * 100;
   const wordsPlayed = chain.length - 1;
 
   return (

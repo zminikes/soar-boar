@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ColoredBgContext, ColorOverrideContext, ThemeContext } from './game/appContext';
+import { ColoredBgContext, ColorOverrideContext, ThemeContext, type ColorOverrides } from './game/appContext';
+import type { ModeId } from './lib/modes';
+import type { DebugState, EndResult } from './lib/types';
 import { StartScreen } from './components/StartScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { PlayScreen } from './components/PlayScreen';
@@ -8,31 +10,32 @@ import { FloatingColorPicker } from './components/FloatingColorPicker';
 import { DebugBadge } from './components/DebugBadge';
 import { BoilDefs } from './components/BoilDefs';
 
+type Screen = 'start' | 'tutorial' | 'playing' | 'end';
+
 export function App() {
-  // screen: 'start' | 'tutorial' | 'playing' | 'end'
-  const [screen,  setScreen]  = useState('start');
-  const [result,  setResult]  = useState(null);
+  const [screen,  setScreen]  = useState<Screen>('start');
+  const [result,  setResult]  = useState<EndResult | null>(null);
   const [playKey, setPlayKey] = useState(0);
-  const [puzzleSeed, setPuzzleSeed] = useState(() => Math.random());
+  const [puzzleSeed, setPuzzleSeed] = useState<number>(() => Math.random());
   // Restart the *same* puzzle (keep seed, just remount PlayScreen)
-  const restartSame = () => { setPlayKey(k => k + 1); setScreen('playing'); };
+  const restartSame = (): void => { setPlayKey(k => k + 1); setScreen('playing'); };
   // Fresh puzzle (new seed → different starter/pair)
-  const newPuzzle   = () => { setPuzzleSeed(Math.random()); setPlayKey(k => k + 1); setScreen('playing'); };
+  const newPuzzle   = (): void => { setPuzzleSeed(Math.random()); setPlayKey(k => k + 1); setScreen('playing'); };
   // Default entry point from landing/tutorial = fresh puzzle
   const restart = newPuzzle;
-  const [debug,   setDebug]   = useState(() => ({
-    streakRule:    true,
-    foreverMode:   false,
-    darkMode:      localStorage.getItem('darkMode') === 'true',
+  const [debug, setDebug] = useState<DebugState>(() => ({
+    streakRule:  true,
+    foreverMode: false,
+    darkMode:    localStorage.getItem('darkMode') === 'true',
   }));
-  const [modeId,  setModeId]  = useState('classic');
+  const [modeId, setModeId] = useState<ModeId>('classic');
 
   /* Debug mode — gates the design-experiments panel and the floating
      color picker. Toggle on/off via:
      - URL parameter:  ?debug=1  /  ?debug=0
      - Keyboard:       Cmd/Ctrl + Shift + D
      Persists in localStorage so once enabled it stays enabled. */
-  const [debugMode, setDebugMode] = useState(() => {
+  const [debugMode, setDebugMode] = useState<boolean>(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       if (params.has('debug')) {
@@ -47,7 +50,7 @@ export function App() {
     localStorage.setItem('debugMode', String(debugMode));
   }, [debugMode]);
   useEffect(() => {
-    const onKey = (e) => {
+    const onKey = (e: KeyboardEvent): void => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         setDebugMode(d => !d);
@@ -59,7 +62,7 @@ export function App() {
 
   // Color picker overrides — live tweak bg + accent per mode, write to a
   // dynamic <style> tag so changes apply without reload.
-  const [colorOverrides, setColorOverrides] = useState(() => {
+  const [colorOverrides, setColorOverrides] = useState<ColorOverrides>(() => {
     // One-time migration: prior versions baked picked values into
     // localStorage. Clear once so the new brand defaults can take effect.
     if (localStorage.getItem('appVersion') !== '3') {
@@ -67,8 +70,16 @@ export function App() {
       localStorage.setItem('appVersion', '3');
       return {};
     }
-    try { return JSON.parse(localStorage.getItem('colorOverrides')) || {}; }
-    catch { return {}; }
+    try {
+      // getItem returns string | null; default to '{}' so JSON.parse never
+      // sees null and the migration above already handled the "no key"
+      // case for first-run users.
+      const raw = localStorage.getItem('colorOverrides') ?? '{}';
+      // Trusted cast: single user per browser, no adversarial input
+      // path. If we ever sync overrides server-side, replace with a
+      // schema validator (zod / hand-written guard).
+      return (JSON.parse(raw) as ColorOverrides) || {};
+    } catch { return {}; }
   });
   useEffect(() => {
     let styleEl = document.getElementById('color-overrides');
@@ -77,9 +88,9 @@ export function App() {
       styleEl.id = 'color-overrides';
       document.head.appendChild(styleEl);
     }
-    const cls = colorOverrides.classic  || {};
-    const soy = colorOverrides.soyboy   || {};
-    const tt  = colorOverrides.thisthat || {};
+    const cls = colorOverrides.classic  ?? {};
+    const soy = colorOverrides.soyboy   ?? {};
+    const tt  = colorOverrides.thisthat ?? {};
     styleEl.textContent = [
       cls.bg     && `:root[data-exp-colored-bg="1"][data-exp-mode="classic"]  { --cream: ${cls.bg}; }`,
       cls.accent && `:root[data-exp-colored-bg="1"][data-exp-mode="classic"]  { --deep-peach: ${cls.accent}; --accent: ${cls.accent}; }`,
@@ -121,7 +132,7 @@ export function App() {
         tc.setAttribute('content',
           modeId === 'soyboy'   ? '#B7D197' :
           modeId === 'thisthat' ? '#CCE1F2' :
-          '#FAD8B8'
+          '#FAD8B8',
         );
       } else {
         tc.setAttribute('content', '#F8F1E5');
@@ -172,7 +183,7 @@ export function App() {
           modeId={modeId}
         />
       )}
-      {screen === 'end' && (
+      {screen === 'end' && result && (
         <EndScreen
           score={result.score}
           chain={result.chain}

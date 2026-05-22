@@ -28,3 +28,25 @@ export interface DebugState {
 export type KeyEvent =
   & Pick<KeyboardEvent, 'key'>
   & Partial<Pick<KeyboardEvent, 'metaKey' | 'ctrlKey' | 'altKey'>>;
+
+// Inline-message state used by the tutorial and play screens (the
+// transient "Not a word" / "Solved!" etc. line above the input).
+export type MsgKind = '' | 'error' | 'ok';
+export interface Msg {
+  text: string;
+  type: MsgKind;
+}
+
+// Result payload PlayScreen passes to App's onEnd callback. App stores
+// it as `result` state and forwards into EndScreen's props.
+// `chain` is readonly because EndScreen / ChainRows / generateShareText
+// all consume it read-only — mutable arrays satisfy via covariance so
+// PlayScreen's builder code doesn't change.
+export interface EndResult {
+  score: number;
+  chain: readonly ChainEntry[];
+  deadEnd: boolean;
+  win?: boolean;
+  target?: string;
+  par?: number | null;
+}

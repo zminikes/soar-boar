@@ -3,7 +3,7 @@ import { MODE_CONFIGS, type ModeId } from '../lib/modes';
 import { getWords } from '../data/modeData';
 import { MSG_DURATION } from '../game/constants';
 import { diffPos } from '../lib/moves';
-import type { KeyEvent } from '../lib/types';
+import type { KeyEvent, Msg, MsgKind } from '../lib/types';
 import { isTouchDevice } from '../platform/dom';
 import { Confetti } from './Confetti';
 import { Keyboard } from './Keyboard';
@@ -12,12 +12,6 @@ interface CompletedStep {
   word: string;
   pts: number;
   changedIdx: number;
-}
-
-type MsgKind = '' | 'error' | 'ok';
-interface Msg {
-  text: string;
-  type: MsgKind;
 }
 
 interface OnboardingScreenProps {
