@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getMascotSvgsSync, loadMascotSvgs, type MascotSvgs } from '../data/svgData';
 import { useColorOverrides, useColoredBgActive, useIsDark } from '../game/appContext';
 import { DEFAULT_COLORS } from '../game/constants';
+import { playMascotSound } from '../game/sounds';
 import { scopeSvgStyles } from '../game/svgUtils';
 import type { ModeId } from '../lib/modes';
 
@@ -72,11 +73,29 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
     return () => clearInterval(id);
   }, []);
 
+  // Reusable bounce trigger that always restarts the animation cleanly,
+  // even if the mascot is already mid-bounce. Toggles off, waits one frame
+  // for React to commit, then toggles on so the CSS keyframes restart.
+  const bounceTimer1Ref = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bounceTimer2Ref = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const triggerBounce = useCallback(() => {
+    if (bounceTimer1Ref.current) clearTimeout(bounceTimer1Ref.current);
+    if (bounceTimer2Ref.current) clearTimeout(bounceTimer2Ref.current);
+    setIsBouncing(false);
+    bounceTimer1Ref.current = setTimeout(() => {
+      setIsBouncing(true);
+      bounceTimer2Ref.current = setTimeout(() => setIsBouncing(false), 420);
+    }, 16);
+  }, []);
+  useEffect(() => () => {
+    if (bounceTimer1Ref.current) clearTimeout(bounceTimer1Ref.current);
+    if (bounceTimer2Ref.current) clearTimeout(bounceTimer2Ref.current);
+  }, []);
+
   const handleEnter = useCallback(() => {
     setIsHovered(true);
-    setIsBouncing(true);
-    setTimeout(() => setIsBouncing(false), 420);
-  }, []);
+    triggerBounce();
+  }, [triggerBounce]);
   const handleLeave = useCallback(() => setIsHovered(false), []);
   // On touch devices, pointerleave never fires after a tap, so the mascot
   // gets stuck with eyes closed. Auto-reopen 420ms after the touch ends
@@ -84,6 +103,11 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
   const handleTouchEnd = useCallback(() => {
     setTimeout(() => setIsHovered(false), 420);
   }, []);
+  // Click / tap = mode-specific sound + re-trigger bounce (even mid-anim).
+  const handleClick = useCallback(() => {
+    playMascotSound(modeId);
+    triggerBounce();
+  }, [modeId, triggerBounce]);
 
   const isSoyboy = modeId === 'soyboy';
   const isThisThat = modeId === 'thisthat';
@@ -170,6 +194,7 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
       onBlur={handleLeave}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
+      onClick={handleClick}
       role="img"
       aria-label={isClassic ? 'Flying pig mascot' : 'Soy bean mascot'}
     >
