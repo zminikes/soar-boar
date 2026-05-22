@@ -1,13 +1,18 @@
 """
 Soar Boar — Level Pack Generator (level-generation pipeline, step 2)
 =====================================================================
-Produces a curated list of (start, end, par) levels for "This That"
+Produces a curated list of (start, end, par, paths) levels for "This That"
 mode, drop-in shaped for `game/pairs.js`.
 
-The path field that the original pairs.js included is intentionally
-dropped — the game never reads pair.path at runtime (it computes
-shortest paths on the fly via bfsPath in game/index.html). Internally
-this script still materializes a canonical all-common path to *verify*
+  paths — total number of distinct shortest paths in the full word graph.
+          1 means "exactly one solution"; higher numbers mean the player
+          has multiple equally-short routes. Useful as a difficulty
+          indicator independent of par.
+
+The path *content* the original pairs.js included is intentionally
+dropped — the game never reads it at runtime (it computes shortest
+paths on the fly via bfsPath in game/index.html). Internally this
+script still materializes a canonical all-common path to *verify*
 each pair is solvable using recognizable words, but it's not written
 to the output.
 
@@ -144,7 +149,8 @@ def format_level(c: dict) -> str:
     return (
         f'  {{ "start": {json.dumps(c["word_a"])}, '
         f'"end": {json.dumps(c["word_b"])}, '
-        f'"par": {c["distance"]} }}'
+        f'"par": {c["distance"]}, '
+        f'"paths": {c["path_count"]} }}'
     )
 
 
