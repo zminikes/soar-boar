@@ -2,15 +2,15 @@
 
     :root {
       --cream:      #F8F1E5;
-      --orange:     #F88065;
-      --pink:       rgba(248,128,101,0.12);
+      --orange:     #D46247;
+      --pink:       rgba(212,98,71,0.12);
       --white:      #FFFFFF;
       --dark:       #0A0A0A;
       --muted:      #737373;
       --border:     rgba(0,0,0,0.08);
       --error:      #C0392B;
       --ok:         #27AE60;
-      --pos1:       #F88065;
+      --pos1:       #D46247;
       --pos2:       #9B59B6;
       --pos3:       #2E86C1;
       --pos4:       #27AE60;
@@ -20,13 +20,13 @@
       /* Brand "deep" colors — pig SVG fill, bean SVG fill, and the
          wordmark accent are all driven by these tokens so they
          can't drift apart. */
-      --deep-peach: #F88065;
-      --deep-sage:  #27885E;
-      --deep-blue:  #59a1d8;
+      --deep-peach: #D46247;
+      --deep-sage:  #247D57;
+      --deep-blue:  #2e83c5;
       --accent:     var(--deep-peach);
       /* Per-mode accent-soft — set on the mode class so tutorial highlights
          and chain pills always match the active hue, even without coloredBg. */
-      --accent-soft: rgba(248,128,101,0.30);
+      --accent-soft: rgba(212,98,71,0.30);
       /* Tutorial highlights inherit the mode accent so the ↓ arrow and the
          changed-ok pill stay on-brand across all modes. */
       --tutorial-accent:      var(--accent);
@@ -234,9 +234,9 @@
     .shake { animation: shake 240ms ease; }
 
     /* ── Soy Boy green theme ─────────────────────────────── */
-    .soyboy   { --orange: #27885E; --accent: var(--deep-sage); --accent-soft: rgba(39,136,94,0.22);  --pink: rgba(39,136,94,0.12); }
+    .soyboy   { --orange: #247D57; --accent: var(--deep-sage); --accent-soft: rgba(36,125,87,0.22);  --pink: rgba(36,125,87,0.12); }
     /* ── This That blue theme ────────────────────────────── */
-    .thisthat { --orange: #59a1d8; --accent: var(--deep-blue); --accent-soft: rgba(89,161,216,0.26); --pink: rgba(89,161,216,0.14); }
+    .thisthat { --orange: #2e83c5; --accent: var(--deep-blue); --accent-soft: rgba(46,131,197,0.26); --pink: rgba(46,131,197,0.14); }
 
     /* ── Design experiments — driven by data attrs on <html> ── */
 
@@ -244,25 +244,25 @@
        data-exp-colored-bg is only set when the start screen is active —
        game/end screens always render on cream. */
     :root[data-exp-colored-bg="1"][data-exp-mode="classic"] {
-      --cream: #F7F1E6;             /* warm neutral cream */
+      --cream: #FFE2C7;             /* peach */
       --muted: rgba(0,0,0,0.62);
       --border: rgba(0,0,0,0.16);
       --accent: var(--deep-peach);
-      --accent-soft: rgba(248,128,101,0.22);
+      --accent-soft: rgba(212,98,71,0.22);
     }
     :root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]  {
       --cream: #B7D197;             /* picked sage */
       --muted: rgba(0,0,0,0.62);
       --border: rgba(0,0,0,0.16);
       --accent: var(--deep-sage);
-      --accent-soft: rgba(39,136,94,0.14);
+      --accent-soft: rgba(36,125,87,0.14);
     }
     :root[data-exp-colored-bg="1"][data-exp-mode="thisthat"] {
-      --cream: #CCE1F2;             /* soft sky blue, derived from #59a1d8 */
+      --cream: #CCE1F2;             /* soft sky blue, derived from #2e83c5 */
       --muted: rgba(0,0,0,0.62);
       --border: rgba(0,0,0,0.16);
       --accent: var(--deep-blue);
-      --accent-soft: rgba(89,161,216,0.16);
+      --accent-soft: rgba(46,131,197,0.16);
     }
     /* Dark mode intentionally does NOT apply the colored bg —
        sticks with the neutral near-black cream for a calmer feel.
@@ -776,7 +776,7 @@
     }
     :root[data-theme="dark"] .big-demo-tile { border-color: rgba(255,255,255,0.18); }
     .big-demo-tile.changed {
-      background: var(--accent-soft, rgba(248,128,101,0.16));
+      background: var(--accent-soft, rgba(212,98,71,0.16));
       border-color: var(--accent);
       color: var(--accent);
       animation: bigTileSnap 700ms var(--ease-spring);
@@ -1714,7 +1714,7 @@
       box-shadow: 0 1px 0 rgba(0,0,0,0.04);
       animation: fadeIn 400ms var(--ease-out);
     }
-    .new-best-banner:hover  { filter: brightness(1.05); box-shadow: 0 6px 18px -8px rgba(248,128,101,0.55); }
+    .new-best-banner:hover  { filter: brightness(1.05); box-shadow: 0 6px 18px -8px rgba(212,98,71,0.55); }
     .new-best-banner:active { transform: scale(0.98); }
     .burst-emoji {
       position: absolute;
@@ -2072,8 +2072,8 @@
     .info-num {
       width: 26px; height: 26px;
       border-radius: 50%;
-      background: rgba(248,128,101,0.14);
-      color: #F88065;
+      background: rgba(212,98,71,0.14);
+      color: #D46247;
       font-size: 13px; font-weight: 700;
       display: inline-flex; align-items: center; justify-content: center;
       flex-shrink: 0;
@@ -2146,7 +2146,7 @@
     :root[data-theme="dark"] .tile { border-color: rgba(255,255,255,0.18); }
     :root[data-theme="dark"] .tile.wrong { background: #3A1A16; }
     /* Boost accent-soft alpha on dark bg so highlights stay visible */
-    :root[data-theme="dark"]            { --accent-soft: rgba(248,128,101,0.22); }
+    :root[data-theme="dark"]            { --accent-soft: rgba(212,98,71,0.22); }
     :root[data-theme="dark"] .soyboy    { --accent-soft: rgba(88,187,139,0.22); }
     :root[data-theme="dark"] .thisthat  { --accent-soft: rgba(143,182,224,0.22); }
     :root[data-theme="dark"] .dead-end-banner { background: #252010; border-color: #5A4A18; color: #D4B860; }

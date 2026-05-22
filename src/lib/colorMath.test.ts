@@ -3,7 +3,7 @@ import { hexToHsv, hexToRgb, hsvToHex, hsvToRgb, rgbToHex, rgbToHsv } from './co
 
 describe('hexToRgb', () => {
   it('parses a 6-digit hex string', () => {
-    expect(hexToRgb('#F88065')).toEqual({ r: 0xf8, g: 0x80, b: 0x65 });
+    expect(hexToRgb('#D46247')).toEqual({ r: 0xd4, g: 0x62, b: 0x47 });
     expect(hexToRgb('#000000')).toEqual({ r: 0, g: 0, b: 0 });
     expect(hexToRgb('#FFFFFF')).toEqual({ r: 255, g: 255, b: 255 });
   });
@@ -16,7 +16,7 @@ describe('hexToRgb', () => {
 
 describe('rgbToHex', () => {
   it('formats with leading # and zero-padded channels', () => {
-    expect(rgbToHex({ r: 0xf8, g: 0x80, b: 0x65 })).toBe('#f88065');
+    expect(rgbToHex({ r: 0xd4, g: 0x62, b: 0x47 })).toBe('#d46247');
     expect(rgbToHex({ r: 0, g: 0, b: 0 })).toBe('#000000');
     expect(rgbToHex({ r: 255, g: 255, b: 255 })).toBe('#ffffff');
   });
@@ -35,9 +35,9 @@ describe('hex -> hsv -> hex round-trip', () => {
   // picker: if the user types a hex, the pad moves to a position
   // whose backing HSV converts back to the same hex.
   const cases = [
-    '#F88065', // classic accent (peach)
-    '#27885E', // soyboy accent (sage)
-    '#59A1D8', // thisthat accent (blue)
+    '#D46247', // classic accent (peach)
+    '#247D57', // soyboy accent (sage)
+    '#2E83C5', // thisthat accent (blue)
     '#FF0000',
     '#00FF00',
     '#0000FF',
