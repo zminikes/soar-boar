@@ -286,8 +286,8 @@
        Higher opacity = cleaner cream-on-color, less muddy mix. */
     :root[data-exp-colored-bg="1"] .info-card,
     :root[data-exp-colored-bg="1"] .mode-pill {
-      background: rgba(255,251,246,0.74);
-      border-color: rgba(0,0,0,0.10);
+      background: #FFFCF7;             /* warm near-white surface across all modes */
+      border-color: rgba(0,0,0,0.08);
       color: var(--dark);
     }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .info-card,
@@ -394,13 +394,9 @@
     :root[data-theme="dark"] .mode-segmented { background: rgba(255,255,255,0.08); }
     :root[data-theme="dark"] .seg-tab.active { background: var(--dark); color: var(--cream); }
     :root[data-theme="dark"] .seg-tab:not(.active) { color: var(--muted); }
-    :root[data-exp-colored-bg="1"] .mode-segmented { background: rgba(255,251,246,0.68); }
+    :root[data-exp-colored-bg="1"] .mode-segmented { background: #FFFCF7; }
     :root[data-exp-colored-bg="1"] .seg-tab.active { background: #1A1918; color: #fff; }
     :root[data-exp-colored-bg="1"] .seg-tab:not(.active) { color: rgba(0,0,0,0.62); }
-    /* Soar Boar light mode — flat warm-beige container instead of cream overlay */
-    :root[data-exp-colored-bg="1"][data-exp-mode="classic"]:not([data-theme="dark"]) .mode-segmented {
-      background: #EAE3D5;
-    }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .mode-segmented { background: rgba(0,0,0,0.32); }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .seg-tab.active { background: #F5F3F0; color: #1A1918; }
     :root[data-theme="dark"][data-exp-colored-bg="1"] .seg-tab:not(.active) { color: rgba(255,255,255,0.72); }
