@@ -99,6 +99,17 @@
       display: block;
       position: relative;
       cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+    /* Prevent the wordmark + tag from getting highlighted when
+       the user rapidly taps the mascot above. */
+    .simple-wordmark,
+    .simple-tag {
+      -webkit-user-select: none;
+      user-select: none;
     }
     .animated-mascot .frame { display: block; }
     /* Instant frame swap — no transition, no overlap.
@@ -1031,6 +1042,11 @@
       margin: 0 auto;
       width: min(96vw, 880px);
       animation: pigSail 5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
     }
     .flying-pig svg {
       width: 100%; height: auto; display: block;
@@ -1802,15 +1818,17 @@
       width: 100%;
       background: linear-gradient(135deg, var(--orange), #F9B68A);
       color: #fff;
-      padding: 14px 20px;
+      padding: 15px 24px;
       border-radius: 999px;
       border: none;
       font-family: var(--ff-sans);
-      font-weight: 800;
-      font-size: 14px;
-      letter-spacing: 0.04em;
+      font-weight: 600;
+      font-size: 17px;
+      letter-spacing: 0;
+      line-height: 1;
       text-align: center;
       margin-top: 14px;
+      min-height: 48px;
       cursor: pointer;
       touch-action: manipulation;
       transition: transform 120ms var(--ease-out), filter 150ms var(--ease-out), box-shadow 200ms var(--ease-out);
@@ -2276,29 +2294,36 @@
     }
     .kb-row {
       display: flex;
-      gap: 4px;
+      gap: 5px;
       justify-content: center;
       max-width: 500px;
       margin: 0 auto;
       width: 100%;
     }
+    /* Visually indent the middle row by ~half a key, like a standard
+       phone keyboard. */
+    .kb-row:nth-child(2) {
+      padding: 0 5%;
+    }
     .kb-key {
       flex: 1 1 0;
       min-width: 0;
-      height: 58px;
+      height: 62px;
       border: none;
       border-radius: 8px;
       background: var(--white);
       color: var(--dark);
       font-family: var(--ff-sans);
-      font-size: 19px;
+      font-size: 20px;
       font-weight: 700;
       cursor: pointer;
       touch-action: manipulation;
       box-shadow: 0 1px 2px rgba(0,0,0,0.06);
       transition: transform 80ms ease, background 80ms ease, color 80ms ease;
+      position: relative;
     }
-    .kb-key:active {
+    .kb-key:active,
+    .kb-key.is-pressed {
       background: var(--orange);
       color: #fff;
       transform: scale(0.94);
@@ -2308,12 +2333,61 @@
       font-size: 13px;
       letter-spacing: 0.05em;
     }
+    /* iOS-style letter magnifier on press — bigger letter floats above
+       the key so the finger doesn't cover it. */
+    .kb-key:not(.wide).is-pressed::before {
+      content: attr(data-letter);
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 8px);
+      transform: translateX(-50%);
+      min-width: 60px;
+      padding: 0 10px;
+      height: 78px;
+      background: var(--white);
+      color: var(--dark);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 46px;
+      font-weight: 700;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.20);
+      pointer-events: none;
+      z-index: 200;
+      animation: kbMagIn 90ms var(--ease-out);
+    }
+    /* Anchor edge magnifiers inside the viewport. */
+    .kb-row > .kb-key:first-child:not(.wide).is-pressed::before {
+      left: 0; transform: none;
+    }
+    .kb-row > .kb-key:last-child:not(.wide).is-pressed::before {
+      left: auto; right: 0; transform: none;
+    }
+    @keyframes kbMagIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.85); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    }
+    :root[data-theme="dark"] .kb-key:not(.wide).is-pressed::before {
+      background: #2A2826; color: var(--dark);
+    }
     :root[data-theme="dark"] .kb { background: var(--cream); border-top-color: rgba(255,255,255,0.10); }
     :root[data-theme="dark"] .kb-key { background: #2A2826; color: var(--dark); box-shadow: none; }
     /* Reserve space below content ONLY when the on-screen keyboard is mounted.
-       Using :has() so the start/end screens don't get a phantom 230px gap. */
+       Also lock the viewport from scrolling while playing — on Safari mobile
+       the page would otherwise rubber-band / scroll, even though all the
+       content fits. The :has(.kb) selector keeps this scoped to playing. */
     @media (hover: none) and (pointer: coarse) {
-      body:has(.kb) { padding-bottom: 230px; }
+      html:has(.kb),
+      body:has(.kb) {
+        overflow: hidden;
+        overscroll-behavior: none;
+        height: 100%;
+        height: 100dvh;
+        touch-action: pan-y; /* still allow inner scroll containers */
+      }
+      body:has(.kb) {
+        padding-bottom: 230px;
+      }
     }
 
     /* ── Mobile polish ───────────────────────────────────── */
@@ -2710,31 +2784,45 @@ function Confetti() {
 
 /* ── OnboardingScreen ─────────────────────────────────── */
 /* ── On-screen keyboard (touch only) ───────────────────── */
+/* Enter is intentionally omitted — words auto-submit when typed
+   length matches the puzzle word length. */
 const KB_ROWS = [
   ['Q','W','E','R','T','Y','U','I','O','P'],
   ['A','S','D','F','G','H','J','K','L'],
-  ['ENTER','Z','X','C','V','B','N','M','⌫'],
+  ['Z','X','C','V','B','N','M','⌫'],
 ];
 function Keyboard({ onKey, visible = true }) {
   if (!isTouchDevice || !visible) return null;
+  const [pressedKey, setPressedKey] = useState(null);
   const dispatch = (k) => {
-    if (k === 'ENTER')      onKey('Enter');
-    else if (k === '⌫')      onKey('Backspace');
-    else                     onKey(k);
+    if (k === '⌫') onKey('Backspace');
+    else            onKey(k);
   };
+  const release = () => setPressedKey(null);
   return (
     <div className="kb" role="group" aria-label="On-screen keyboard">
       {KB_ROWS.map((row, ri) => (
         <div key={ri} className="kb-row">
-          {row.map(k => (
-            <button
-              key={k}
-              type="button"
-              className={`kb-key${k === 'ENTER' || k === '⌫' ? ' wide' : ''}`}
-              onPointerDown={e => { e.preventDefault(); dispatch(k); }}
-              aria-label={k === '⌫' ? 'Backspace' : k === 'ENTER' ? 'Enter' : k}
-            >{k}</button>
-          ))}
+          {row.map(k => {
+            const isLetter = k !== '⌫';
+            return (
+              <button
+                key={k}
+                type="button"
+                data-letter={k}
+                className={`kb-key${k === '⌫' ? ' wide' : ''}${pressedKey === k && isLetter ? ' is-pressed' : ''}`}
+                onPointerDown={e => {
+                  e.preventDefault();
+                  if (isLetter) setPressedKey(k);
+                  dispatch(k);
+                }}
+                onPointerUp={release}
+                onPointerCancel={release}
+                onPointerLeave={release}
+                aria-label={k === '⌫' ? 'Backspace' : k}
+              >{k}</button>
+            );
+          })}
         </div>
       ))}
     </div>
@@ -2953,6 +3041,158 @@ function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'classic' })
     </div>
   );
 }
+/* ── Mascot sound effects ─────────────────────────────── */
+/* Tiny synthesized blips via Web Audio. One AudioContext is lazily
+   created on first call (browsers block audio before user gesture).
+   Each mode has its own short profile so clicks feel distinct. */
+let _mascotAudioCtx = null;
+function getMascotAudioCtx() {
+  if (typeof window === 'undefined') return null;
+  if (!_mascotAudioCtx) {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      _mascotAudioCtx = new Ctx();
+    } catch (e) { return null; }
+  }
+  if (_mascotAudioCtx.state === 'suspended') {
+    _mascotAudioCtx.resume().catch(() => {});
+  }
+  return _mascotAudioCtx;
+}
+function playMascotSound(modeId) {
+  const ctx = getMascotAudioCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  if (modeId === 'soyboy') {
+    // Bean's squeaky non-verbal "hello" — two playful syllables (hel-lo)
+    // with a rising-falling-rising pitch and a brief envelope dip in the middle.
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 2600;
+    osc.type = 'triangle';
+    osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    // Syllable 1 "hel": rising
+    osc.frequency.setValueAtTime(560, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.09);
+    // Syllable 2 "lo": dip then up again
+    osc.frequency.exponentialRampToValueAtTime(700, now + 0.16);
+    osc.frequency.exponentialRampToValueAtTime(960, now + 0.28);
+    // Two-bump envelope so it reads as two syllables
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.014);
+    gain.gain.exponentialRampToValueAtTime(0.04, now + 0.11);
+    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.16);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+    osc.start(now); osc.stop(now + 0.34);
+
+  } else if (modeId === 'thisthat') {
+    // Squiggly slide-whistle with vibrato — pitch wobbles up-down-up-down,
+    // an LFO adds fine vibrato on top for that "squiggly line" quality.
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.connect(gain); gain.connect(ctx.destination);
+    // Wiggly pitch path
+    osc.frequency.setValueAtTime(420, now);
+    osc.frequency.exponentialRampToValueAtTime(760, now + 0.07);
+    osc.frequency.exponentialRampToValueAtTime(340, now + 0.15);
+    osc.frequency.exponentialRampToValueAtTime(680, now + 0.23);
+    osc.frequency.exponentialRampToValueAtTime(400, now + 0.32);
+    // Vibrato on top
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    lfo.frequency.value = 16;
+    lfoGain.gain.value = 28;
+    lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.16, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    osc.start(now);  osc.stop(now + 0.36);
+    lfo.start(now);  lfo.stop(now + 0.36);
+
+  } else {
+    // Pig oink — two-syllable "uh-OINK" with sawtooth body + lowpass for
+    // a buzzy, nasal grunt. Filter sweep opens up on the main hit so it
+    // pops, then closes back down for that snorty tail.
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.Q.value = 4;
+    filter.frequency.setValueAtTime(700, now);
+    filter.frequency.exponentialRampToValueAtTime(1800, now + 0.10);
+    filter.frequency.exponentialRampToValueAtTime(900, now + 0.26);
+    osc.type = 'sawtooth';
+    osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    // "uh" (short low) → gap → "OINK" (rising peak, settle)
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(190, now + 0.05);
+    osc.frequency.exponentialRampToValueAtTime(270, now + 0.13);
+    osc.frequency.exponentialRampToValueAtTime(220, now + 0.26);
+    // Envelope: short grunt, dip, main hit, decay
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.16, now + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.03, now + 0.07);
+    gain.gain.exponentialRampToValueAtTime(0.22, now + 0.11);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+    osc.start(now); osc.stop(now + 0.30);
+  }
+}
+
+/* Celebration sounds — ascending fanfare for personal-best,
+   sparkle chime for ladder shortest-path solves. */
+function playCelebrationSound(kind) {
+  const ctx = getMascotAudioCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  if (kind === 'shortest') {
+    // Magical sparkle — four ascending notes with an octave shimmer
+    const notes = [784, 988, 1175, 1568]; // G5, B5, D6, G6
+    notes.forEach((freq, i) => {
+      const t = now + i * 0.075;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.13, t + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+      osc.start(t); osc.stop(t + 0.4);
+      // Octave shimmer
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.frequency.value = freq * 2;
+      gain2.gain.setValueAtTime(0.0001, t);
+      gain2.gain.exponentialRampToValueAtTime(0.05, t + 0.012);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, t + 0.30);
+      osc2.start(t); osc2.stop(t + 0.35);
+    });
+  } else {
+    // Personal best — warm ascending fanfare (C major arpeggio)
+    const notes = [523, 659, 784, 1046]; // C5, E5, G5, C6
+    notes.forEach((freq, i) => {
+      const t = now + i * 0.08;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.16, t + 0.014);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+      osc.start(t); osc.stop(t + 0.32);
+    });
+  }
+}
+
 /* ── AnimatedMascot ───────────────────────────────────── */
 /* Renders open + closed SVG frames stacked. The closed frame fades in
    when eyes are "closed" (random ambient blink OR hover). Hover also
@@ -2995,17 +3235,36 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
     return () => clearInterval(id);
   }, []);
 
+  // Reusable bounce trigger that always restarts the animation cleanly,
+  // even if the mascot is already mid-bounce. Toggles off, waits one frame
+  // for React to commit, then toggles on so the CSS keyframes restart.
+  const bounceTimer1Ref = useRef(null);
+  const bounceTimer2Ref = useRef(null);
+  const triggerBounce = useCallback(() => {
+    if (bounceTimer1Ref.current) clearTimeout(bounceTimer1Ref.current);
+    if (bounceTimer2Ref.current) clearTimeout(bounceTimer2Ref.current);
+    setIsBouncing(false);
+    bounceTimer1Ref.current = setTimeout(() => {
+      setIsBouncing(true);
+      bounceTimer2Ref.current = setTimeout(() => setIsBouncing(false), 420);
+    }, 16);
+  }, []);
+
   const handleEnter = useCallback(() => {
     setIsHovered(true);
-    setIsBouncing(true);
-    setTimeout(() => setIsBouncing(false), 420);
-  }, []);
+    triggerBounce();
+  }, [triggerBounce]);
   const handleLeave = useCallback(() => setIsHovered(false), []);
   // On touch devices, pointerleave never fires after a tap, so the mascot
   // gets stuck eyes-closed. Auto-reopen eyes when the touch ends.
   const handleTouchEnd = useCallback(() => {
     setTimeout(() => setIsHovered(false), 420);
   }, []);
+  // Click/tap = cute sound + retrigger bounce (even mid-animation).
+  const handleClick = useCallback(() => {
+    playMascotSound(modeId);
+    triggerBounce();
+  }, [modeId, triggerBounce]);
 
   const isSoyboy   = modeId === 'soyboy';
   const isThisThat = modeId === 'thisthat';
@@ -3098,6 +3357,7 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
       onBlur={handleLeave}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
+      onClick={handleClick}
       role="img"
       aria-label={isClassic ? 'Flying pig mascot' : 'Soy bean mascot'}
     >
@@ -3122,7 +3382,7 @@ function AnimatedMascot({ size = 120, modeId = 'classic' }) {
 /* Tiles-style minimal landing.
    Mode switcher is a pill-shaped segmented control with both mascots
    visible at once — you "peek" into each mode just by seeing the tabs. */
-function StartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, modeId, setModeId, debugMode }) {
+function StartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, modeId, setModeId, debugMode, onDebugJump }) {
   const cfg = MODES[modeId];
   const [showPrefs, setShowPrefs] = useState(false);
   const bestScore = getBestScore(modeId);
@@ -3206,7 +3466,7 @@ function StartScreen({ onStart, onStartForever, onTutorial, debug, setDebug, mod
                 <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
               </div>
             ))}
-            {debugMode && <ExperimentsPanel debug={debug} setDebug={setDebug} />}
+            {debugMode && <ExperimentsPanel debug={debug} setDebug={setDebug} onDebugJump={onDebugJump} />}
           </div>
         </div>
       </div>
@@ -3850,7 +4110,11 @@ function FlyingPig() {
 
   return (
     <div className="flying-section" aria-hidden="true">
-      <div className="flying-pig" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
+      <div
+        className="flying-pig"
+        onClick={() => playMascotSound('classic')}
+        dangerouslySetInnerHTML={{ __html: svgMarkup }}
+      />
     </div>
   );
 }
@@ -4028,28 +4292,118 @@ function DebugBadge({ onToggle }) {
 /* Design experiments — A/B compare directions.
    The colored-bg color picker lives in a floating panel rendered at the
    App root (not here) so it stays visible while scrolling. */
-function ExperimentsPanel({ debug, setDebug }) {
+function ExperimentsPanel({ debug, setDebug, onDebugJump }) {
   const experiments = [
     // No experiments currently — colored bg is now canonical.
   ];
-  if (!experiments.length) return null;
+
+  // Preset result data for each celebration variant.
+  // chain entries are objects { word, pts } — matches the real game shape.
+  const mkChain = (...words) =>
+    words.map((w, i) => ({ word: w, pts: i === 0 ? null : 12 }));
+  const mkLadderChain = (...words) =>
+    words.map((w) => ({ word: w, pts: null }));
+  const celebrationTests = [
+    {
+      label: 'Soar Boar · new PB',
+      modeId: 'classic',
+      result: {
+        score: 63, chain: mkChain('BOAR','BEAR','BEAD','BEND','MEND','MIND'),
+        deadEnd: false, forceNewBest: true,
+      },
+    },
+    {
+      label: 'Soy Boy · new PB',
+      modeId: 'soyboy',
+      result: {
+        score: 52, chain: mkChain('SOY','BOY','BAY','DAY','DAB'),
+        deadEnd: false, forceNewBest: true,
+      },
+    },
+    {
+      label: 'This That · matched par',
+      modeId: 'thisthat',
+      result: {
+        score: 3, chain: mkLadderChain('THIS','THIN','THAN','THAT'),
+        deadEnd: false, win: true, target: 'THAT', par: 3,
+      },
+    },
+    {
+      label: 'This That · beat par',
+      modeId: 'thisthat',
+      result: {
+        score: 2, chain: mkLadderChain('THIS','THAN','THAT'),
+        deadEnd: false, win: true, target: 'THAT', par: 3,
+      },
+    },
+    {
+      label: 'This That · over par (no banner)',
+      modeId: 'thisthat',
+      result: {
+        score: 5, chain: mkLadderChain('THIS','THIN','THAN','THAT','WHAT','WHIT'),
+        deadEnd: false, win: true, target: 'WHIT', par: 3,
+      },
+    },
+  ];
+
+  if (!experiments.length && !onDebugJump) return null;
   return (
     <>
-      <div style={{
-        marginTop: 16, paddingTop: 14,
-        borderTop: '1px solid var(--border)',
-        fontFamily: 'var(--ff-sans)', fontSize: 12, fontWeight: 700,
-        letterSpacing: '0.08em', textTransform: 'uppercase',
-        color: 'var(--muted)',
-      }}>
-        Design experiments
-      </div>
-      {experiments.map(({ key, label, sub }) => (
-        <div key={key} className="prefs-row" style={{ marginTop: 12 }}>
-          <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
-          <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
-        </div>
-      ))}
+      {experiments.length > 0 && (
+        <>
+          <div style={{
+            marginTop: 16, paddingTop: 14,
+            borderTop: '1px solid var(--border)',
+            fontFamily: 'var(--ff-sans)', fontSize: 12, fontWeight: 700,
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: 'var(--muted)',
+          }}>
+            Design experiments
+          </div>
+          {experiments.map(({ key, label, sub }) => (
+            <div key={key} className="prefs-row" style={{ marginTop: 12 }}>
+              <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
+              <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
+            </div>
+          ))}
+        </>
+      )}
+
+      {onDebugJump && (
+        <>
+          <div style={{
+            marginTop: 16, paddingTop: 14,
+            borderTop: '1px solid var(--border)',
+            fontFamily: 'var(--ff-sans)', fontSize: 12, fontWeight: 700,
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: 'var(--muted)',
+          }}>
+            Test celebration screens
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+            {celebrationTests.map(t => (
+              <button
+                key={t.label}
+                type="button"
+                onClick={() => onDebugJump(t.modeId, t.result)}
+                style={{
+                  fontFamily: 'var(--ff-sans)',
+                  fontSize: 13, fontWeight: 600,
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  color: 'var(--dark)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </>
   );
 }
@@ -4459,7 +4813,7 @@ function PlayScreen({ puzzleSeed, onEnd, onHome, onRestart, onNewPuzzle, debug, 
 }
 
 /* ── EndScreen ────────────────────────────────────────── */
-function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = 'classic', win, target, par }) {
+function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = 'classic', win, target, par, forceNewBest }) {
   const cfg = MODES[modeId];
   const isLadder = !!cfg.isLadder;
   const [copied, setCopied] = useState(false);
@@ -4468,17 +4822,28 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
   // Best score: only tracked for timed runs.
   // Ladder mode + forever mode don't write to personal-best.
   const previousBest = useRef(getBestScore(modeId)).current;
-  const isNewBest = !isLadder && !debug.foreverMode && score > 0 && score > previousBest;
+  const isNewBest = forceNewBest || (!isLadder && !debug.foreverMode && score > 0 && score > previousBest);
   useEffect(() => {
-    if (isNewBest) setBestScore(modeId, score);
-  }, [isNewBest, modeId, score]);
+    // Don't write debug-forced bests to localStorage.
+    if (isNewBest && !forceNewBest) setBestScore(modeId, score);
+  }, [isNewBest, forceNewBest, modeId, score]);
   const currentBest = isNewBest ? score : previousBest;
 
-  // Emoji burst on tapping the new-best banner
+  // Ladder par achievements (this-that shortest-path celebration)
+  const matchedPar = isLadder && win && par != null && score === par;
+  const beatPar    = isLadder && win && par != null && score < par;
+  const isParCelebration = matchedPar || beatPar;
+
+  // Play celebration sound once when the appropriate banner appears.
+  useEffect(() => {
+    if (isNewBest)         playCelebrationSound('best');
+    else if (isParCelebration) playCelebrationSound('shortest');
+  }, [isNewBest, isParCelebration]);
+
+  // Emoji burst on tapping a celebration banner. Emoji set varies by banner.
   const [bursts, setBursts] = useState([]);
   const burstId = useRef(0);
-  const handleBurst = useCallback(() => {
-    const emojis = modeId === 'soyboy' ? ['🫛'] : ['🐷', '🪽'];
+  const makeBurst = useCallback((emojis) => {
     const id = ++burstId.current;
     const N = 14;
     const particles = Array.from({ length: N }, (_, i) => {
@@ -4495,7 +4860,16 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
     });
     setBursts(prev => [...prev, { id, particles }]);
     setTimeout(() => setBursts(prev => prev.filter(b => b.id !== id)), 1500);
-  }, [modeId]);
+  }, []);
+  const handleBurst = useCallback(() => {
+    playCelebrationSound('best');
+    const emojis = modeId === 'soyboy' ? ['🫛'] : ['🐷', '🪽'];
+    makeBurst(emojis);
+  }, [modeId, makeBurst]);
+  const handleParBurst = useCallback(() => {
+    playCelebrationSound('shortest');
+    makeBurst(['🎯', '✨', '🪽']);
+  }, [makeBurst]);
 
   const handleShare = useCallback(async () => {
     const text = generateShareText(chain, score, modeId);
@@ -4540,11 +4914,7 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
             <div className="end-score-label">
               {win
                 ? (par != null
-                    ? (score === par
-                        ? `🎯 You matched the best path of ${par}!`
-                        : score < par
-                          ? `🏆 Beat the best path of ${par}!`
-                          : `Best path: ${par} move${par !== 1 ? 's' : ''}`)
+                    ? `Best path: ${par} move${par !== 1 ? 's' : ''}`
                     : 'Solved it!')
                 : (target ? `Was heading to ${target}` : '')}
             </div>
@@ -4563,6 +4933,33 @@ function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = '
               </div>
             )}
           </>
+        )}
+        {isParCelebration && (
+          <button
+            type="button"
+            className="new-best-banner"
+            onClick={handleParBurst}
+            aria-label={beatPar ? "Celebrate beating the best path" : "Celebrate matching the best path"}
+          >
+            {beatPar ? '🏆 Beat the best path!' : '🎯 Matched the best path!'}
+            {bursts.map(burst => (
+              <React.Fragment key={burst.id}>
+                {burst.particles.map((p, i) => (
+                  <span
+                    key={i}
+                    className="burst-emoji"
+                    aria-hidden="true"
+                    style={{
+                      '--burst-dx':  `${p.dx}px`,
+                      '--burst-dy':  `${p.dy}px`,
+                      '--burst-rot': `${p.rot}deg`,
+                      '--burst-dur': `${p.dur}ms`,
+                    }}
+                  >{p.emoji}</span>
+                ))}
+              </React.Fragment>
+            ))}
+          </button>
         )}
         {!debug.foreverMode && isNewBest && (
           <button
@@ -4759,6 +5156,11 @@ function App() {
           modeId={modeId}
           setModeId={setModeId}
           debugMode={debugMode}
+          onDebugJump={(testModeId, resultData) => {
+            setModeId(testModeId);
+            setResult(resultData);
+            setScreen('end');
+          }}
         />
       )}
       {screen === 'tutorial' && (
@@ -4792,6 +5194,7 @@ function App() {
           win={result.win}
           target={result.target}
           par={result.par}
+          forceNewBest={result.forceNewBest}
           debug={debug}
           modeId={modeId}
           onRestart={newPuzzle}
