@@ -18,11 +18,16 @@ Filters (in order):
      solvable using only recognizable words.
 
 Selection:
-  3. Distance distribution via --distribution "3:60,4:70,5:30"
-     (default matches existing game/pairs.js shape: 60 par-3, 70 par-4, 30 par-5).
+  3. Distance distribution via --distribution "4:30,5:40,6:40,7:30,8:5"
+     (default ramps from par-4 warm-ups to single-path par-7 grinders).
   4. Diversity: no word appears as start or end in more than
      --max-appearances levels (default 2).
-  5. Within each distance bucket: random sample (seeded with --seed).
+  5. Within each distance bucket: pick by --strategy.
+       hardest (default) — sort by path_count ascending, then
+                            avg_branching ascending. Fewer paths and
+                            tighter corridors = brain-bending puzzles.
+       random            — shuffle (seeded) and take in order. Use
+                            this for variety / less-punishing packs.
   6. Final output sorted ascending by composite difficulty score so the
      campaign ramps from easy to hard.
 
@@ -145,7 +150,7 @@ def format_level(c: dict) -> str:
 def generate(wordlist_path: Path, tsv_path: Path, starters_path: Path,
              out_path: Path, *, endpoint_source: str, endpoint_threshold: float,
              path_threshold: float, distribution: dict[int, int],
-             max_appearances: int, seed: int) -> None:
+             strategy: str, max_appearances: int, seed: int) -> None:
 
     print(f"[1/6] loading wordlist  ({wordlist_path.name})")
     words = load_words(wordlist_path)
@@ -200,7 +205,8 @@ def generate(wordlist_path: Path, tsv_path: Path, starters_path: Path,
     print(f"      {len(path_filtered):,} have an all-common shortest path")
 
     print(f"[6/6] selecting levels  "
-          f"(distribution={distribution}, max_appearances={max_appearances}, seed={seed})")
+          f"(distribution={distribution}, strategy={strategy}, "
+          f"max_appearances={max_appearances}, seed={seed})")
     by_distance: dict[int, list[dict]] = defaultdict(list)
     for c in path_filtered:
         by_distance[c["distance"]].append(c)
@@ -211,7 +217,11 @@ def generate(wordlist_path: Path, tsv_path: Path, starters_path: Path,
     for d in sorted(distribution):
         target_n = distribution[d]
         pool = by_distance.get(d, [])[:]
-        rng.shuffle(pool)
+        if strategy == "hardest":
+            # Fewer paths first, then tighter corridor.
+            pool.sort(key=lambda c: (c["path_count"], c["avg_branching"]))
+        else:
+            rng.shuffle(pool)
         picked = 0
         for c in pool:
             if picked >= target_n:
@@ -238,7 +248,8 @@ def generate(wordlist_path: Path, tsv_path: Path, starters_path: Path,
                 f'{f" (threshold {endpoint_threshold})" if endpoint_source == "wordfreq" else ""}\n')
         f.write(f'   Path threshold: {path_threshold}    '
                 f'Distribution: {distribution}\n')
-        f.write(f'   Diversity: max_appearances={max_appearances}    '
+        f.write(f'   Strategy: {strategy}    '
+                f'Diversity: max_appearances={max_appearances}    '
                 f'Seed: {seed}\n')
         f.write(f'   {len(selected)} levels.\n')
         f.write('*/\n')
@@ -280,8 +291,11 @@ def main():
                     help="min wordfreq for endpoints when --endpoint-source=wordfreq")
     ap.add_argument("--path-threshold", type=float, default=1e-7,
                     help="min wordfreq for words on the materialized path")
-    ap.add_argument("--distribution", default="3:60,4:70,5:30",
-                    help='per-distance quotas, e.g. "3:60,4:70,5:30"')
+    ap.add_argument("--distribution", default="4:30,5:40,6:40,7:30,8:5",
+                    help='per-distance quotas, e.g. "4:30,5:40,6:40,7:30,8:5"')
+    ap.add_argument("--strategy", choices=["hardest", "random"], default="hardest",
+                    help='within-bucket pick: "hardest" sorts by path_count then '
+                         'avg_branching ascending; "random" shuffles (seeded)')
     ap.add_argument("--max-appearances", type=int, default=2,
                     help="max times any word may appear as start or end")
     ap.add_argument("--seed", type=int, default=42, help="rng seed for sampling")
@@ -314,6 +328,7 @@ def main():
         endpoint_threshold=args.endpoint_threshold,
         path_threshold=args.path_threshold,
         distribution=parse_distribution(args.distribution),
+        strategy=args.strategy,
         max_appearances=args.max_appearances,
         seed=args.seed,
     )
