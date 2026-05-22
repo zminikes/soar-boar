@@ -9,13 +9,6 @@ mode, drop-in shaped for `game/pairs.js`.
           has multiple equally-short routes. Useful as a difficulty
           indicator independent of par.
 
-The path *content* the original pairs.js included is intentionally
-dropped — the game never reads it at runtime (it computes shortest
-paths on the fly via bfsPath in game/index.html). Internally this
-script still materializes a canonical all-common path to *verify*
-each pair is solvable using recognizable words, but it's not written
-to the output.
-
 Inputs:
   - scripts/output/pairs_<N>.tsv   (from word_pair_difficulty.py)
   - game/wordlist<N>.js            (graph rebuild for path materialization)
