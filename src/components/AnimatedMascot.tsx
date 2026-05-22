@@ -78,6 +78,12 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
     setTimeout(() => setIsBouncing(false), 420);
   }, []);
   const handleLeave = useCallback(() => setIsHovered(false), []);
+  // On touch devices, pointerleave never fires after a tap, so the mascot
+  // gets stuck with eyes closed. Auto-reopen 420ms after the touch ends
+  // so the wink lands in the same rhythm as the bounce animation.
+  const handleTouchEnd = useCallback(() => {
+    setTimeout(() => setIsHovered(false), 420);
+  }, []);
 
   const isSoyboy = modeId === 'soyboy';
   const isThisThat = modeId === 'thisthat';
@@ -162,6 +168,8 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
       onMouseLeave={handleLeave}
       onFocus={handleEnter}
       onBlur={handleLeave}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
       role="img"
       aria-label={isClassic ? 'Flying pig mascot' : 'Soy bean mascot'}
     >
