@@ -1,5 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
-import { MODE_CONFIGS } from '../lib/modes';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { MODE_CONFIGS, type ModeId } from '../lib/modes';
+
+interface DemoStep {
+  word: string;
+  changed: number | null;
+  pts: number | null;
+  target?: string;
+  caption: ReactNode;
+  sub: ReactNode;
+}
+
+interface DemoSectionProps {
+  modeId: ModeId;
+  onStart: () => void;
+  onStartForever?: () => void;
+}
 
 /* DemoSection (scroll-jacked, sticky scene).
    Outer wrapper is N viewport-heights tall.
@@ -7,12 +22,12 @@ import { MODE_CONFIGS } from '../lib/modes';
    Scroll progress through the outer drives which step is active.
    Each new step re-mounts via React `key`, so the entrance
    animations replay (tile snap-in + points float). */
-export function DemoSection({ modeId, onStart, onStartForever }) {
+export function DemoSection({ modeId, onStart, onStartForever }: DemoSectionProps) {
   const cfg = MODE_CONFIGS[modeId];
   const isLadder = !!cfg.isLadder;
 
   // 4 scenes per mode. The last is a CTA finale.
-  const STEPS = modeId === 'thisthat' ? [
+  const STEPS: DemoStep[] = modeId === 'thisthat' ? [
     { word: 'THIS', changed: null, pts: null, target: 'THAT',
       caption: <>Each game has a starting word and a goal.</>,
       sub: <>Get from <span className="accent">THIS</span> to <span className="accent">THAT</span>.</> },
@@ -55,12 +70,12 @@ export function DemoSection({ modeId, onStart, onStartForever }) {
   const FINALE_INDEX = STEPS.length; // one extra scene at the end
   const totalScenes = STEPS.length + 1;
 
-  const outerRef = useRef(null);
+  const outerRef = useRef<HTMLElement | null>(null);
   const [step, setStep] = useState(0);
 
   useEffect(() => {
     let ticking = false;
-    const update = () => {
+    const update = (): void => {
       ticking = false;
       const el = outerRef.current;
       if (!el) return;
@@ -70,7 +85,7 @@ export function DemoSection({ modeId, onStart, onStartForever }) {
       const idx = Math.min(totalScenes - 1, Math.floor((scrolled / totalScroll) * totalScenes));
       setStep(prev => prev === idx ? prev : idx);
     };
-    const onScroll = () => {
+    const onScroll = (): void => {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(update);

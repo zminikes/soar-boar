@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
-import { MODE_CONFIGS } from '../lib/modes';
+import { MODE_CONFIGS, type ModeId } from '../lib/modes';
 import { getWords } from '../data/modeData';
 import { MSG_DURATION } from '../game/constants';
 import { diffPos } from '../lib/moves';
@@ -7,7 +7,35 @@ import { isTouchDevice } from '../platform/dom';
 import { Confetti } from './Confetti';
 import { Keyboard } from './Keyboard';
 
-export function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'classic' }) {
+interface CompletedStep {
+  word: string;
+  pts: number;
+  changedIdx: number;
+}
+
+type MsgKind = '' | 'error' | 'ok';
+interface Msg {
+  text: string;
+  type: MsgKind;
+}
+
+// Minimal KeyboardEvent-shaped object — only the fields the handler reads.
+// Lets the Keyboard component dispatch a synthetic key event via the same path.
+interface KeyEvent {
+  key: string;
+  metaKey?: boolean;
+  ctrlKey?: boolean;
+  altKey?: boolean;
+}
+
+interface OnboardingScreenProps {
+  onDone: () => void;
+  onDoneForever: () => void;
+  onBack: () => void;
+  modeId?: ModeId;
+}
+
+export function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'classic' }: OnboardingScreenProps) {
   const cfg      = MODE_CONFIGS[modeId];
   const isLadder = !!cfg.isLadder;
   const words = cfg.tutorialWords;   // e.g. ['SOAR','BOAR','BEAR']
@@ -15,26 +43,26 @@ export function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'clas
 
   const [step,           setStep]           = useState(0);
   const [typed,          setTyped]          = useState('');
-  const [msg,            setMsg]            = useState({ text: '', type: '' });
+  const [msg,            setMsg]            = useState<Msg>({ text: '', type: '' });
   const [shaking,        setShaking]        = useState(false);
-  const [completedSteps, setCompletedSteps] = useState([]); // [{word, pts, changedIdx}]
+  const [completedSteps, setCompletedSteps] = useState<CompletedStep[]>([]);
   const [done,           setDone]           = useState(false);
   const typedRef  = useRef('');
-  const msgTimer  = useRef(null);
+  const msgTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fromWord = words[step];
 
-  const showMsg = useCallback((text, type) => {
-    clearTimeout(msgTimer.current);
+  const showMsg = useCallback((text: string, type: MsgKind): void => {
+    if (msgTimer.current) clearTimeout(msgTimer.current);
     setMsg({ text, type });
-    msgTimer.current = setTimeout(() => setMsg({ text:'', type:'' }), MSG_DURATION);
+    msgTimer.current = setTimeout(() => setMsg({ text: '', type: '' }), MSG_DURATION);
   }, []);
 
-  const handleKeyDown = useCallback((e) => {
+  const handleKeyDown = useCallback((e: KeyEvent): void => {
     if (done) return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
-    const tryShake = () => { setShaking(true); setTimeout(() => setShaking(false), 280); };
-    const attemptSubmit = (word) => {
+    const tryShake = (): void => { setShaking(true); setTimeout(() => setShaking(false), 280); };
+    const attemptSubmit = (word: string): void => {
       if (word.length !== cfg.wordLen) return;
       if (!getWords(modeId).has(word)) { showMsg('Not a word', 'error'); tryShake(); return; }
       const diffs = diffPos(fromWord, word);
@@ -58,7 +86,7 @@ export function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'clas
     } else if (e.key === 'Backspace') {
       const next = typedRef.current.slice(0, -1);
       typedRef.current = next; setTyped(next);
-      setMsg({ text:'', type:'' });
+      setMsg({ text: '', type: '' });
     } else if (/^[a-zA-Z]$/.test(e.key) && typedRef.current.length < cfg.wordLen) {
       const next = typedRef.current + e.key.toUpperCase();
       typedRef.current = next; setTyped(next);
@@ -74,7 +102,7 @@ export function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'clas
   const typedDiffs      = typed.length === cfg.wordLen ? diffPos(fromWord, typed) : [];
   const tooMany         = typedDiffs.length > 1;
   const persistentError = tooMany ? `Changed ${typedDiffs.length} letters — change just 1` : '';
-  const displayMsg      = persistentError ? { text: persistentError, type: 'error' } : msg;
+  const displayMsg: Msg = persistentError ? { text: persistentError, type: 'error' } : msg;
   const totalPts        = completedSteps.reduce((s, x) => s + x.pts, 0);
 
   return (
@@ -180,7 +208,7 @@ export function OnboardingScreen({ onDone, onDoneForever, onBack, modeId = 'clas
                 );
               })}
             </div>
-            <div className={`input-hint ${displayMsg.type}`}>{displayMsg.text || ' '}</div>
+            <div className={`input-hint ${displayMsg.type}`}>{displayMsg.text || ' '}</div>
             {!isTouchDevice && (
               <div className="kbd-hint">type a word · <kbd>↵</kbd> to submit</div>
             )}

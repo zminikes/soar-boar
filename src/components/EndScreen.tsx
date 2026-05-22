@@ -1,12 +1,42 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
-import { MODE_CONFIGS } from '../lib/modes';
+import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { MODE_CONFIGS, type ModeId } from '../lib/modes';
 import { generateShareText } from '../lib/share';
 import { SHARE_URL } from '../game/constants';
+import type { ChainEntry, DebugState } from '../lib/types';
 import { getBestScore, setBestScore } from '../platform/dom';
 import { MascotIcon } from './MascotIcon';
 import { ChainRows } from './ChainRows';
 
-export function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, modeId = 'classic', win, target, par }) {
+interface BurstParticle {
+  emoji: string;
+  dx: number;
+  dy: number;
+  rot: number;
+  dur: number;
+}
+
+interface Burst {
+  id: number;
+  particles: BurstParticle[];
+}
+
+interface EndScreenProps {
+  score: number;
+  chain: readonly ChainEntry[];
+  deadEnd: boolean;
+  onRestart: () => void;
+  onHome: () => void;
+  debug: DebugState;
+  modeId?: ModeId;
+  win?: boolean;
+  target?: string;
+  par?: number | null;
+}
+
+export function EndScreen({
+  score, chain, deadEnd, onRestart, onHome,
+  debug, modeId = 'classic', win, target, par,
+}: EndScreenProps) {
   const cfg = MODE_CONFIGS[modeId];
   const isLadder = !!cfg.isLadder;
   const [copied, setCopied] = useState(false);
@@ -22,13 +52,13 @@ export function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, mod
   const currentBest = isNewBest ? score : previousBest;
 
   // Emoji burst on tapping the new-best banner
-  const [bursts, setBursts] = useState([]);
+  const [bursts, setBursts] = useState<Burst[]>([]);
   const burstId = useRef(0);
-  const handleBurst = useCallback(() => {
+  const handleBurst = useCallback((): void => {
     const emojis = modeId === 'soyboy' ? ['🫛'] : ['🐷', '🪽'];
     const id = ++burstId.current;
     const N = 14;
-    const particles = Array.from({ length: N }, (_, i) => {
+    const particles: BurstParticle[] = Array.from({ length: N }, (_, i) => {
       const angle = (i / N) * 360 + (Math.random() * 24 - 12);
       const dist  = 130 + Math.random() * 110;
       const rad   = (angle * Math.PI) / 180;
@@ -44,10 +74,14 @@ export function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, mod
     setTimeout(() => setBursts(prev => prev.filter(b => b.id !== id)), 1500);
   }, [modeId]);
 
-  const handleShare = useCallback(async () => {
+  const handleShare = useCallback(async (): Promise<void> => {
     const text = generateShareText(chain, score, cfg, SHARE_URL);
+    // typeof check rather than `'share' in navigator` — modern lib.dom
+    // types `share` as always-present, so the `in` form narrows to never
+    // in the else branch even though the runtime check is honest.
+    const canNativeShare = typeof navigator.share === 'function';
     try {
-      if (navigator.share) {
+      if (canNativeShare) {
         await navigator.share({ text });
       } else {
         await navigator.clipboard.writeText(text);
@@ -126,12 +160,13 @@ export function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, mod
                     key={i}
                     className="burst-emoji"
                     aria-hidden="true"
+                    // CSS custom properties; React.CSSProperties doesn't allow arbitrary `--*` keys.
                     style={{
                       '--burst-dx':  `${p.dx}px`,
                       '--burst-dy':  `${p.dy}px`,
                       '--burst-rot': `${p.rot}deg`,
                       '--burst-dur': `${p.dur}ms`,
-                    }}
+                    } as CSSProperties}
                   >{p.emoji}</span>
                 ))}
               </Fragment>
@@ -162,7 +197,7 @@ export function EndScreen({ score, chain, deadEnd, onRestart, onHome, debug, mod
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
             </svg>
-            {navigator.share ? 'Share ladder' : 'Copy ladder'}
+            {typeof navigator.share === 'function' ? 'Share ladder' : 'Copy ladder'}
           </button>
         )}
         {copied && <div className="share-copied">Copied to clipboard! ✓</div>}
