@@ -4,10 +4,10 @@ import { scopeSvgStyles } from '../game/svgUtils';
 import { useIsDark } from '../game/appContext';
 
 /* Lazy-fetches big-pig-1.svg at mount instead of inlining the ~80 KB
-   raw string in the JS bundle. The pig is purely decorative (aria-
-   hidden, sits at the bottom of the start screen) so the brief flash
-   of nothing during the initial fetch is invisible. Browser HTTP
-   cache makes subsequent mounts effectively free. */
+   raw string in the JS bundle. The wrapper renders unconditionally
+   with an aspect-ratio reservation (see .flying-pig in global.css)
+   so EmailSignup below doesn't jump when the SVG hydrates — no CLS
+   on cold load. Browser HTTP cache makes subsequent mounts free. */
 export function FlyingPig() {
   const isDark = useIsDark();
   const [rawSvg, setRawSvg] = useState<string | null>(null);
@@ -45,8 +45,6 @@ export function FlyingPig() {
     }
     return scopeSvgStyles(raw, 'flying-pig');
   }, [rawSvg, isDark]);
-
-  if (!svgMarkup) return null;
 
   return (
     <div className="flying-section" aria-hidden="true">

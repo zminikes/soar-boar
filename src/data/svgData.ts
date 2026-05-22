@@ -91,8 +91,8 @@ export const SVG_URLS: Readonly<Record<MascotName, string>> = {
   'hair-8.svg': hair8Url,
 };
 
-// Raw SVG strings for in-place recoloring (useColoredSvg) and direct
-// dangerouslySetInnerHTML render (AnimatedMascot body). Excludes
+// Raw SVG strings for in-place recoloring + direct
+// dangerouslySetInnerHTML render (AnimatedMascot). Excludes
 // big-pig-1.svg which FlyingPig fetches at runtime.
 export const SVG_DATA: Readonly<Record<InlinedMascotName, string>> = {
   'pig-open.svg': pigOpenRaw,
