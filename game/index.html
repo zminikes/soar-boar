@@ -2320,10 +2320,8 @@
       touch-action: manipulation;
       box-shadow: 0 1px 2px rgba(0,0,0,0.06);
       transition: transform 80ms ease, background 80ms ease, color 80ms ease;
-      position: relative;
     }
-    .kb-key:active,
-    .kb-key.is-pressed {
+    .kb-key:active {
       background: var(--orange);
       color: #fff;
       transform: scale(0.94);
@@ -2333,42 +2331,12 @@
       font-size: 13px;
       letter-spacing: 0.05em;
     }
-    /* iOS-style letter magnifier on press — bigger letter floats above
-       the key so the finger doesn't cover it. */
-    .kb-key:not(.wide).is-pressed::before {
-      content: attr(data-letter);
-      position: absolute;
-      left: 50%;
-      bottom: calc(100% + 8px);
-      transform: translateX(-50%);
-      min-width: 60px;
-      padding: 0 10px;
-      height: 78px;
-      background: var(--white);
-      color: var(--dark);
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      font-size: 46px;
-      font-weight: 700;
-      box-shadow: 0 8px 22px rgba(0,0,0,0.20);
+    /* Inset spacer at the start of row 3 — matches the width of the
+       backspace key so the Z sits where it would on a phone keyboard. */
+    .kb-spacer {
+      flex: 1.6 1 0;
+      min-width: 0;
       pointer-events: none;
-      z-index: 200;
-      animation: kbMagIn 90ms var(--ease-out);
-    }
-    /* Anchor edge magnifiers inside the viewport. */
-    .kb-row > .kb-key:first-child:not(.wide).is-pressed::before {
-      left: 0; transform: none;
-    }
-    .kb-row > .kb-key:last-child:not(.wide).is-pressed::before {
-      left: auto; right: 0; transform: none;
-    }
-    @keyframes kbMagIn {
-      from { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.85); }
-      to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-    }
-    :root[data-theme="dark"] .kb-key:not(.wide).is-pressed::before {
-      background: #2A2826; color: var(--dark);
     }
     :root[data-theme="dark"] .kb { background: var(--cream); border-top-color: rgba(255,255,255,0.10); }
     :root[data-theme="dark"] .kb-key { background: #2A2826; color: var(--dark); box-shadow: none; }
@@ -2793,36 +2761,24 @@ const KB_ROWS = [
 ];
 function Keyboard({ onKey, visible = true }) {
   if (!isTouchDevice || !visible) return null;
-  const [pressedKey, setPressedKey] = useState(null);
   const dispatch = (k) => {
     if (k === '⌫') onKey('Backspace');
     else            onKey(k);
   };
-  const release = () => setPressedKey(null);
   return (
     <div className="kb" role="group" aria-label="On-screen keyboard">
       {KB_ROWS.map((row, ri) => (
         <div key={ri} className="kb-row">
-          {row.map(k => {
-            const isLetter = k !== '⌫';
-            return (
-              <button
-                key={k}
-                type="button"
-                data-letter={k}
-                className={`kb-key${k === '⌫' ? ' wide' : ''}${pressedKey === k && isLetter ? ' is-pressed' : ''}`}
-                onPointerDown={e => {
-                  e.preventDefault();
-                  if (isLetter) setPressedKey(k);
-                  dispatch(k);
-                }}
-                onPointerUp={release}
-                onPointerCancel={release}
-                onPointerLeave={release}
-                aria-label={k === '⌫' ? 'Backspace' : k}
-              >{k}</button>
-            );
-          })}
+          {ri === 2 && <div className="kb-spacer" aria-hidden="true" />}
+          {row.map(k => (
+            <button
+              key={k}
+              type="button"
+              className={`kb-key${k === '⌫' ? ' wide' : ''}`}
+              onPointerDown={e => { e.preventDefault(); dispatch(k); }}
+              aria-label={k === '⌫' ? 'Backspace' : k}
+            >{k}</button>
+          ))}
         </div>
       ))}
     </div>
