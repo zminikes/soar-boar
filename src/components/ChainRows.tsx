@@ -20,9 +20,16 @@ export function ChainRows({ chain, maxHeight = 200, modeId = 'classic' }: ChainR
         const diffs = prev ? diffPos(prev, entry.word) : [];
         return (
           <div key={idx} className="chain-row">
-            {entry.word.split('').map((l, j) => (
-              <div key={j} className={`chain-tile${diffs.includes(j) ? ' changed' : ''}`}>{l}</div>
-            ))}
+            {entry.word.split('').map((l, j) => {
+              const changed = diffs.includes(j);
+              return (
+                <div
+                  key={j}
+                  className={`chain-tile${changed ? ' changed' : ''}`}
+                  data-changed={changed ? 'true' : undefined}
+                >{l}</div>
+              );
+            })}
             {entry.pts != null && (
               <span className="chain-pts">+{entry.pts} · {prev && diffs.length === 1 && cfg.posLabels[diffs[0]]} letter</span>
             )}
