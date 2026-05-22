@@ -1,44 +1,98 @@
 """
 Soar Boar — Level Pack Generator (level-generation pipeline, step 2)
 =====================================================================
-Produces a curated list of (start, end, par, paths) levels for "This That"
-mode, drop-in shaped for `game/pairs.js`.
+Produces a curated `pairs.js`-shaped JSON list of (start, end, par, paths)
+levels for the This That word-ladder mode, drawing from the ranked pair
+TSV that `word_pair_difficulty.py` produces.
 
-  paths — total number of distinct shortest paths in the full word graph.
-          1 means "exactly one solution"; higher numbers mean the player
-          has multiple equally-short routes. Useful as a difficulty
-          indicator independent of par.
+Quick start
+-----------
+    pip install wordfreq
+    python3 scripts/generate_levels.py
+    # → scripts/output/pairs.generated.js
 
-Inputs:
-  - scripts/output/pairs_<N>.tsv   (from word_pair_difficulty.py)
-  - game/wordlist<N>.js            (graph rebuild for path materialization)
-  - game/starters<N>.js            (curated endpoint pool — default source)
+The defaults give 145 levels, par 4–8, biased toward single-shortest-path
+puzzles. Diff against game/pairs.js and copy over when you're happy.
 
-Filters (in order):
-  1. Endpoints — both word_a and word_b must be in the curated starters pool.
-     Override with --endpoint-source=wordfreq to use a wordfreq threshold instead.
-  2. Path commonness — at least one shortest path must exist where every
-     node has wordfreq >= --path-threshold. The materialized path uses
-     this all-common subgraph, so what ships in pairs.js is guaranteed
-     solvable using only recognizable words.
+Output format
+-------------
+    { "start": "FAME", "end": "FOSS", "par": 4, "paths": 1 }
 
-Selection:
-  3. Distance distribution via --distribution "4:30,5:40,6:40,7:30,8:5"
-     (default ramps from par-4 warm-ups to single-path par-7 grinders).
-  4. Diversity: no word appears as start or end in more than
-     --max-appearances levels (default 2).
-  5. Within each distance bucket: pick by --strategy.
-       hardest (default) — sort by path_count ascending, then
-                            avg_branching ascending. Fewer paths and
-                            tighter corridors = brain-bending puzzles.
-       random            — shuffle (seeded) and take in order. Use
-                            this for variety / less-punishing packs.
-  6. Final output sorted ascending by composite difficulty score so the
-     campaign ramps from easy to hard.
+  start, end   — the two endpoint words
+  par          — shortest-path distance in hops
+  paths        — number of distinct shortest paths in the full word graph
+                 (1 = exactly one solution route; higher = more lenient)
 
-Output:
-  scripts/output/pairs.generated.js  (drop-in replacement for game/pairs.js,
-  written to scripts/output/ so you can diff before copying over).
+CLI options
+-----------
+Sizing & distribution
+  --distribution "4:30,5:40,6:40,7:30,8:5"
+                       per-distance quotas; the sum is the total level count.
+                       Set whatever combination you want (e.g. "5:100" for
+                       100 par-5 puzzles).
+
+Within-bucket selection
+  --strategy hardest   sort each par bucket by (path_count, avg_branching)
+                       ascending — picks the most constrained pairs first.
+  --strategy random    shuffle each bucket (seeded) and take in order, for
+                       variety.
+
+Numeric filters (applied before bucketing; combine freely)
+  --min-paths N        require path_count >= N (default: no minimum)
+  --max-paths N        require path_count <= N (default: no maximum)
+  --min-difficulty X   require composite difficulty score >= X
+  --max-difficulty X   require composite difficulty score <= X
+
+Endpoint pool
+  --endpoint-source starters    (default) only words in game/starters<N>.js
+                                may be endpoints — matches the existing
+                                pairs.js generation behavior.
+  --endpoint-source wordfreq    use a wordfreq threshold instead.
+  --endpoint-threshold 1e-5     min wordfreq when source=wordfreq.
+
+Path commonness
+  --path-threshold 1e-7         min wordfreq for any word on the verified
+                                all-common shortest path. Lower = more
+                                obscure intermediates allowed.
+
+Diversity
+  --max-appearances 2  no word may appear as start or end in more than
+                       this many levels (default 2). Set to a high number
+                       for fewer constraints, or 1 for maximum variety.
+
+Misc
+  --wordlist 4 | 3     which game wordlist to source from (default 4).
+  --seed 42            RNG seed (only affects --strategy random).
+  --out PATH           override the output location.
+
+Common recipes
+--------------
+Default: punishing campaign of 145 levels, par 4–8, mostly single-path.
+    python3 scripts/generate_levels.py
+
+Easier, more varied 100-level pack (random within each bucket):
+    python3 scripts/generate_levels.py \\
+      --distribution "3:30,4:40,5:30" --strategy random
+
+Only show pairs with exactly one solution (hardest possible):
+    python3 scripts/generate_levels.py --max-paths 1
+
+Mid-difficulty pack (2–10 solutions per puzzle, scores 50–70):
+    python3 scripts/generate_levels.py \\
+      --min-paths 2 --max-paths 10 \\
+      --min-difficulty 50 --max-difficulty 70
+
+Filter pipeline (for the curious)
+---------------------------------
+1. Endpoints   — both endpoints must be in the chosen endpoint pool.
+2. All-common  — verify at least one shortest path exists where every
+                 word has wordfreq >= --path-threshold.
+3. Numeric     — apply --min/--max-paths and --min/--max-difficulty.
+4. Diversity   — greedy pass: skip any pair whose words have hit
+                 --max-appearances.
+5. Quota       — for each distance d in --distribution, pick at most
+                 distribution[d] survivors via --strategy.
+6. Order       — final list sorted ascending by composite difficulty.
 
 Requires: pip install wordfreq
 """
@@ -150,7 +204,9 @@ def format_level(c: dict) -> str:
 def generate(wordlist_path: Path, tsv_path: Path, starters_path: Path,
              out_path: Path, *, endpoint_source: str, endpoint_threshold: float,
              path_threshold: float, distribution: dict[int, int],
-             strategy: str, max_appearances: int, seed: int) -> None:
+             strategy: str, max_appearances: int, seed: int,
+             min_paths: int | None, max_paths: int | None,
+             min_difficulty: float | None, max_difficulty: float | None) -> None:
 
     print(f"[1/6] loading wordlist  ({wordlist_path.name})")
     words = load_words(wordlist_path)
@@ -204,11 +260,31 @@ def generate(wordlist_path: Path, tsv_path: Path, starters_path: Path,
                 path_filtered.append(c)
     print(f"      {len(path_filtered):,} have an all-common shortest path")
 
+    numeric_filters_active = any(
+        v is not None for v in (min_paths, max_paths, min_difficulty, max_difficulty)
+    )
+    if numeric_filters_active:
+        range_filtered = [
+            c for c in path_filtered
+            if (min_paths is None or c["path_count"] >= min_paths)
+            and (max_paths is None or c["path_count"] <= max_paths)
+            and (min_difficulty is None or c["difficulty"] >= min_difficulty)
+            and (max_difficulty is None or c["difficulty"] <= max_difficulty)
+        ]
+        bounds = []
+        if min_paths is not None or max_paths is not None:
+            bounds.append(f"paths in [{min_paths or '∅'},{max_paths or '∅'}]")
+        if min_difficulty is not None or max_difficulty is not None:
+            bounds.append(f"difficulty in [{min_difficulty or '∅'},{max_difficulty or '∅'}]")
+        print(f"      {len(range_filtered):,} survive numeric filters ({'; '.join(bounds)})")
+    else:
+        range_filtered = path_filtered
+
     print(f"[6/6] selecting levels  "
           f"(distribution={distribution}, strategy={strategy}, "
           f"max_appearances={max_appearances}, seed={seed})")
     by_distance: dict[int, list[dict]] = defaultdict(list)
-    for c in path_filtered:
+    for c in range_filtered:
         by_distance[c["distance"]].append(c)
 
     rng = random.Random(seed)
@@ -251,6 +327,13 @@ def generate(wordlist_path: Path, tsv_path: Path, starters_path: Path,
         f.write(f'   Strategy: {strategy}    '
                 f'Diversity: max_appearances={max_appearances}    '
                 f'Seed: {seed}\n')
+        if numeric_filters_active:
+            parts = []
+            if min_paths is not None:    parts.append(f"min_paths={min_paths}")
+            if max_paths is not None:    parts.append(f"max_paths={max_paths}")
+            if min_difficulty is not None: parts.append(f"min_difficulty={min_difficulty}")
+            if max_difficulty is not None: parts.append(f"max_difficulty={max_difficulty}")
+            f.write(f'   Numeric filters: {", ".join(parts)}\n')
         f.write(f'   {len(selected)} levels.\n')
         f.write('*/\n')
         f.write('const THIS_THAT_PAIRS = [\n')
@@ -298,10 +381,26 @@ def main():
                          'avg_branching ascending; "random" shuffles (seeded)')
     ap.add_argument("--max-appearances", type=int, default=2,
                     help="max times any word may appear as start or end")
+    ap.add_argument("--min-paths", type=int, default=None,
+                    help="require path_count >= N (default: no minimum)")
+    ap.add_argument("--max-paths", type=int, default=None,
+                    help="require path_count <= N (default: no maximum)")
+    ap.add_argument("--min-difficulty", type=float, default=None,
+                    help="require composite difficulty score >= X")
+    ap.add_argument("--max-difficulty", type=float, default=None,
+                    help="require composite difficulty score <= X")
     ap.add_argument("--seed", type=int, default=42, help="rng seed for sampling")
     ap.add_argument("--out", type=Path, default=None,
                     help="output path (default: scripts/output/pairs.generated.js)")
     args = ap.parse_args()
+
+    if (args.min_paths is not None and args.max_paths is not None
+            and args.min_paths > args.max_paths):
+        sys.exit(f"error: --min-paths ({args.min_paths}) > --max-paths ({args.max_paths})")
+    if (args.min_difficulty is not None and args.max_difficulty is not None
+            and args.min_difficulty > args.max_difficulty):
+        sys.exit(f"error: --min-difficulty ({args.min_difficulty}) > "
+                 f"--max-difficulty ({args.max_difficulty})")
 
     if args.wordlist == "4":
         wordlist = GAME_DIR / "wordlist.js"
@@ -331,6 +430,10 @@ def main():
         strategy=args.strategy,
         max_appearances=args.max_appearances,
         seed=args.seed,
+        min_paths=args.min_paths,
+        max_paths=args.max_paths,
+        min_difficulty=args.min_difficulty,
+        max_difficulty=args.max_difficulty,
     )
 
 
