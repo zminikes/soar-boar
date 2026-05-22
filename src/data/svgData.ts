@@ -18,28 +18,7 @@ import hair6Url from '../assets/hair-6.svg';
 import hair7Url from '../assets/hair-7.svg';
 import hair8Url from '../assets/hair-8.svg';
 
-import pigOpenRaw from '../assets/pig-open.svg?raw';
-import pigClosedRaw from '../assets/pig-closed.svg?raw';
-import pigOpenDarkRaw from '../assets/pig-open-dark.svg?raw';
-import pigClosedDarkRaw from '../assets/pig-closed-dark.svg?raw';
-import beanOpenRaw from '../assets/bean-open.svg?raw';
-import beanClosedRaw from '../assets/bean-closed.svg?raw';
-import beanOpenDarkRaw from '../assets/bean-open-dark.svg?raw';
-import beanClosedDarkRaw from '../assets/bean-closed-dark.svg?raw';
-import pigTtOpenRaw from '../assets/pig-tt-open.svg?raw';
-import pigTtClosedRaw from '../assets/pig-tt-closed.svg?raw';
-import hair1Raw from '../assets/hair-1.svg?raw';
-import hair2Raw from '../assets/hair-2.svg?raw';
-import hair3Raw from '../assets/hair-3.svg?raw';
-import hair4Raw from '../assets/hair-4.svg?raw';
-import hair5Raw from '../assets/hair-5.svg?raw';
-import hair6Raw from '../assets/hair-6.svg?raw';
-import hair7Raw from '../assets/hair-7.svg?raw';
-import hair8Raw from '../assets/hair-8.svg?raw';
-
-// big-pig-1.svg ships as an asset URL only (no `?raw` import). FlyingPig
-// fetches the raw text at runtime — keeps the 80 KB out of the JS bundle.
-// Browser HTTP cache handles re-mounts. See FlyingPig.tsx.
+import type { ModeId } from '../lib/modes';
 
 export type MascotName =
   | 'pig-open.svg'
@@ -62,13 +41,12 @@ export type MascotName =
   | 'hair-7.svg'
   | 'hair-8.svg';
 
-// Subset of MascotName that has an inline raw-string available in
-// SVG_DATA. big-pig-1.svg is excluded — FlyingPig fetches it at runtime
-// to keep ~80 KB out of the JS bundle. TypeScript catches any consumer
-// that tries to look it up via SVG_DATA[name].
-export type InlinedMascotName = Exclude<MascotName, 'big-pig-1.svg'>;
-
 // Vite-resolved URLs (content-hashed) for <img src=...> consumption.
+// All 18 mascot URLs stay eagerly imported here because MascotIcon (the
+// small per-mode icon on the start screen) and FlyingPig (the hero on
+// the end screen) consume them via URL — the browser fetches the actual
+// SVG bytes only when the <img> mounts, so the initial JS cost is just
+// the URL strings.
 export const SVG_URLS: Readonly<Record<MascotName, string>> = {
   'pig-open.svg': pigOpenUrl,
   'pig-closed.svg': pigClosedUrl,
@@ -91,26 +69,58 @@ export const SVG_URLS: Readonly<Record<MascotName, string>> = {
   'hair-8.svg': hair8Url,
 };
 
-// Raw SVG strings for in-place recoloring + direct
-// dangerouslySetInnerHTML render (AnimatedMascot). Excludes
-// big-pig-1.svg which FlyingPig fetches at runtime.
-export const SVG_DATA: Readonly<Record<InlinedMascotName, string>> = {
-  'pig-open.svg': pigOpenRaw,
-  'pig-closed.svg': pigClosedRaw,
-  'pig-open-dark.svg': pigOpenDarkRaw,
-  'pig-closed-dark.svg': pigClosedDarkRaw,
-  'bean-open.svg': beanOpenRaw,
-  'bean-closed.svg': beanClosedRaw,
-  'bean-open-dark.svg': beanOpenDarkRaw,
-  'bean-closed-dark.svg': beanClosedDarkRaw,
-  'pig-tt-open.svg': pigTtOpenRaw,
-  'pig-tt-closed.svg': pigTtClosedRaw,
-  'hair-1.svg': hair1Raw,
-  'hair-2.svg': hair2Raw,
-  'hair-3.svg': hair3Raw,
-  'hair-4.svg': hair4Raw,
-  'hair-5.svg': hair5Raw,
-  'hair-6.svg': hair6Raw,
-  'hair-7.svg': hair7Raw,
-  'hair-8.svg': hair8Raw,
-};
+// Per-mode raw-SVG payload returned by loadMascotSvgs. Only `thisthat`
+// carries the hair-frame array — the other modes don't animate hair.
+export interface MascotSvgs {
+  open: string;
+  closed: string;
+  openDark?: string;
+  closedDark?: string;
+  hair?: readonly string[];
+}
+
+// Module-level cache so AnimatedMascot can render synchronously on
+// remount when the user switches back to a mode it has already loaded.
+// Vite's module cache dedupes the network fetch, but without a
+// synchronous getter the consumer still flashes through a null state
+// for one frame while useEffect re-runs.
+const mascotSvgsCache = new Map<ModeId, MascotSvgs>();
+
+export function getMascotSvgsSync(modeId: ModeId): MascotSvgs | null {
+  return mascotSvgsCache.get(modeId) ?? null;
+}
+
+// Lazy-loads the raw SVG strings AnimatedMascot needs for in-place
+// recoloring + dangerouslySetInnerHTML render. Each mode's strings
+// live in a separate chunk (src/data/svgSets/*.ts), so a classic-mode
+// session never downloads the bean or hair SVGs. Vite emits one chunk
+// per mode; the module cache + our own map dedupe re-requests.
+export async function loadMascotSvgs(modeId: ModeId): Promise<MascotSvgs> {
+  const cached = mascotSvgsCache.get(modeId);
+  if (cached) return cached;
+  const svgs = await loadModeChunk(modeId);
+  mascotSvgsCache.set(modeId, svgs);
+  return svgs;
+}
+
+async function loadModeChunk(modeId: ModeId): Promise<MascotSvgs> {
+  if (modeId === 'soyboy') {
+    const { soyboySvgs } = await import('./svgSets/soyboy');
+    return soyboySvgs;
+  }
+  if (modeId === 'thisthat') {
+    const { thisthatSvgs } = await import('./svgSets/thisthat');
+    return thisthatSvgs;
+  }
+  const { classicSvgs } = await import('./svgSets/classic');
+  return classicSvgs;
+}
+
+// Best-effort prefetch of the non-active mode chunks so a user who
+// switches modes after the start screen has already mounted doesn't
+// see a loading frame. Fire-and-forget — failures don't matter here.
+export function prefetchOtherModeSvgs(activeModeId: ModeId): void {
+  if (activeModeId !== 'classic') void loadMascotSvgs('classic');
+  if (activeModeId !== 'soyboy') void loadMascotSvgs('soyboy');
+  if (activeModeId !== 'thisthat') void loadMascotSvgs('thisthat');
+}

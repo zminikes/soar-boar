@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { SVG_DATA, type InlinedMascotName } from '../data/svgData';
+import { getMascotSvgsSync, loadMascotSvgs, type MascotSvgs } from '../data/svgData';
 import { useColorOverrides, useColoredBgActive, useIsDark } from '../game/appContext';
 import { DEFAULT_COLORS } from '../game/constants';
 import { scopeSvgStyles } from '../game/svgUtils';
@@ -10,36 +10,28 @@ interface AnimatedMascotProps {
   modeId?: ModeId;
 }
 
-// Per-mode mascot frames for the open + closed eye states. Explicit
-// literal returns so TypeScript verifies each branch against
-// InlinedMascotName (the SVG_DATA-indexable subset — excludes big-pig-1
-// which FlyingPig fetches at runtime).
-function mascotFrames(modeId: ModeId, isDark: boolean): { open: InlinedMascotName; closed: InlinedMascotName } {
-  if (modeId === 'soyboy') {
-    return isDark
-      ? { open: 'bean-open-dark.svg', closed: 'bean-closed-dark.svg' }
-      : { open: 'bean-open.svg', closed: 'bean-closed.svg' };
+// Picks the right open/closed pair from the loaded svgs for the
+// active mode + theme. Falls back to the light variants when dark
+// versions aren't shipped (thisthat reuses one SVG across themes;
+// classic + soyboy always carry all four).
+function pickFrames(
+  svgs: MascotSvgs,
+  isDark: boolean,
+): { open: string; closed: string } {
+  if (isDark && svgs.openDark && svgs.closedDark) {
+    return { open: svgs.openDark, closed: svgs.closedDark };
   }
-  if (modeId === 'thisthat') {
-    return { open: 'pig-tt-open.svg', closed: 'pig-tt-closed.svg' };
-  }
-  return isDark
-    ? { open: 'pig-open-dark.svg', closed: 'pig-closed-dark.svg' }
-    : { open: 'pig-open.svg', closed: 'pig-closed.svg' };
+  return { open: svgs.open, closed: svgs.closed };
 }
-
-// 8 hair frames used by the thisthat ping-pong animation. Typed as
-// InlinedMascotName[] so SVG_DATA[HAIR_KEYS[i]] is type-correct
-// without an `as` cast.
-const HAIR_KEYS: readonly InlinedMascotName[] = [
-  'hair-1.svg', 'hair-2.svg', 'hair-3.svg', 'hair-4.svg',
-  'hair-5.svg', 'hair-6.svg', 'hair-7.svg', 'hair-8.svg',
-];
 
 /* AnimatedMascot — two SVG frames cross-faded between "open" and "closed"
    when eyes are "closed" (random ambient blink OR hover). Hover also
    plays a single subtle bounce animation. All styles are scoped via
-   scopeSvgStyles so multiple inline SVGs don't fight over class names. */
+   scopeSvgStyles so multiple inline SVGs don't fight over class names.
+
+   SVG payload is lazy-loaded per mode (src/data/svgSets/*) so a session
+   in classic mode never downloads the bean or hair SVGs. Renders an
+   empty same-size placeholder during the load to avoid a layout shift. */
 export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMascotProps) {
   const isDark = useIsDark();
   const coloredBgActive = useColoredBgActive();
@@ -47,6 +39,27 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
   const [ambientBlink, setAmbientBlink] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isBouncing, setIsBouncing] = useState(false);
+  // Initial state hits the module cache synchronously when the user
+  // has previously visited this mode (or the prefetch already ran),
+  // so a return-trip to a known mode renders the mascot on the first
+  // frame instead of flashing through a null placeholder.
+  const [svgs, setSvgs] = useState<MascotSvgs | null>(() => getMascotSvgsSync(modeId));
+
+  // Async load fills the cache when the lazy initial state was a miss.
+  // Cancellation guard prevents a late-resolving promise from clobbering
+  // newer state if the user rapid-switches modes.
+  useEffect(() => {
+    if (getMascotSvgsSync(modeId)) {
+      setSvgs(getMascotSvgsSync(modeId));
+      return;
+    }
+    let cancelled = false;
+    setSvgs(null);
+    loadMascotSvgs(modeId).then((loaded) => {
+      if (!cancelled) setSvgs(loaded);
+    }).catch(() => { /* chunk load failure leaves placeholder visible */ });
+    return () => { cancelled = true; };
+  }, [modeId]);
 
   // Ambient blink — random ~35% every 2.5s
   useEffect(() => {
@@ -69,7 +82,6 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
   const isSoyboy = modeId === 'soyboy';
   const isThisThat = modeId === 'thisthat';
   const isClassic = !isSoyboy && !isThisThat;
-  const { open: openPath, closed: closedPath } = mascotFrames(modeId, isDark);
   // Per-mode brand accent — single source of truth shared with the
   // FloatingColorPicker swatches (DEFAULT_COLORS) so a designer changing
   // the brand can't desync the mascot recolor from the swatch display.
@@ -97,32 +109,34 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
     }
     return result;
   }, [accent, defaultColor, isDark]);
+
+  const frames = svgs ? pickFrames(svgs, isDark) : null;
   const openSvg = useMemo(
-    () => scopeSvgStyles(recolor(SVG_DATA[openPath]), 'animated-mascot'),
-    [openPath, recolor],
+    () => (frames ? scopeSvgStyles(recolor(frames.open), 'animated-mascot') : ''),
+    [frames, recolor],
   );
   const closedSvg = useMemo(
-    () => scopeSvgStyles(recolor(SVG_DATA[closedPath]), 'animated-mascot'),
-    [closedPath, recolor],
+    () => (frames ? scopeSvgStyles(recolor(frames.closed), 'animated-mascot') : ''),
+    [frames, recolor],
   );
 
-  // This That: build 8 hair frames + cycle them 1→8→1 (ping-pong).
-  // Use a distinct scope class so the hair's .cls-1 rules (dark fill) don't
-  // override the pig body's .cls-1 (blue fill) via DOM-order cascade.
-  // In dark mode, force hair to white for contrast against the dark bg.
+  // This That: 8 hair frames cycled 1→8→1 (ping-pong). Use a distinct
+  // scope class so the hair's .cls-1 rules (dark fill) don't override
+  // the pig body's .cls-1 (blue fill) via DOM-order cascade. In dark
+  // mode, force hair to white for contrast against the dark bg.
   const hairFrames = useMemo(() => {
-    if (!isThisThat) return [];
-    return HAIR_KEYS.map((key) => {
-      let raw = SVG_DATA[key];
+    if (!isThisThat || !svgs?.hair) return [];
+    return svgs.hair.map((raw) => {
+      let r = raw;
       if (isDark) {
-        raw = raw.replace(/fill:\s*#2e2b26/gi, 'fill: #F5F3F0');
+        r = r.replace(/fill:\s*#2e2b26/gi, 'fill: #F5F3F0');
       }
-      return scopeSvgStyles(raw, 'hair-anim');
+      return scopeSvgStyles(r, 'hair-anim');
     });
-  }, [isThisThat, isDark]);
+  }, [isThisThat, isDark, svgs]);
   const [hairIdx, setHairIdx] = useState(0);
   useEffect(() => {
-    if (!isThisThat) return;
+    if (!isThisThat || hairFrames.length === 0) return;
     // 14-step ping-pong: 0,1,2,3,4,5,6,7,6,5,4,3,2,1 → repeat
     const seq = [0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1];
     let step = 0;
@@ -131,7 +145,7 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
       setHairIdx(seq[step]);
     }, 130); // ~1.8s for full forward+back cycle
     return () => clearInterval(id);
-  }, [isThisThat]);
+  }, [isThisThat, hairFrames.length]);
 
   const eyesClosed = ambientBlink || isHovered;
 
