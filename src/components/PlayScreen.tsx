@@ -1,123 +1,15 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { MODE_CONFIGS, tutorialPair, type ModeConfig, type ModeId } from '../lib/modes';
-import { getPairs, getStarters, getWords } from '../data/modeData';
-import { HEAD_START, MSG_DURATION } from '../game/constants';
+import { MODE_CONFIGS, type ModeId } from '../lib/modes';
+import { getWords } from '../data/modeData';
+import { MSG_DURATION } from '../game/constants';
 import { bfsPath } from '../lib/bfs';
 import { diffPos, getValidMoves } from '../lib/moves';
-import { pickLadderPair, pickStarter } from '../lib/puzzle';
 import type { ChainEntry, DebugState, EndResult, KeyEvent, Msg, MsgKind } from '../lib/types';
 import { isTouchDevice } from '../platform/dom';
+import { gameReducer, initGameState } from './playScreenReducer';
 import { MascotIcon } from './MascotIcon';
 import { ChainRows } from './ChainRows';
 import { Keyboard } from './Keyboard';
-
-type GamePhase = 'countdown' | 'playing';
-
-interface GameState {
-  phase: GamePhase;
-  countdown: number;
-  currentWord: string;
-  targetWord: string;
-  par: number | null;
-  typed: string;
-  usedWords: Set<string>;
-  chain: ChainEntry[];
-  score: number;
-  timeLeft: number;
-  acceptKey: number;       // re-key for tile snap-in animation
-  deadEnd: boolean;
-  streakPos: number | null; // last-changed letter position (for streak rule)
-  streakCount: number;      // consecutive changes at streakPos
-  gameOver: boolean;        // latched once any end condition fires
-}
-
-type GameAction =
-  | { type: 'TICK_COUNTDOWN' }
-  | { type: 'START_PLAYING' }
-  | { type: 'TICK_TIMER' }
-  | { type: 'TYPE_LETTER'; letter: string; wordLen: number }
-  | { type: 'BACKSPACE' }
-  | { type: 'CLEAR_TYPED' }
-  | { type: 'SUBMIT_ACCEPTED'; word: string; pos: number; pts: number }
-  | { type: 'SET_DEAD_END' }
-  | { type: 'GAME_OVER' };
-
-function gameReducer(state: GameState, action: GameAction): GameState {
-  switch (action.type) {
-    case 'TICK_COUNTDOWN':
-      if (state.countdown <= 1) return { ...state, countdown: 0, phase: 'playing' };
-      return { ...state, countdown: state.countdown - 1 };
-    case 'START_PLAYING':
-      return state.phase === 'countdown' ? { ...state, phase: 'playing' } : state;
-    case 'TICK_TIMER':
-      if (state.timeLeft <= 1) return { ...state, timeLeft: 0, gameOver: true };
-      return { ...state, timeLeft: state.timeLeft - 1 };
-    case 'TYPE_LETTER':
-      if (state.typed.length >= action.wordLen) return state;
-      return { ...state, typed: state.typed + action.letter.toUpperCase() };
-    case 'BACKSPACE':
-      return { ...state, typed: state.typed.slice(0, -1) };
-    case 'CLEAR_TYPED':
-      return { ...state, typed: '' };
-    case 'SUBMIT_ACCEPTED': {
-      const { word, pos, pts } = action;
-      const newStreakCount = state.streakPos === pos ? state.streakCount + 1 : 1;
-      return {
-        ...state,
-        currentWord: word,
-        usedWords: new Set(state.usedWords).add(word),
-        chain: [...state.chain, { word, pts }],
-        score: state.score + pts,
-        streakPos: pos,
-        streakCount: newStreakCount,
-        typed: '',
-        acceptKey: state.acceptKey + 1,
-      };
-    }
-    case 'SET_DEAD_END':
-      return { ...state, deadEnd: true };
-    case 'GAME_OVER':
-      return state.gameOver ? state : { ...state, gameOver: true };
-  }
-}
-
-interface InitArgs {
-  isLadder: boolean;
-  cfg: ModeConfig;
-  modeId: ModeId;
-  puzzleSeed: number;
-}
-
-function initGameState({ isLadder, cfg, modeId, puzzleSeed }: InitArgs): GameState {
-  let start: string;
-  let target = '';
-  let parVal: number | null = null;
-  if (isLadder) {
-    const pair = pickLadderPair(getPairs(modeId), tutorialPair(cfg), puzzleSeed);
-    start  = pair.start;
-    target = pair.end;
-    parVal = pair.par;
-  } else {
-    start = pickStarter(getStarters(modeId), getWords(modeId), cfg.tutorialStart, puzzleSeed);
-  }
-  return {
-    phase: isLadder ? 'playing' : 'countdown',
-    countdown: HEAD_START,
-    currentWord: start,
-    targetWord: target,
-    par: parVal,
-    typed: '',
-    usedWords: new Set([start]),
-    chain: [{ word: start, pts: null }],
-    score: 0,
-    timeLeft: cfg.duration ?? 0,
-    acceptKey: 0,
-    deadEnd: false,
-    streakPos: null,
-    streakCount: 0,
-    gameOver: false,
-  };
-}
 
 interface PlayScreenProps {
   puzzleSeed: number;
@@ -202,12 +94,16 @@ export function PlayScreen({
 
   // Time's-up side effect — fires once when the timer-driven gameOver
   // latches. Win + dead-end-forever paths set gameOver imperatively from
-  // submitWord with their own onEnd payloads, so this effect only runs
-  // for the pure timeup case (no deadEnd, not a win).
+  // submitWord with their own onEnd payloads, both keeping timeLeft > 0,
+  // so the `timeLeft === 0` guard naturally excludes them. (A `!deadEnd`
+  // guard here would BREAK the non-forever dead-end-then-timer-expires
+  // path — the player needs onEnd to fire even if they dead-ended early
+  // and waited out the clock. Original code matched the behaviour
+  // here.)
   const timeupHandledRef = useRef(false);
   useEffect(() => {
     if (timeupHandledRef.current) return;
-    if (state.gameOver && state.timeLeft === 0 && !state.deadEnd && !isLadder) {
+    if (state.gameOver && state.timeLeft === 0 && !isLadder) {
       timeupHandledRef.current = true;
       setTimer(() => onEnd({
         score: stateRef.current.score,
@@ -215,7 +111,7 @@ export function PlayScreen({
         deadEnd: false,
       }), 300);
     }
-  }, [state.gameOver, state.timeLeft, state.deadEnd, isLadder, onEnd, setTimer]);
+  }, [state.gameOver, state.timeLeft, isLadder, onEnd, setTimer]);
 
   // ── Hint wiggle: after 15s idle, wiggle a useful tile letter ──
   // Resets whenever the player types, current word changes, or hint toggles.
