@@ -174,6 +174,7 @@ For each component:
 - **Set `VITE_APPS_SCRIPT_URL` in the production env** (Vercel project settings) before flipping DNS — EmailSignup throws on empty string, so leaving this unset silently breaks signups even though the rest of the game works. **Deploy blocker.**
 - **Deploy**: swap `soarboar.com` from serving `game/` to serving `dist/`. Keep `game/` in git history for one release as a fallback.
 - **Remove `game/`** once parity is confirmed in production.
+- **Sync `pig-open.svg` body color with `DEFAULT_COLORS.classic.accent`.** Surfaced during Phase 4c review: the classic pig SVG has `fill: #f48870` baked in but `DEFAULT_COLORS.classic.accent` is `#F88065`. The accent-recolor regex in `AnimatedMascot` searches for `fill: #F88065` and never matches, so the color picker silently has no visual effect on the classic-mode mascot body (works correctly for soyboy + thisthat where the SVG and config colors match). Either update the SVG body to `#F88065` or update the config to `#f48870` — designer's call which is the canonical value. Pre-existing bug from the legacy `game/` build; not blocking, just invisible until the color picker is used.
 - Update `README.md` with new dev/build commands and the `VITE_APPS_SCRIPT_URL` env var requirement.
 
 **Verify**: production build deployed; one full game played end-to-end on real domain; lighthouse perf comparable to or better than current.

@@ -29,3 +29,4 @@ export interface ModeColorOverride {
 }
 export type ColorOverrides = Partial<Record<ModeId, ModeColorOverride>>;
 export const ColorOverrideContext = createContext<ColorOverrides>({});
+export const useColorOverrides = (): ColorOverrides => useContext(ColorOverrideContext);

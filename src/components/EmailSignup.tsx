@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { APPS_SCRIPT_URL } from '../game/config';
+
+type SignupStatus = 'idle' | 'submitting' | 'done' | 'error';
 
 export function EmailSignup() {
   const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
-  const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'done' | 'error'
+  const [status, setStatus] = useState<SignupStatus>('idle');
 
-  const submit = async (e) => {
+  const submit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     if (status === 'submitting') return;
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return;

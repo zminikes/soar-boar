@@ -1,17 +1,33 @@
-import { useEffect, useRef, useState } from 'react';
-import { hexToHsv, hsvToHex } from '../lib/colorMath';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type PointerEvent } from 'react';
+import { hexToHsv, hsvToHex, type Hsv } from '../lib/colorMath';
+
+interface HsvPickerProps {
+  value: string;
+  onChange: (hex: string) => void;
+}
+
+type DragTarget = 'pad' | 'hue' | null;
 
 /* Inline drag-to-pick color picker. 2D SL pad on top, hue slider below,
    hex input at the bottom. Pointer events with window-level capture
    so dragging stays live even when the pointer leaves the element. */
-export function HsvPicker({ value, onChange }) {
+export function HsvPicker({ value, onChange }: HsvPickerProps) {
   const safe = (typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)) ? value : '#000000';
-  const [hsv, setHsv] = useState(() => hexToHsv(safe));
+  const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(safe));
   const [hexDraft, setHexDraft] = useState(safe.toUpperCase());
-  const padRef = useRef(null);
-  const hueRef = useRef(null);
-  const dragRef = useRef(null);
+  const padRef = useRef<HTMLDivElement | null>(null);
+  const hueRef = useRef<HTMLDivElement | null>(null);
+  const dragRef = useRef<DragTarget>(null);
   const internalHexRef = useRef(safe.toUpperCase());
+
+  // Latest-value refs so handlePad / handleHue can be stable useCallbacks
+  // without re-attaching window listeners on every render. (Original code
+  // re-attached on every render — preserved-style perf cost we're paying
+  // down now that the file is being typed.)
+  const hsvRef = useRef(hsv);
+  hsvRef.current = hsv;
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   // Sync from external value when it changes (e.g. swatch switch).
   useEffect(() => {
@@ -24,34 +40,36 @@ export function HsvPicker({ value, onChange }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  const commitHsv = (next) => {
+  const commitHsv = useCallback((next: Hsv): void => {
     setHsv(next);
     const hex = hsvToHex(next).toUpperCase();
     setHexDraft(hex);
     internalHexRef.current = hex;
-    onChange(hex);
-  };
+    onChangeRef.current(hex);
+  }, []);
 
-  const handlePad = (clientX, clientY) => {
-    const r = padRef.current.getBoundingClientRect();
+  const handlePad = useCallback((clientX: number, clientY: number): void => {
+    const r = padRef.current?.getBoundingClientRect();
+    if (!r) return;
     const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
-    const y = Math.max(0, Math.min(1, (clientY - r.top)  / r.height));
-    commitHsv({ ...hsv, s: x * 100, v: (1 - y) * 100 });
-  };
-  const handleHue = (clientX) => {
-    const r = hueRef.current.getBoundingClientRect();
+    const y = Math.max(0, Math.min(1, (clientY - r.top) / r.height));
+    commitHsv({ ...hsvRef.current, s: x * 100, v: (1 - y) * 100 });
+  }, [commitHsv]);
+  const handleHue = useCallback((clientX: number): void => {
+    const r = hueRef.current?.getBoundingClientRect();
+    if (!r) return;
     const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
-    commitHsv({ ...hsv, h: x * 360 });
-  };
+    commitHsv({ ...hsvRef.current, h: x * 360 });
+  }, [commitHsv]);
 
   useEffect(() => {
-    const onMove = (e) => {
+    const onMove = (e: globalThis.PointerEvent): void => {
       if (!dragRef.current) return;
       e.preventDefault();
       if (dragRef.current === 'pad') handlePad(e.clientX, e.clientY);
       if (dragRef.current === 'hue') handleHue(e.clientX);
     };
-    const onUp = () => { dragRef.current = null; };
+    const onUp = (): void => { dragRef.current = null; };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onUp);
@@ -60,20 +78,20 @@ export function HsvPicker({ value, onChange }) {
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
     };
-  });
+  }, [handlePad, handleHue]);
 
-  const padDown = (e) => {
+  const padDown = (e: PointerEvent<HTMLDivElement>): void => {
     e.preventDefault();
     dragRef.current = 'pad';
     handlePad(e.clientX, e.clientY);
   };
-  const hueDown = (e) => {
+  const hueDown = (e: PointerEvent<HTMLDivElement>): void => {
     e.preventDefault();
     dragRef.current = 'hue';
     handleHue(e.clientX);
   };
 
-  const onHexChange = (e) => {
+  const onHexChange = (e: ChangeEvent<HTMLInputElement>): void => {
     let v = e.target.value;
     if (v && v[0] !== '#') v = '#' + v;
     setHexDraft(v.toUpperCase());
