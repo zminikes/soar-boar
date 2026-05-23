@@ -1,5 +1,12 @@
 # Newsletter signup → email list (lightweight, free, portable)
 
+> **Status note (post-migration):** the signup form now lives in
+> `src/components/EmailSignup.tsx`, and `APPS_SCRIPT_URL` is supplied via the
+> `VITE_APPS_SCRIPT_URL` env var (see `src/game/config.ts`) rather than edited
+> into source. The Apps Script + Google Sheet deploy steps below are still
+> current; the `game/index.html:NNNN` line references are historical (that
+> file was removed once the Vite build went live).
+
 ## Context
 
 The signup form at [game/index.html:3709](game/index.html:3709) is currently UI-only — the submit handler just flips a local `done` flag and shows "You're on the list," but no email is ever sent or stored anywhere. The site is a single static `index.html` (React 18 via CDN, no build step) deployed to **Vercel** from the `game/` directory.
