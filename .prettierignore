@@ -1,8 +1,5 @@
 dist
 node_modules
 coverage
-game
-design
-fonts
 scripts
 *.lock
