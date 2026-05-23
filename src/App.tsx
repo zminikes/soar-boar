@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { ColoredBgContext, ColorOverrideContext, ThemeContext, type ColorOverrides } from './game/appContext';
+import {
+  ColoredBgContext,
+  ColorOverrideContext,
+  ThemeContext,
+  type ColorOverrides,
+} from './game/appContext';
 import type { ModeId } from './lib/modes';
 import type { DebugState, EndResult } from './lib/types';
 import { StartScreen } from './components/StartScreen';
@@ -13,20 +18,27 @@ import { BoilDefs } from './components/BoilDefs';
 type Screen = 'start' | 'tutorial' | 'playing' | 'end';
 
 export function App() {
-  const [screen,  setScreen]  = useState<Screen>('start');
-  const [result,  setResult]  = useState<EndResult | null>(null);
+  const [screen, setScreen] = useState<Screen>('start');
+  const [result, setResult] = useState<EndResult | null>(null);
   const [playKey, setPlayKey] = useState(0);
   const [puzzleSeed, setPuzzleSeed] = useState<number>(() => Math.random());
   // Restart the *same* puzzle (keep seed, just remount PlayScreen)
-  const restartSame = (): void => { setPlayKey(k => k + 1); setScreen('playing'); };
+  const restartSame = (): void => {
+    setPlayKey((k) => k + 1);
+    setScreen('playing');
+  };
   // Fresh puzzle (new seed → different starter/pair)
-  const newPuzzle   = (): void => { setPuzzleSeed(Math.random()); setPlayKey(k => k + 1); setScreen('playing'); };
+  const newPuzzle = (): void => {
+    setPuzzleSeed(Math.random());
+    setPlayKey((k) => k + 1);
+    setScreen('playing');
+  };
   // Default entry point from landing/tutorial = fresh puzzle
   const restart = newPuzzle;
   const [debug, setDebug] = useState<DebugState>(() => ({
-    streakRule:  true,
+    streakRule: true,
     foreverMode: false,
-    darkMode:    localStorage.getItem('darkMode') === 'true',
+    darkMode: localStorage.getItem('darkMode') === 'true',
   }));
   const [modeId, setModeId] = useState<ModeId>('classic');
 
@@ -43,7 +55,9 @@ export function App() {
         localStorage.setItem('debugMode', String(val));
         return val;
       }
-    } catch { /* URL parsing failed */ }
+    } catch {
+      /* URL parsing failed */
+    }
     return localStorage.getItem('debugMode') === 'true';
   });
   useEffect(() => {
@@ -53,7 +67,7 @@ export function App() {
     const onKey = (e: KeyboardEvent): void => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
         e.preventDefault();
-        setDebugMode(d => !d);
+        setDebugMode((d) => !d);
       }
     };
     window.addEventListener('keydown', onKey);
@@ -79,7 +93,9 @@ export function App() {
       // path. If we ever sync overrides server-side, replace with a
       // schema validator (zod / hand-written guard).
       return (JSON.parse(raw) as ColorOverrides) || {};
-    } catch { return {}; }
+    } catch {
+      return {};
+    }
   });
   useEffect(() => {
     let styleEl = document.getElementById('color-overrides');
@@ -88,17 +104,22 @@ export function App() {
       styleEl.id = 'color-overrides';
       document.head.appendChild(styleEl);
     }
-    const cls = colorOverrides.classic  ?? {};
-    const soy = colorOverrides.soyboy   ?? {};
-    const tt  = colorOverrides.thisthat ?? {};
+    const cls = colorOverrides.classic ?? {};
+    const soy = colorOverrides.soyboy ?? {};
+    const tt = colorOverrides.thisthat ?? {};
     styleEl.textContent = [
-      cls.bg     && `:root[data-exp-colored-bg="1"][data-exp-mode="classic"]  { --cream: ${cls.bg}; }`,
-      cls.accent && `:root[data-exp-colored-bg="1"][data-exp-mode="classic"]  { --deep-peach: ${cls.accent}; --accent: ${cls.accent}; }`,
-      soy.bg     && `:root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]   { --cream: ${soy.bg}; }`,
-      soy.accent && `:root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]   { --deep-sage: ${soy.accent}; --accent: ${soy.accent}; }`,
-      tt.bg      && `:root[data-exp-colored-bg="1"][data-exp-mode="thisthat"] { --cream: ${tt.bg}; }`,
-      tt.accent  && `:root[data-exp-colored-bg="1"][data-exp-mode="thisthat"] { --deep-blue: ${tt.accent}; --accent: ${tt.accent}; }`,
-    ].filter(Boolean).join('\n');
+      cls.bg && `:root[data-exp-colored-bg="1"][data-exp-mode="classic"]  { --cream: ${cls.bg}; }`,
+      cls.accent &&
+        `:root[data-exp-colored-bg="1"][data-exp-mode="classic"]  { --deep-peach: ${cls.accent}; --accent: ${cls.accent}; }`,
+      soy.bg && `:root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]   { --cream: ${soy.bg}; }`,
+      soy.accent &&
+        `:root[data-exp-colored-bg="1"][data-exp-mode="soyboy"]   { --deep-sage: ${soy.accent}; --accent: ${soy.accent}; }`,
+      tt.bg && `:root[data-exp-colored-bg="1"][data-exp-mode="thisthat"] { --cream: ${tt.bg}; }`,
+      tt.accent &&
+        `:root[data-exp-colored-bg="1"][data-exp-mode="thisthat"] { --deep-blue: ${tt.accent}; --accent: ${tt.accent}; }`,
+    ]
+      .filter(Boolean)
+      .join('\n');
     localStorage.setItem('colorOverrides', JSON.stringify(colorOverrides));
   }, [colorOverrides]);
 
@@ -129,10 +150,9 @@ export function App() {
       if (isDark) {
         tc.setAttribute('content', '#141413');
       } else if (coloredBgActive) {
-        tc.setAttribute('content',
-          modeId === 'soyboy'   ? '#B7D197' :
-          modeId === 'thisthat' ? '#CCE1F2' :
-          '#FAD8B8',
+        tc.setAttribute(
+          'content',
+          modeId === 'soyboy' ? '#B7D197' : modeId === 'thisthat' ? '#CCE1F2' : '#FAD8B8',
         );
       } else {
         tc.setAttribute('content', '#F8F1E5');
@@ -142,75 +162,76 @@ export function App() {
 
   return (
     <ThemeContext.Provider value={isDark}>
-    <ColoredBgContext.Provider value={coloredBgActive}>
-    <ColorOverrideContext.Provider value={colorOverrides}>
-    <div className={modeId === 'soyboy' ? 'soyboy' : (modeId === 'thisthat' ? 'thisthat' : '')}>
-      {screen === 'start' && (
-        <StartScreen
-          onStart={restart}
-          onStartForever={() => {
-            setDebug(d => ({ ...d, foreverMode: true }));
-            restart();
-          }}
-          onTutorial={() => setScreen('tutorial')}
-          debug={debug}
-          setDebug={setDebug}
-          modeId={modeId}
-          setModeId={setModeId}
-          debugMode={debugMode}
-        />
-      )}
-      {screen === 'tutorial' && (
-        <OnboardingScreen
-          modeId={modeId}
-          onDone={restart}
-          onDoneForever={() => {
-            setDebug(d => ({ ...d, foreverMode: true }));
-            restart();
-          }}
-          onBack={() => setScreen('start')}
-        />
-      )}
-      {screen === 'playing' && (
-        <PlayScreen
-          key={playKey}
-          puzzleSeed={puzzleSeed}
-          onEnd={res => { setResult(res); setScreen('end'); }}
-          onHome={() => setScreen('start')}
-          onRestart={restartSame}
-          onNewPuzzle={newPuzzle}
-          debug={debug}
-          modeId={modeId}
-        />
-      )}
-      {screen === 'end' && result && (
-        <EndScreen
-          score={result.score}
-          chain={result.chain}
-          deadEnd={result.deadEnd}
-          win={result.win}
-          target={result.target}
-          par={result.par}
-          debug={debug}
-          modeId={modeId}
-          onRestart={newPuzzle}
-          onHome={() => setScreen('start')}
-        />
-      )}
-      {debugMode && !debug.darkMode && (screen === 'start' || screen === 'tutorial') && (
-        <FloatingColorPicker
-          colorOverrides={colorOverrides}
-          setColorOverrides={setColorOverrides}
-          modeId={modeId}
-        />
-      )}
-      {debugMode && (
-        <DebugBadge onToggle={() => setDebugMode(false)} />
-      )}
-      <BoilDefs />
-    </div>
-    </ColorOverrideContext.Provider>
-    </ColoredBgContext.Provider>
+      <ColoredBgContext.Provider value={coloredBgActive}>
+        <ColorOverrideContext.Provider value={colorOverrides}>
+          <div className={modeId === 'soyboy' ? 'soyboy' : modeId === 'thisthat' ? 'thisthat' : ''}>
+            {screen === 'start' && (
+              <StartScreen
+                onStart={restart}
+                onStartForever={() => {
+                  setDebug((d) => ({ ...d, foreverMode: true }));
+                  restart();
+                }}
+                onTutorial={() => setScreen('tutorial')}
+                debug={debug}
+                setDebug={setDebug}
+                modeId={modeId}
+                setModeId={setModeId}
+                debugMode={debugMode}
+              />
+            )}
+            {screen === 'tutorial' && (
+              <OnboardingScreen
+                modeId={modeId}
+                onDone={restart}
+                onDoneForever={() => {
+                  setDebug((d) => ({ ...d, foreverMode: true }));
+                  restart();
+                }}
+                onBack={() => setScreen('start')}
+              />
+            )}
+            {screen === 'playing' && (
+              <PlayScreen
+                key={playKey}
+                puzzleSeed={puzzleSeed}
+                onEnd={(res) => {
+                  setResult(res);
+                  setScreen('end');
+                }}
+                onHome={() => setScreen('start')}
+                onRestart={restartSame}
+                onNewPuzzle={newPuzzle}
+                debug={debug}
+                modeId={modeId}
+              />
+            )}
+            {screen === 'end' && result && (
+              <EndScreen
+                score={result.score}
+                chain={result.chain}
+                deadEnd={result.deadEnd}
+                win={result.win}
+                target={result.target}
+                par={result.par}
+                debug={debug}
+                modeId={modeId}
+                onRestart={newPuzzle}
+                onHome={() => setScreen('start')}
+              />
+            )}
+            {debugMode && !debug.darkMode && (screen === 'start' || screen === 'tutorial') && (
+              <FloatingColorPicker
+                colorOverrides={colorOverrides}
+                setColorOverrides={setColorOverrides}
+                modeId={modeId}
+              />
+            )}
+            {debugMode && <DebugBadge onToggle={() => setDebugMode(false)} />}
+            <BoilDefs />
+          </div>
+        </ColorOverrideContext.Provider>
+      </ColoredBgContext.Provider>
     </ThemeContext.Provider>
   );
 }

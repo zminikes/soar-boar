@@ -27,46 +27,124 @@ export function DemoSection({ modeId, onStart, onStartForever }: DemoSectionProp
   const isLadder = !!cfg.isLadder;
 
   // 4 scenes per mode. The last is a CTA finale.
-  const STEPS: DemoStep[] = modeId === 'thisthat' ? [
-    { word: 'THIS', changed: null, pts: null, target: 'THAT',
-      caption: <>Each game has a starting word and a goal.</>,
-      sub: <>Get from <span className="accent">THIS</span> to <span className="accent">THAT</span>.</> },
-    { word: 'THIN', changed: 3, pts: null, target: 'THAT',
-      caption: <>Change one letter at a time.</>,
-      sub: <><span className="accent">THIS</span> → <span className="accent">THIN</span>.</> },
-    { word: 'THAN', changed: 2, pts: null, target: 'THAT',
-      caption: <>Every step has to be a real word.</>,
-      sub: <><span className="accent">THIN</span> → <span className="accent">THAN</span>.</> },
-    { word: 'THAT', changed: 2, pts: null, target: 'THAT',
-      caption: <>Hit the target word to win.</>,
-      sub: <>Three moves — see if you can match the best path.</> },
-  ] : modeId === 'soyboy' ? [
-    { word: 'SOY', changed: null, pts: null,
-      caption: <>Every game starts with a different word.</>,
-      sub: 'Your goal: change one letter to make a new word.' },
-    { word: 'BOY', changed: 0, pts: 1,
-      caption: <>Like <span className="accent">SOY</span> to <span className="accent">BOY</span>.</>,
-      sub: 'The first letter earns 1 point.' },
-    { word: 'BAY', changed: 1, pts: 3,
-      caption: <>Middle letters score more.</>,
-      sub: 'The second letter is worth 3 points.' },
-    { word: 'BAT', changed: 2, pts: 2,
-      caption: <>Keep climbing the ladder.</>,
-      sub: 'Race the clock — 45 seconds to stack as many words as you can.' },
-  ] : [
-    { word: 'SOAR', changed: null, pts: null,
-      caption: <>Every game starts with a different word.</>,
-      sub: 'Your goal: change one letter to make a new word.' },
-    { word: 'BOAR', changed: 0, pts: 1,
-      caption: <>Like <span className="accent">SOAR</span> to <span className="accent">BOAR</span>.</>,
-      sub: 'The first letter earns 1 point.' },
-    { word: 'BEAR', changed: 1, pts: 4,
-      caption: <>Inner letters score more.</>,
-      sub: 'The second letter is worth 4 points.' },
-    { word: 'BEAD', changed: 3, pts: 2,
-      caption: <>Keep climbing the ladder.</>,
-      sub: 'Race the clock — 60 seconds to stack as many words as you can.' },
-  ];
+  const STEPS: DemoStep[] =
+    modeId === 'thisthat'
+      ? [
+          {
+            word: 'THIS',
+            changed: null,
+            pts: null,
+            target: 'THAT',
+            caption: <>Each game has a starting word and a goal.</>,
+            sub: (
+              <>
+                Get from <span className="accent">THIS</span> to{' '}
+                <span className="accent">THAT</span>.
+              </>
+            ),
+          },
+          {
+            word: 'THIN',
+            changed: 3,
+            pts: null,
+            target: 'THAT',
+            caption: <>Change one letter at a time.</>,
+            sub: (
+              <>
+                <span className="accent">THIS</span> → <span className="accent">THIN</span>.
+              </>
+            ),
+          },
+          {
+            word: 'THAN',
+            changed: 2,
+            pts: null,
+            target: 'THAT',
+            caption: <>Every step has to be a real word.</>,
+            sub: (
+              <>
+                <span className="accent">THIN</span> → <span className="accent">THAN</span>.
+              </>
+            ),
+          },
+          {
+            word: 'THAT',
+            changed: 2,
+            pts: null,
+            target: 'THAT',
+            caption: <>Hit the target word to win.</>,
+            sub: <>Three moves — see if you can match the best path.</>,
+          },
+        ]
+      : modeId === 'soyboy'
+        ? [
+            {
+              word: 'SOY',
+              changed: null,
+              pts: null,
+              caption: <>Every game starts with a different word.</>,
+              sub: 'Your goal: change one letter to make a new word.',
+            },
+            {
+              word: 'BOY',
+              changed: 0,
+              pts: 1,
+              caption: (
+                <>
+                  Like <span className="accent">SOY</span> to <span className="accent">BOY</span>.
+                </>
+              ),
+              sub: 'The first letter earns 1 point.',
+            },
+            {
+              word: 'BAY',
+              changed: 1,
+              pts: 3,
+              caption: <>Middle letters score more.</>,
+              sub: 'The second letter is worth 3 points.',
+            },
+            {
+              word: 'BAT',
+              changed: 2,
+              pts: 2,
+              caption: <>Keep climbing the ladder.</>,
+              sub: 'Race the clock — 45 seconds to stack as many words as you can.',
+            },
+          ]
+        : [
+            {
+              word: 'SOAR',
+              changed: null,
+              pts: null,
+              caption: <>Every game starts with a different word.</>,
+              sub: 'Your goal: change one letter to make a new word.',
+            },
+            {
+              word: 'BOAR',
+              changed: 0,
+              pts: 1,
+              caption: (
+                <>
+                  Like <span className="accent">SOAR</span> to <span className="accent">BOAR</span>.
+                </>
+              ),
+              sub: 'The first letter earns 1 point.',
+            },
+            {
+              word: 'BEAR',
+              changed: 1,
+              pts: 4,
+              caption: <>Inner letters score more.</>,
+              sub: 'The second letter is worth 4 points.',
+            },
+            {
+              word: 'BEAD',
+              changed: 3,
+              pts: 2,
+              caption: <>Keep climbing the ladder.</>,
+              sub: 'Race the clock — 60 seconds to stack as many words as you can.',
+            },
+          ];
   const FINALE_INDEX = STEPS.length; // one extra scene at the end
   const totalScenes = STEPS.length + 1;
 
@@ -83,7 +161,7 @@ export function DemoSection({ modeId, onStart, onStartForever }: DemoSectionProp
       const totalScroll = Math.max(1, r.height - window.innerHeight);
       const scrolled = Math.max(0, Math.min(totalScroll, -r.top));
       const idx = Math.min(totalScenes - 1, Math.floor((scrolled / totalScroll) * totalScenes));
-      setStep(prev => prev === idx ? prev : idx);
+      setStep((prev) => (prev === idx ? prev : idx));
     };
     const onScroll = (): void => {
       if (ticking) return;
@@ -122,7 +200,9 @@ export function DemoSection({ modeId, onStart, onStartForever }: DemoSectionProp
           <div key={`scene-${step}`} className="big-demo-scene">
             <div className="big-demo-tiles">
               {current.pts != null && (
-                <span key={`pts-${step}`} className="big-demo-pts">+{current.pts}</span>
+                <span key={`pts-${step}`} className="big-demo-pts">
+                  +{current.pts}
+                </span>
               )}
               {current.word.split('').map((l, i) => (
                 <div
@@ -142,9 +222,13 @@ export function DemoSection({ modeId, onStart, onStartForever }: DemoSectionProp
               Now <span className="accent">you</span> try.
             </div>
             <div className="big-demo-sub">
-              {isLadder
-                ? <>{cfg.wordLen}-letter words · word ladder, no clock.</>
-                : <>{cfg.wordLen}-letter words · {cfg.duration} seconds on the clock.</>}
+              {isLadder ? (
+                <>{cfg.wordLen}-letter words · word ladder, no clock.</>
+              ) : (
+                <>
+                  {cfg.wordLen}-letter words · {cfg.duration} seconds on the clock.
+                </>
+              )}
             </div>
             <button className="big-demo-finale-cta" onClick={onStart}>
               Start playing →

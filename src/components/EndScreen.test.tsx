@@ -67,7 +67,9 @@ describe('EndScreen', () => {
     // Prior best is 0 by default (cleared in beforeEach); score 4 should
     // qualify as a new best.
     renderEndScreen({ score: 4 });
-    expect(screen.getByRole('button', { name: /Celebrate new personal best/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Celebrate new personal best/i }),
+    ).toBeInTheDocument();
     expect(localStorage.getItem(BEST_KEY('classic'))).toBe('4');
   });
 

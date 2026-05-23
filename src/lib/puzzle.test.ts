@@ -74,7 +74,8 @@ describe('pickLadderPair', () => {
 
   it('uses Math.floor(seed * pairs.length) % pairs.length indexing', () => {
     const seed = 0.5;
-    const expected = THIS_THAT_PAIRS[Math.floor(seed * THIS_THAT_PAIRS.length) % THIS_THAT_PAIRS.length];
+    const expected =
+      THIS_THAT_PAIRS[Math.floor(seed * THIS_THAT_PAIRS.length) % THIS_THAT_PAIRS.length];
     expect(pickLadderPair(THIS_THAT_PAIRS, fallback, seed)).toBe(expected);
   });
 

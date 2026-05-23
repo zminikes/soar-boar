@@ -56,8 +56,14 @@ describe('StartScreen', () => {
   it('marks only the active mode tab as selected', () => {
     renderStartScreen({ modeId: 'soyboy' });
     expect(screen.getByRole('tab', { name: 'Soy Boy' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tab', { name: 'Soar Boar' })).toHaveAttribute('aria-selected', 'false');
-    expect(screen.getByRole('tab', { name: 'This That' })).toHaveAttribute('aria-selected', 'false');
+    expect(screen.getByRole('tab', { name: 'Soar Boar' })).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+    expect(screen.getByRole('tab', { name: 'This That' })).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
   });
 
   it('calls setModeId when a mode tab is clicked', async () => {

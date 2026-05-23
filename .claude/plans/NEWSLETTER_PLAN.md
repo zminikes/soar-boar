@@ -29,7 +29,7 @@ No Vercel function needed for this — the form POSTs directly to the Apps Scrip
 
 ### Why Apps Script over the alternatives
 
-Surveyed the field — quick summary of why each loses to Apps Script for *this* situation:
+Surveyed the field — quick summary of why each loses to Apps Script for _this_ situation:
 
 - **Resend**: 1,000-contact free cap is the actual ceiling, not headroom. Migrating away is a CSV import, but you'd hit the cap before deciding which destination you want.
 - **Kit (formerly ConvertKit)**: 10,000 contacts free + sending included is genuinely the strongest "one tool for both" option. The real cost is commitment — Kit is a full newsletter platform with its own UI, automations, and gravity. Adopting it now is the opposite of "stay flexible."
@@ -48,7 +48,7 @@ If the user later decides they DO want one tool that does collect-and-send, **Ki
 
 ### Tradeoffs to know
 
-- Need a separate path for *sending* eventually (manual BCC for now; Kit / Mailchimp / Resend / something else later)
+- Need a separate path for _sending_ eventually (manual BCC for now; Kit / Mailchimp / Resend / something else later)
 - Bolts a Google account dependency into the stack (the user already has one; not an issue)
 - Apps Script Web Apps have a known CORS quirk (preflight requests don't get CORS headers) — workaround is to POST as `Content-Type: text/plain`, which avoids the preflight entirely. Plan handles this; it's a one-line consideration in the form code.
 
@@ -59,7 +59,7 @@ If the user later decides they DO want one tool that does collect-and-send, **Ki
 3. **Apps Script `doPost(e)`** (~30 lines, bound to the Sheet):
    - Parses JSON from `e.postData.contents`
    - Validates email with a cheap regex
-   - Honeypot check: if `website` is set, return `{ok:true}` *without* appending
+   - Honeypot check: if `website` is set, return `{ok:true}` _without_ appending
    - Dedupe: read column B as a range, skip append if email already exists
    - Append row: `[new Date(), email, source]`
    - Return `ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON)`
@@ -80,7 +80,7 @@ Why `Content-Type: text/plain`: it's a "simple request" per CORS spec, so the br
 
 1. New Google Sheet → name it "Soar Boar signups" → first row: `timestamp | email | source`.
 2. `Extensions → Apps Script`. Paste the `doPost(e)` (~30 lines). Save.
-3. `Deploy → New deployment → Web app`. Execute as: *Me*. Who has access: *Anyone*. Authorize when prompted. Copy the resulting `/exec` URL.
+3. `Deploy → New deployment → Web app`. Execute as: _Me_. Who has access: _Anyone_. Authorize when prompted. Copy the resulting `/exec` URL.
 4. Paste the URL into the `APPS_SCRIPT_URL` constant in `game/index.html`.
 5. Commit and push. Vercel auto-redeploys.
 
@@ -112,7 +112,7 @@ Compared to Resend's 1,000-contact ceiling, Apps Script's effective ceiling is s
 ### Defensive patterns worth adding
 
 - **In the script**: wrap the append in a `try/catch`, log errors to `Logger` (or to a separate "errors" sheet tab). Apps Script logs are persistent in the project's execution log.
-- **Optional fallback notification**: have the script also `MailApp.sendEmail(yourAddress, 'New signup', email)` so each signup pings your inbox. Apps Script daily mail quota is 100/day for personal accounts — plenty of buffer at this volume, and gives you a real-time pulse without checking the Sheet. *Skip for now; add if you want signup notifications.*
+- **Optional fallback notification**: have the script also `MailApp.sendEmail(yourAddress, 'New signup', email)` so each signup pings your inbox. Apps Script daily mail quota is 100/day for personal accounts — plenty of buffer at this volume, and gives you a real-time pulse without checking the Sheet. _Skip for now; add if you want signup notifications._
 
 ## When to revisit
 

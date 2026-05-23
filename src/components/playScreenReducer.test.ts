@@ -70,13 +70,17 @@ describe('initGameState', () => {
 
 describe('gameReducer — TICK_COUNTDOWN', () => {
   it('decrements countdown', () => {
-    const next = gameReducer(makeState({ phase: 'countdown', countdown: 4 }), { type: 'TICK_COUNTDOWN' });
+    const next = gameReducer(makeState({ phase: 'countdown', countdown: 4 }), {
+      type: 'TICK_COUNTDOWN',
+    });
     expect(next.countdown).toBe(3);
     expect(next.phase).toBe('countdown');
   });
 
   it('transitions to playing when countdown hits 0', () => {
-    const next = gameReducer(makeState({ phase: 'countdown', countdown: 1 }), { type: 'TICK_COUNTDOWN' });
+    const next = gameReducer(makeState({ phase: 'countdown', countdown: 1 }), {
+      type: 'TICK_COUNTDOWN',
+    });
     expect(next.countdown).toBe(0);
     expect(next.phase).toBe('playing');
   });
@@ -122,7 +126,11 @@ describe('gameReducer — TICK_TIMER', () => {
 
 describe('gameReducer — TYPE_LETTER', () => {
   it('appends an uppercased letter to typed', () => {
-    const next = gameReducer(makeState({ typed: 'BO' }), { type: 'TYPE_LETTER', letter: 'a', wordLen: 4 });
+    const next = gameReducer(makeState({ typed: 'BO' }), {
+      type: 'TYPE_LETTER',
+      letter: 'a',
+      wordLen: 4,
+    });
     expect(next.typed).toBe('BOA');
   });
 
@@ -150,7 +158,10 @@ describe('gameReducer — SUBMIT_ACCEPTED', () => {
     const before = makeState({ currentWord: 'SOAR', typed: 'BOAR', score: 0, acceptKey: 5 });
     const next = gameReducer(before, { type: 'SUBMIT_ACCEPTED', word: 'BOAR', pos: 0, pts: 1 });
     expect(next.currentWord).toBe('BOAR');
-    expect(next.chain).toEqual([{ word: 'SOAR', pts: null }, { word: 'BOAR', pts: 1 }]);
+    expect(next.chain).toEqual([
+      { word: 'SOAR', pts: null },
+      { word: 'BOAR', pts: 1 },
+    ]);
     expect(next.usedWords.has('BOAR')).toBe(true);
     expect(next.usedWords.has('SOAR')).toBe(true);
     expect(next.score).toBe(1);

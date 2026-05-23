@@ -26,11 +26,7 @@ describe('generateShareText', () => {
   });
 
   it('uses the bean emoji and 3-cell rows for the soyboy mode', () => {
-    const chain: ChainEntry[] = [
-      { word: 'SOY' },
-      { word: 'BOY', pts: 1 },
-      { word: 'BAY', pts: 3 },
-    ];
+    const chain: ChainEntry[] = [{ word: 'SOY' }, { word: 'BOY', pts: 1 }, { word: 'BAY', pts: 3 }];
     const out = generateShareText(chain, 4, MODE_CONFIGS.soyboy, 'soarboar.com');
     expect(out).toBe(
       [
@@ -55,10 +51,18 @@ describe('generateShareText', () => {
 
   it('uses plural "words" for 0-move and 2+-move chains', () => {
     const zeroMove: ChainEntry[] = [{ word: 'SOAR' }];
-    expect(generateShareText(zeroMove, 0, MODE_CONFIGS.classic, 'soarboar.com')).toContain('· 0 words');
+    expect(generateShareText(zeroMove, 0, MODE_CONFIGS.classic, 'soarboar.com')).toContain(
+      '· 0 words',
+    );
 
-    const twoMove: ChainEntry[] = [{ word: 'SOAR' }, { word: 'BOAR', pts: 1 }, { word: 'BEAR', pts: 4 }];
-    expect(generateShareText(twoMove, 5, MODE_CONFIGS.classic, 'soarboar.com')).toContain('· 2 words');
+    const twoMove: ChainEntry[] = [
+      { word: 'SOAR' },
+      { word: 'BOAR', pts: 1 },
+      { word: 'BEAR', pts: 4 },
+    ];
+    expect(generateShareText(twoMove, 5, MODE_CONFIGS.classic, 'soarboar.com')).toContain(
+      '· 2 words',
+    );
   });
 
   it('inlines the share URL the caller passes (not a hard-coded value)', () => {

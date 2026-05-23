@@ -28,8 +28,14 @@ export function Keyboard({ onKey, visible = true }: KeyboardProps) {
     }, BACKSPACE_HOLD_DELAY);
   }, [onKey]);
   const stopBackspaceRepeat = useCallback(() => {
-    if (holdTimerRef.current) { clearTimeout(holdTimerRef.current); holdTimerRef.current = null; }
-    if (repeatIntervalRef.current) { clearInterval(repeatIntervalRef.current); repeatIntervalRef.current = null; }
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    if (repeatIntervalRef.current) {
+      clearInterval(repeatIntervalRef.current);
+      repeatIntervalRef.current = null;
+    }
   }, []);
   // Cleanup on unmount — keyboard hides when the player dead-ends or
   // navigates home mid-repeat; we don't want the interval running after.
@@ -50,14 +56,14 @@ export function Keyboard({ onKey, visible = true }: KeyboardProps) {
     <div className="kb" role="group" aria-label="On-screen keyboard">
       {KB_ROWS.map((row, ri) => (
         <div key={ri} className="kb-row">
-          {row.map(k => {
+          {row.map((k) => {
             const isBackspace = k === '⌫';
             return (
               <button
                 key={k}
                 type="button"
                 className={classFor(k)}
-                onPointerDown={e => {
+                onPointerDown={(e) => {
                   e.preventDefault();
                   dispatch(k);
                   if (isBackspace) startBackspaceRepeat();
@@ -66,7 +72,9 @@ export function Keyboard({ onKey, visible = true }: KeyboardProps) {
                 onPointerCancel={isBackspace ? stopBackspaceRepeat : undefined}
                 onPointerLeave={isBackspace ? stopBackspaceRepeat : undefined}
                 aria-label={k === '⌫' ? 'Backspace' : k === 'ENTER' ? 'Enter' : k}
-              >{k}</button>
+              >
+                {k}
+              </button>
             );
           })}
         </div>

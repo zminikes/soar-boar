@@ -39,8 +39,9 @@ function renderPlayScreen(overrides: Partial<React.ComponentProps<typeof PlayScr
 // the current word (read-only) and the typed input. The "Next word"
 // section-label sits immediately before the typed row.
 function typedLetters(): string {
-  const nextLabel = Array.from(document.querySelectorAll('.section-label'))
-    .find((el) => el.textContent === 'Next word');
+  const nextLabel = Array.from(document.querySelectorAll('.section-label')).find(
+    (el) => el.textContent === 'Next word',
+  );
   const row = nextLabel?.nextElementSibling;
   return Array.from(row?.querySelectorAll('.tile') ?? [])
     .map((el) => el.textContent ?? '')

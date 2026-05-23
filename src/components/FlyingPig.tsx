@@ -17,9 +17,15 @@ export function FlyingPig() {
     let cancelled = false;
     fetch(SVG_URLS['big-pig-1.svg'])
       .then((r) => r.text())
-      .then((text) => { if (!cancelled) setRawSvg(text); })
-      .catch(() => { /* decorative — silent fail is acceptable */ });
-    return () => { cancelled = true; };
+      .then((text) => {
+        if (!cancelled) setRawSvg(text);
+      })
+      .catch(() => {
+        /* decorative — silent fail is acceptable */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const svgMarkup = useMemo(() => {
@@ -36,10 +42,7 @@ export function FlyingPig() {
          - Ear fills: white (kept). */
       raw = raw.replace(/fill:\s*#2e2b26/gi, 'fill: #5B453B');
       raw = raw.replace(/<g id="air">([\s\S]*?)<\/g>/, (_, inner: string) => {
-        const updated = inner.replace(
-          /<path class="cls-3"/g,
-          '<path class="cls-3" fill="#8C8884"',
-        );
+        const updated = inner.replace(/<path class="cls-3"/g, '<path class="cls-3" fill="#8C8884"');
         return `<g id="air">${updated}</g>`;
       });
       // Ear fills (cls-2 = #fff) stay white — no substitution.

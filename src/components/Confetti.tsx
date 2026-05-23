@@ -16,7 +16,8 @@ export function Confetti() {
           style={{
             background: d.color,
             left: d.left,
-            width: d.size, height: d.size,
+            width: d.size,
+            height: d.size,
             animationDelay: d.delay,
             top: -10,
           }}

@@ -25,9 +25,8 @@ export interface DebugState {
 // components dispatch synthetic events (e.g. from the on-screen Keyboard
 // component) through the same code path as real `keydown` listeners.
 // Derived from the DOM type so future field needs surface naturally.
-export type KeyEvent =
-  & Pick<KeyboardEvent, 'key'>
-  & Partial<Pick<KeyboardEvent, 'metaKey' | 'ctrlKey' | 'altKey'>>;
+export type KeyEvent = Pick<KeyboardEvent, 'key'> &
+  Partial<Pick<KeyboardEvent, 'metaKey' | 'ctrlKey' | 'altKey'>>;
 
 // Inline-message state used by the tutorial and play screens (the
 // transient "Not a word" / "Solved!" etc. line above the input).

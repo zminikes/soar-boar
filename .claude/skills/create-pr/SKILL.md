@@ -33,10 +33,10 @@ screenshots also keeps the repo free of per-PR binary bloat.
 
 ## Naming
 
-| Prefix   | Meaning                                         | Example              |
-| -------- | ----------------------------------------------- | -------------------- |
-| `site-`  | Public page rendered at the dev URL             | `site-home.jpg`      |
-| `admin-` | Keystatic admin view (`/keystatic/...`)         | `admin-releases.png` |
+| Prefix   | Meaning                                 | Example              |
+| -------- | --------------------------------------- | -------------------- |
+| `site-`  | Public page rendered at the dev URL     | `site-home.jpg`      |
+| `admin-` | Keystatic admin view (`/keystatic/...`) | `admin-releases.png` |
 
 Second token is the page slug or collection name. For nested admin
 views, append the item slug: `admin-releases-item-first-album.png`.
@@ -98,9 +98,11 @@ git push
 ## Screenshots
 
 ### Site
+
 ![Home](https://gist.githubusercontent.com/<user>/<GIST_ID>/raw/site-home.jpg)
 
 ### Admin
+
 ![Releases admin](https://gist.githubusercontent.com/<user>/<GIST_ID>/raw/admin-releases.png)
 ```
 

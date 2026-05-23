@@ -15,10 +15,7 @@ interface AnimatedMascotProps {
 // active mode + theme. Falls back to the light variants when dark
 // versions aren't shipped (thisthat reuses one SVG across themes;
 // classic + soyboy always carry all four).
-function pickFrames(
-  svgs: MascotSvgs,
-  isDark: boolean,
-): { open: string; closed: string } {
+function pickFrames(svgs: MascotSvgs, isDark: boolean): { open: string; closed: string } {
   if (isDark && svgs.openDark && svgs.closedDark) {
     return { open: svgs.openDark, closed: svgs.closedDark };
   }
@@ -56,10 +53,16 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
     }
     let cancelled = false;
     setSvgs(null);
-    loadMascotSvgs(modeId).then((loaded) => {
-      if (!cancelled) setSvgs(loaded);
-    }).catch(() => { /* chunk load failure leaves placeholder visible */ });
-    return () => { cancelled = true; };
+    loadMascotSvgs(modeId)
+      .then((loaded) => {
+        if (!cancelled) setSvgs(loaded);
+      })
+      .catch(() => {
+        /* chunk load failure leaves placeholder visible */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [modeId]);
 
   // Ambient blink — random ~35% every 2.5s
@@ -87,10 +90,13 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
       bounceTimer2Ref.current = setTimeout(() => setIsBouncing(false), 420);
     }, 16);
   }, []);
-  useEffect(() => () => {
-    if (bounceTimer1Ref.current) clearTimeout(bounceTimer1Ref.current);
-    if (bounceTimer2Ref.current) clearTimeout(bounceTimer2Ref.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (bounceTimer1Ref.current) clearTimeout(bounceTimer1Ref.current);
+      if (bounceTimer2Ref.current) clearTimeout(bounceTimer2Ref.current);
+    },
+    [],
+  );
 
   const handleEnter = useCallback(() => {
     setIsHovered(true);
@@ -121,24 +127,27 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
   // useCallback rather than a per-render arrow so the useMemo deps below
   // can list `recolor` honestly. eslint-disable not needed — TypeScript
   // and the rule both see a stable dep set.
-  const recolor = useCallback((raw: string): string => {
-    if (!raw) return '';
-    let result = raw;
-    // Accent color from picker
-    if (accent && accent.toLowerCase() !== defaultColor.toLowerCase()) {
-      result = result.replace(
-        new RegExp(`fill\\s*:\\s*${defaultColor}`, 'gi'),
-        `fill: ${accent}`,
-      );
-    }
-    // Dark mode: all dark strokes (.cls-2 = #2e2b26) — outlines + facial
-    // features — flip to "almost black" so they stay readable but feel
-    // dark. Applies to both pig and bean.
-    if (isDark) {
-      result = result.replace(/fill:\s*#2e2b26/gi, 'fill: #1A1918');
-    }
-    return result;
-  }, [accent, defaultColor, isDark]);
+  const recolor = useCallback(
+    (raw: string): string => {
+      if (!raw) return '';
+      let result = raw;
+      // Accent color from picker
+      if (accent && accent.toLowerCase() !== defaultColor.toLowerCase()) {
+        result = result.replace(
+          new RegExp(`fill\\s*:\\s*${defaultColor}`, 'gi'),
+          `fill: ${accent}`,
+        );
+      }
+      // Dark mode: all dark strokes (.cls-2 = #2e2b26) — outlines + facial
+      // features — flip to "almost black" so they stay readable but feel
+      // dark. Applies to both pig and bean.
+      if (isDark) {
+        result = result.replace(/fill:\s*#2e2b26/gi, 'fill: #1A1918');
+      }
+      return result;
+    },
+    [accent, defaultColor, isDark],
+  );
 
   const frames = svgs ? pickFrames(svgs, isDark) : null;
   const openSvg = useMemo(
@@ -181,12 +190,10 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
 
   return (
     <div
-      className={[
-        'animated-mascot',
-        eyesClosed ? 'blinking' : '',
-        isBouncing ? 'bouncing' : '',
-      ].filter(Boolean).join(' ')}
-      data-mode={isClassic ? 'classic' : (isSoyboy ? 'soyboy' : 'thisthat')}
+      className={['animated-mascot', eyesClosed ? 'blinking' : '', isBouncing ? 'bouncing' : '']
+        .filter(Boolean)
+        .join(' ')}
+      data-mode={isClassic ? 'classic' : isSoyboy ? 'soyboy' : 'thisthat'}
       style={{ width: size, height: size }}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
