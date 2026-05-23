@@ -15,7 +15,7 @@ npm install
 npm run dev
 ```
 
-Opens the Vite dev server (default `http://localhost:5173`). The legacy single-file build still lives at `game/index.html` and remains playable directly in a browser — it's retained as a fallback until the new build ships to production.
+Opens the Vite dev server (default `http://localhost:5173`).
 
 ## Scripts
 
@@ -54,8 +54,6 @@ src/
   styles/      Global CSS
   assets/      SVG mascots
 
-game/           Legacy single-file React build (kept as fallback;
-                removed after production cutover)
 docs/migration/ Modernization plan + phase notes
 scripts/        Utility scripts (word list analysis)
 ```
