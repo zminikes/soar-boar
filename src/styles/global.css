@@ -773,7 +773,9 @@
       width: 100vw;
       margin-left: calc(50% - 50vw); /* break out of #root max-width */
       margin-top: 120px;
-      background: var(--cream);
+      /* No background — full-bleed section sitting directly on body, which
+         already paints var(--cream). Inheriting body's surface is identical
+         to painting cream here. */
     }
     .big-demo-sticky {
       position: sticky;
@@ -1450,8 +1452,10 @@
       padding: env(safe-area-inset-top, 0) 20px calc(24px + env(safe-area-inset-bottom, 0));
       display: flex;
       flex-direction: column;
-      /* Prevents dark/light background bleed-through during screen fade transitions */
-      background: var(--cream);
+      /* No background — body already paints var(--cream) underneath, and
+         both inherit --cream from documentElement, so they can never hold
+         different colors at once. #root showing body through is identical
+         to #root painting cream itself. */
     }
     /* Width values match what legacy game/index.html renders. The legacy
        app declared <div id="root"> in both the index.html placeholder AND
@@ -2223,7 +2227,12 @@
     }
 
     /* ── Theme transitions ───────────────────────────────── */
-    body, #root, .big-demo, .kb,
+    /* #root + .big-demo are intentionally absent — they have no background
+       of their own (they show body's var(--cream) through), so there's
+       nothing to cross-fade on a dark-mode toggle. .kb stays: it's
+       position:fixed over scrolling content, so it carries an opaque
+       var(--cream) fill that does need to transition. */
+    body, .kb,
     .card, .info-card, .dead-end-banner, kbd,
     .chain-tile, .chain-tile.changed,
     .score-badge, .timer-track {
