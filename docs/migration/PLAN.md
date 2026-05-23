@@ -28,7 +28,7 @@ Set up the build/test/lint pipeline at the repo root. `game/index.html` is untou
 - Configs:
   - `tsconfig.json` (`strict: true`, `jsx: "react-jsx"`, `moduleResolution: "bundler"`)
   - `vite.config.ts` (React plugin, Vitest config inline with `environment: 'jsdom'`, `setupFiles: ['./src/test/setup.ts']`, `build.sourcemap: true`, `build.chunkSizeWarningLimit: 500`)
-  - `eslint.config.js` (flat config; **add `no-restricted-imports` to forbid `react`/`react-dom` inside `src/lib/**`** — guards the RN-portable boundary)
+  - `eslint.config.js` (flat config; **add `no-restricted-imports` to forbid `react`/`react-dom` inside `src/lib/**`\*\* — guards the RN-portable boundary)
   - `.prettierrc`, `.editorconfig`
 - npm scripts: `dev`, `build`, `preview`, `test`, `test:watch`, `typecheck`, `lint`, `format`
 - New `index.html` at repo root (Vite entry) and `src/main.tsx` rendering a placeholder.

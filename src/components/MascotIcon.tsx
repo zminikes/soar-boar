@@ -20,5 +20,14 @@ function iconPath(modeId: ModeId, isDark: boolean): MascotName {
 export function MascotIcon({ size = 48, modeId = 'classic', className = '' }: MascotIconProps) {
   const isDark = useIsDark();
   const src = iconPath(modeId, isDark);
-  return <img src={SVG_URLS[src]} width={size} height={size} alt="" className={className} style={{ display: 'block' }} />;
+  return (
+    <img
+      src={SVG_URLS[src]}
+      width={size}
+      height={size}
+      alt=""
+      className={className}
+      style={{ display: 'block' }}
+    />
+  );
 }

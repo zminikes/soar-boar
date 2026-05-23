@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type ChangeEvent, type PointerEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type PointerEvent,
+} from 'react';
 import { hexToHsv, hsvToHex, type Hsv } from '../lib/colorMath';
 
 interface HsvPickerProps {
@@ -12,7 +19,7 @@ type DragTarget = 'pad' | 'hue' | null;
    hex input at the bottom. Pointer events with window-level capture
    so dragging stays live even when the pointer leaves the element. */
 export function HsvPicker({ value, onChange }: HsvPickerProps) {
-  const safe = (typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)) ? value : '#000000';
+  const safe = typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value) ? value : '#000000';
   const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(safe));
   const [hexDraft, setHexDraft] = useState(safe.toUpperCase());
   const padRef = useRef<HTMLDivElement | null>(null);
@@ -48,19 +55,25 @@ export function HsvPicker({ value, onChange }: HsvPickerProps) {
     onChangeRef.current(hex);
   }, []);
 
-  const handlePad = useCallback((clientX: number, clientY: number): void => {
-    const r = padRef.current?.getBoundingClientRect();
-    if (!r) return;
-    const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
-    const y = Math.max(0, Math.min(1, (clientY - r.top) / r.height));
-    commitHsv({ ...hsvRef.current, s: x * 100, v: (1 - y) * 100 });
-  }, [commitHsv]);
-  const handleHue = useCallback((clientX: number): void => {
-    const r = hueRef.current?.getBoundingClientRect();
-    if (!r) return;
-    const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
-    commitHsv({ ...hsvRef.current, h: x * 360 });
-  }, [commitHsv]);
+  const handlePad = useCallback(
+    (clientX: number, clientY: number): void => {
+      const r = padRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+      const y = Math.max(0, Math.min(1, (clientY - r.top) / r.height));
+      commitHsv({ ...hsvRef.current, s: x * 100, v: (1 - y) * 100 });
+    },
+    [commitHsv],
+  );
+  const handleHue = useCallback(
+    (clientX: number): void => {
+      const r = hueRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+      commitHsv({ ...hsvRef.current, h: x * 360 });
+    },
+    [commitHsv],
+  );
 
   useEffect(() => {
     const onMove = (e: globalThis.PointerEvent): void => {
@@ -69,7 +82,9 @@ export function HsvPicker({ value, onChange }: HsvPickerProps) {
       if (dragRef.current === 'pad') handlePad(e.clientX, e.clientY);
       if (dragRef.current === 'hue') handleHue(e.clientX);
     };
-    const onUp = (): void => { dragRef.current = null; };
+    const onUp = (): void => {
+      dragRef.current = null;
+    };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onUp);
@@ -125,11 +140,7 @@ export function HsvPicker({ value, onChange }: HsvPickerProps) {
           }}
         />
       </div>
-      <div
-        className="hsv-hue"
-        ref={hueRef}
-        onPointerDown={hueDown}
-      >
+      <div className="hsv-hue" ref={hueRef} onPointerDown={hueDown}>
         <div className="hsv-hue-marker" style={{ left: `${(hsv.h / 360) * 100}%` }} />
       </div>
       <div className="hsv-hex-row">

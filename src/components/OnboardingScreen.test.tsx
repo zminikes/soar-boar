@@ -63,9 +63,15 @@ describe('OnboardingScreen', () => {
     const user = userEvent.setup();
     const { props } = renderOnboarding({ modeId: 'classic' });
     // Type BOAR (auto-submits on the 4th letter).
-    pressKey('B'); pressKey('O'); pressKey('A'); pressKey('R');
+    pressKey('B');
+    pressKey('O');
+    pressKey('A');
+    pressKey('R');
     // Then BEAR — last word of the tutorial, sets done=true.
-    pressKey('B'); pressKey('E'); pressKey('A'); pressKey('R');
+    pressKey('B');
+    pressKey('E');
+    pressKey('A');
+    pressKey('R');
     // Done screen shows the "Let's play!" button.
     const playBtn = await screen.findByRole('button', { name: /Let.?s play/ });
     await user.click(playBtn);
@@ -78,7 +84,10 @@ describe('OnboardingScreen', () => {
     // (4-letter inputs with multiple diffs trigger a different message:
     // "Changed N letters — change just 1". XOAR keeps the diff at 1 so
     // we exercise the wordlist-rejection branch specifically.)
-    pressKey('X'); pressKey('O'); pressKey('A'); pressKey('R');
+    pressKey('X');
+    pressKey('O');
+    pressKey('A');
+    pressKey('R');
     expect(screen.getByText(/Not a word/)).toBeInTheDocument();
     // Still on step 0 — first hint is still showing.
     expect(screen.getByText('Type BOAR')).toBeInTheDocument();

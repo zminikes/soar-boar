@@ -45,7 +45,9 @@ vi.mock('./components/PlayScreen', () => ({
     // Module-level counter increments on every mount — re-renders don't
     // hit the effect, which lets the test prove a real remount happened
     // (i.e. App passed a fresh `key`).
-    useEffect(() => { playMountCount++; }, []);
+    useEffect(() => {
+      playMountCount++;
+    }, []);
     return (
       <div
         data-testid="play-screen"
@@ -53,7 +55,11 @@ vi.mock('./components/PlayScreen', () => ({
         data-forever={String(props.debug.foreverMode)}
       >
         <button onClick={props.onHome}>home</button>
-        <button onClick={() => props.onEnd({ score: 5, chain: [{ word: 'SOAR' }], deadEnd: false })}>finish</button>
+        <button
+          onClick={() => props.onEnd({ score: 5, chain: [{ word: 'SOAR' }], deadEnd: false })}
+        >
+          finish
+        </button>
       </div>
     );
   },
@@ -172,9 +178,13 @@ describe('App screen transitions', () => {
     render(<App />);
     expect(screen.queryByRole('button', { name: /Debug/ })).toBeNull();
     act(() => {
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'd', metaKey: true, shiftKey: true,
-      }));
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'd',
+          metaKey: true,
+          shiftKey: true,
+        }),
+      );
     });
     expect(screen.getByRole('button', { name: /Debug/ })).toBeInTheDocument();
   });

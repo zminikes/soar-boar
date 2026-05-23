@@ -1,6 +1,5 @@
 export const isTouchDevice =
-  typeof window !== 'undefined' &&
-  ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
 export const BEST_KEY = (modeId: string): string => `bestScore:${modeId}`;
 

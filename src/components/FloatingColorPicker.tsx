@@ -15,11 +15,11 @@ interface Swatch {
 }
 
 const SWATCHES: Swatch[] = [
-  { key: 'classic.bg',      label: 'Soar Boar BG' },
-  { key: 'classic.accent',  label: 'Soar Boar Accent' },
-  { key: 'soyboy.bg',       label: 'Soy Boy BG' },
-  { key: 'soyboy.accent',   label: 'Soy Boy Accent' },
-  { key: 'thisthat.bg',     label: 'This That BG' },
+  { key: 'classic.bg', label: 'Soar Boar BG' },
+  { key: 'classic.accent', label: 'Soar Boar Accent' },
+  { key: 'soyboy.bg', label: 'Soy Boy BG' },
+  { key: 'soyboy.accent', label: 'Soy Boy Accent' },
+  { key: 'thisthat.bg', label: 'This That BG' },
   { key: 'thisthat.accent', label: 'This That Accent' },
 ];
 
@@ -35,27 +35,29 @@ interface FloatingColorPickerProps {
   modeId: ModeId;
 }
 
-export function FloatingColorPicker({ colorOverrides, setColorOverrides, modeId }: FloatingColorPickerProps) {
+export function FloatingColorPicker({
+  colorOverrides,
+  setColorOverrides,
+  modeId,
+}: FloatingColorPickerProps) {
   const [open, setOpen] = useState(true);
   const [activeKey, setActiveKey] = useState<SwatchKey>(() => `${modeId}.bg`);
   const [copied, setCopied] = useState(false);
 
   // When mode changes, focus the active swatch on the new mode if helpful
   useEffect(() => {
-    setActiveKey(prev => {
+    setActiveKey((prev) => {
       const [mm, kk] = parseKey(prev);
       return mm === modeId ? prev : `${modeId}.${kk}`;
     });
   }, [modeId]);
 
-  const get = (m: ModeId, k: SwatchKind): string =>
-    colorOverrides[m]?.[k] ?? DEFAULT_COLORS[m][k];
-  const isOverride = (m: ModeId, k: SwatchKind): boolean =>
-    !!colorOverrides[m]?.[k];
+  const get = (m: ModeId, k: SwatchKind): string => colorOverrides[m]?.[k] ?? DEFAULT_COLORS[m][k];
+  const isOverride = (m: ModeId, k: SwatchKind): boolean => !!colorOverrides[m]?.[k];
 
   const updateActive = (hex: string): void => {
     const [m, k] = parseKey(activeKey);
-    setColorOverrides(prev => ({
+    setColorOverrides((prev) => ({
       ...prev,
       [m]: { ...(prev[m] ?? {}), [k]: hex },
     }));
@@ -63,14 +65,16 @@ export function FloatingColorPicker({ colorOverrides, setColorOverrides, modeId 
 
   const reset = (): void => setColorOverrides({});
   const copy = (): void => {
-    const text =
-`Classic   — bg: ${get('classic', 'bg')}   accent: ${get('classic', 'accent')}
+    const text = `Classic   — bg: ${get('classic', 'bg')}   accent: ${get('classic', 'accent')}
 Soyboy    — bg: ${get('soyboy', 'bg')}    accent: ${get('soyboy', 'accent')}
 This That — bg: ${get('thisthat', 'bg')} accent: ${get('thisthat', 'accent')}`;
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    }).catch(() => {});
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1800);
+      })
+      .catch(() => {});
   };
 
   if (!open) {
@@ -107,11 +111,13 @@ This That — bg: ${get('thisthat', 'bg')} accent: ${get('thisthat', 'accent')}`
     <div className="cp-floating" role="dialog" aria-label="Color tool">
       <div className="cp-header">
         <span className="cp-title">Color tool</span>
-        <button className="cp-close" onClick={() => setOpen(false)} aria-label="Close">×</button>
+        <button className="cp-close" onClick={() => setOpen(false)} aria-label="Close">
+          ×
+        </button>
       </div>
 
       <div className="cp-swatches">
-        {SWATCHES.map(s => {
+        {SWATCHES.map((s) => {
           const [m, k] = parseKey(s.key);
           const v = get(m, k);
           const isActive = s.key === activeKey;
@@ -125,9 +131,14 @@ This That — bg: ${get('thisthat', 'bg')} accent: ${get('thisthat', 'accent')}`
               <span className="cp-swatch-color" style={{ background: v }} />
               <span className="cp-swatch-text">
                 <span className="cp-swatch-label">{s.label}</span>
-                <span className="cp-swatch-hex" style={{
-                  fontWeight: isOverride(m, k) ? 700 : 600,
-                }}>{v.toUpperCase()}</span>
+                <span
+                  className="cp-swatch-hex"
+                  style={{
+                    fontWeight: isOverride(m, k) ? 700 : 600,
+                  }}
+                >
+                  {v.toUpperCase()}
+                </span>
               </span>
             </button>
           );
@@ -136,7 +147,7 @@ This That — bg: ${get('thisthat', 'bg')} accent: ${get('thisthat', 'accent')}`
 
       <div className="cp-contrast" aria-label={`Contrast ratios for ${modeLabel}`}>
         <div className="cp-contrast-title">{modeLabel} contrast</div>
-        {contrastPairs.map(p => {
+        {contrastPairs.map((p) => {
           const ratio = contrastRatio(p.fg, p.bg);
           const level = wcagLevel(ratio);
           return (
@@ -145,7 +156,9 @@ This That — bg: ${get('thisthat', 'bg')} accent: ${get('thisthat', 'accent')}`
                 className="cp-contrast-preview"
                 style={{ background: p.bg, color: p.fg }}
                 aria-hidden="true"
-              >{p.glyph}</span>
+              >
+                {p.glyph}
+              </span>
               <span className="cp-contrast-label">{p.label}</span>
               <span className="cp-contrast-ratio">{ratio.toFixed(2)}:1</span>
               <span className={`cp-contrast-badge ${badgeClass(level)}`}>{level}</span>
@@ -157,7 +170,9 @@ This That — bg: ${get('thisthat', 'bg')} accent: ${get('thisthat', 'accent')}`
       <HsvPicker value={currentValue} onChange={updateActive} />
 
       <div className="cp-actions">
-        <button type="button" className="cp-btn" onClick={reset}>Reset</button>
+        <button type="button" className="cp-btn" onClick={reset}>
+          Reset
+        </button>
         <button type="button" className="cp-btn primary" onClick={copy}>
           {copied ? 'Copied ✓' : 'Copy values'}
         </button>

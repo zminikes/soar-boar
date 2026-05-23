@@ -33,9 +33,7 @@ describe('EmailSignup', () => {
 
   it('transitions idle → submitting → done on a successful POST', async () => {
     const user = userEvent.setup();
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(null, { status: 200 }),
-    );
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 200 }));
     render(<EmailSignup />);
     await user.type(screen.getByLabelText('Email address'), 'alice@example.com');
     await user.click(screen.getByRole('button', { name: /Sign up/i }));
@@ -44,9 +42,7 @@ describe('EmailSignup', () => {
 
   it('shows the error alert when the POST returns non-2xx', async () => {
     const user = userEvent.setup();
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(null, { status: 500 }),
-    );
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 500 }));
     render(<EmailSignup />);
     await user.type(screen.getByLabelText('Email address'), 'alice@example.com');
     await user.click(screen.getByRole('button', { name: /Sign up/i }));
@@ -65,9 +61,9 @@ describe('EmailSignup', () => {
 
   it('POSTs to APPS_SCRIPT_URL with text/plain content-type and JSON body', async () => {
     const user = userEvent.setup();
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(null, { status: 200 }),
-    );
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(null, { status: 200 }));
     render(<EmailSignup />);
     await user.type(screen.getByLabelText('Email address'), 'alice@example.com');
     await user.click(screen.getByRole('button', { name: /Sign up/i }));

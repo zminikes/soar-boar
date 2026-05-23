@@ -19,16 +19,16 @@ Opens the Vite dev server (default `http://localhost:5173`).
 
 ## Scripts
 
-| Command             | What it does                                |
-| ------------------- | ------------------------------------------- |
-| `npm run dev`       | Vite dev server with HMR                    |
-| `npm run build`     | Typecheck + production build into `dist/`   |
-| `npm run preview`   | Serve the production build locally          |
-| `npm test`          | Run the Vitest suite once                   |
-| `npm run test:watch`| Run Vitest in watch mode                    |
-| `npm run typecheck` | `tsc -b --noEmit`                           |
-| `npm run lint`      | ESLint over the repo                        |
-| `npm run format`    | Prettier write across the repo              |
+| Command              | What it does                              |
+| -------------------- | ----------------------------------------- |
+| `npm run dev`        | Vite dev server with HMR                  |
+| `npm run build`      | Typecheck + production build into `dist/` |
+| `npm run preview`    | Serve the production build locally        |
+| `npm test`           | Run the Vitest suite once                 |
+| `npm run test:watch` | Run Vitest in watch mode                  |
+| `npm run typecheck`  | `tsc -b --noEmit`                         |
+| `npm run lint`       | ESLint over the repo                      |
+| `npm run format`     | Prettier write across the repo            |
 
 CI runs typecheck, lint, test, and build on every pull request — see `.github/workflows/ci.yml`.
 

@@ -30,7 +30,10 @@ describe('Keyboard', () => {
     const user = userEvent.setup();
     const onKey = vi.fn();
     render(<Keyboard onKey={onKey} />);
-    await user.pointer({ keys: '[MouseLeft]', target: screen.getByRole('button', { name: 'Enter' }) });
+    await user.pointer({
+      keys: '[MouseLeft]',
+      target: screen.getByRole('button', { name: 'Enter' }),
+    });
     expect(onKey).toHaveBeenCalledWith('Enter');
   });
 
@@ -38,7 +41,10 @@ describe('Keyboard', () => {
     const user = userEvent.setup();
     const onKey = vi.fn();
     render(<Keyboard onKey={onKey} />);
-    await user.pointer({ keys: '[MouseLeft]', target: screen.getByRole('button', { name: 'Backspace' }) });
+    await user.pointer({
+      keys: '[MouseLeft]',
+      target: screen.getByRole('button', { name: 'Backspace' }),
+    });
     expect(onKey).toHaveBeenCalledWith('Backspace');
   });
 

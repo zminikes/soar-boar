@@ -26,7 +26,9 @@ function getCtx(): AudioContext | null {
     }
   }
   if (_ctx.state === 'suspended') {
-    _ctx.resume().catch(() => { /* swallow — non-fatal */ });
+    _ctx.resume().catch(() => {
+      /* swallow — non-fatal */
+    });
   }
   return _ctx;
 }
@@ -47,7 +49,9 @@ export function playMascotSound(modeId: ModeId): void {
     filter.type = 'lowpass';
     filter.frequency.value = 2600;
     osc.type = 'triangle';
-    osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
     // Syllable 1 "hel": rising
     osc.frequency.setValueAtTime(560, now);
     osc.frequency.exponentialRampToValueAtTime(880, now + 0.09);
@@ -60,7 +64,8 @@ export function playMascotSound(modeId: ModeId): void {
     gain.gain.exponentialRampToValueAtTime(0.04, now + 0.11);
     gain.gain.exponentialRampToValueAtTime(0.18, now + 0.16);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
-    osc.start(now); osc.stop(now + 0.34);
+    osc.start(now);
+    osc.stop(now + 0.34);
     return;
   }
 
@@ -70,7 +75,8 @@ export function playMascotSound(modeId: ModeId): void {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.connect(gain); gain.connect(ctx.destination);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
     osc.frequency.setValueAtTime(420, now);
     osc.frequency.exponentialRampToValueAtTime(760, now + 0.07);
     osc.frequency.exponentialRampToValueAtTime(340, now + 0.15);
@@ -80,12 +86,15 @@ export function playMascotSound(modeId: ModeId): void {
     const lfoGain = ctx.createGain();
     lfo.frequency.value = 16;
     lfoGain.gain.value = 28;
-    lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc.frequency);
     gain.gain.setValueAtTime(0.0001, now);
     gain.gain.exponentialRampToValueAtTime(0.16, now + 0.015);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
-    osc.start(now); osc.stop(now + 0.36);
-    lfo.start(now); lfo.stop(now + 0.36);
+    osc.start(now);
+    osc.stop(now + 0.36);
+    lfo.start(now);
+    lfo.stop(now + 0.36);
     return;
   }
 
@@ -98,10 +107,12 @@ export function playMascotSound(modeId: ModeId): void {
   filter.type = 'lowpass';
   filter.Q.value = 4;
   filter.frequency.setValueAtTime(700, now);
-  filter.frequency.exponentialRampToValueAtTime(1800, now + 0.10);
+  filter.frequency.exponentialRampToValueAtTime(1800, now + 0.1);
   filter.frequency.exponentialRampToValueAtTime(900, now + 0.26);
   osc.type = 'sawtooth';
-  osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
   osc.frequency.setValueAtTime(150, now);
   osc.frequency.exponentialRampToValueAtTime(190, now + 0.05);
   osc.frequency.exponentialRampToValueAtTime(270, now + 0.13);
@@ -111,7 +122,8 @@ export function playMascotSound(modeId: ModeId): void {
   gain.gain.exponentialRampToValueAtTime(0.03, now + 0.07);
   gain.gain.exponentialRampToValueAtTime(0.22, now + 0.11);
   gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
-  osc.start(now); osc.stop(now + 0.30);
+  osc.start(now);
+  osc.stop(now + 0.3);
 }
 
 /* End-screen celebration sounds — ascending fanfare for a new
@@ -131,22 +143,26 @@ export function playCelebrationSound(kind: CelebrationKind): void {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.connect(gain); gain.connect(ctx.destination);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.0001, t);
       gain.gain.exponentialRampToValueAtTime(0.13, t + 0.012);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
-      osc.start(t); osc.stop(t + 0.4);
+      osc.start(t);
+      osc.stop(t + 0.4);
       // Octave shimmer
       const osc2 = ctx.createOscillator();
       const gain2 = ctx.createGain();
       osc2.type = 'sine';
-      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
       osc2.frequency.value = freq * 2;
       gain2.gain.setValueAtTime(0.0001, t);
       gain2.gain.exponentialRampToValueAtTime(0.05, t + 0.012);
-      gain2.gain.exponentialRampToValueAtTime(0.0001, t + 0.30);
-      osc2.start(t); osc2.stop(t + 0.35);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      osc2.start(t);
+      osc2.stop(t + 0.35);
     });
     return;
   }
@@ -159,11 +175,13 @@ export function playCelebrationSound(kind: CelebrationKind): void {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'triangle';
-    osc.connect(gain); gain.connect(ctx.destination);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
     osc.frequency.value = freq;
     gain.gain.setValueAtTime(0.0001, t);
     gain.gain.exponentialRampToValueAtTime(0.16, t + 0.014);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
-    osc.start(t); osc.stop(t + 0.32);
+    osc.start(t);
+    osc.stop(t + 0.32);
   });
 }

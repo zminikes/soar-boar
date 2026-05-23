@@ -24,11 +24,11 @@ export interface GameState {
   chain: ChainEntry[];
   score: number;
   timeLeft: number;
-  acceptKey: number;        // re-key for tile snap-in animation
+  acceptKey: number; // re-key for tile snap-in animation
   deadEnd: boolean;
   streakPos: number | null; // last-changed letter position (for streak rule)
-  streakCount: number;      // consecutive changes at streakPos
-  gameOver: boolean;        // latched once any end condition fires
+  streakCount: number; // consecutive changes at streakPos
+  gameOver: boolean; // latched once any end condition fires
 }
 
 export type GameAction =
@@ -91,7 +91,7 @@ export function initGameState({ isLadder, cfg, modeId, puzzleSeed }: InitArgs): 
   let parVal: number | null = null;
   if (isLadder) {
     const pair = pickLadderPair(getPairs(modeId), tutorialPair(cfg), puzzleSeed);
-    start  = pair.start;
+    start = pair.start;
     target = pair.end;
     parVal = pair.par;
   } else {

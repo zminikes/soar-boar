@@ -41,8 +41,16 @@ interface EndScreenProps {
 }
 
 export function EndScreen({
-  score, chain, deadEnd, onRestart, onHome,
-  debug, modeId = 'classic', win, target, par,
+  score,
+  chain,
+  deadEnd,
+  onRestart,
+  onHome,
+  debug,
+  modeId = 'classic',
+  win,
+  target,
+  par,
 }: EndScreenProps) {
   const cfg = MODE_CONFIGS[modeId];
   const isLadder = !!cfg.isLadder;
@@ -93,8 +101,8 @@ export function EndScreen({
         dur: 900 + Math.random() * 500,
       };
     });
-    setBursts(prev => [...prev, { id, particles }]);
-    setTimeout(() => setBursts(prev => prev.filter(b => b.id !== id)), 1500);
+    setBursts((prev) => [...prev, { id, particles }]);
+    setTimeout(() => setBursts((prev) => prev.filter((b) => b.id !== id)), 1500);
   }, []);
   const handleBurst = useCallback((): void => {
     playCelebrationSound('personalBest');
@@ -120,7 +128,9 @@ export function EndScreen({
         await navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2500);
-      } catch { /* clipboard unavailable */ }
+      } catch {
+        /* clipboard unavailable */
+      }
     }
   }, [chain, score, cfg]);
 
@@ -129,13 +139,20 @@ export function EndScreen({
       <div
         className="hdr"
         onClick={onHome}
-        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onHome(); } }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onHome();
+          }
+        }}
         role="button"
         tabIndex={0}
         aria-label="Back to home"
       >
         <MascotIcon size={72} modeId={cfg.id} />
-        <div className="wordmark">{cfg.name.split(' ')[0]} <span className="accent">{cfg.name.split(' ')[1]}</span></div>
+        <div className="wordmark">
+          {cfg.name.split(' ')[0]} <span className="accent">{cfg.name.split(' ')[1]}</span>
+        </div>
       </div>
 
       {/* Score readout */}
@@ -147,14 +164,16 @@ export function EndScreen({
             </div>
             <div className="end-score-label">
               {win
-                ? (par != null
-                    ? (score === par
-                        ? `🎯 You matched the best path of ${par}!`
-                        : score < par
-                          ? `🏆 Beat the best path of ${par}!`
-                          : `Best path: ${par} move${par !== 1 ? 's' : ''}`)
-                    : 'Solved it!')
-                : (target ? `Was heading to ${target}` : '')}
+                ? par != null
+                  ? score === par
+                    ? `🎯 You matched the best path of ${par}!`
+                    : score < par
+                      ? `🏆 Beat the best path of ${par}!`
+                      : `Best path: ${par} move${par !== 1 ? 's' : ''}`
+                  : 'Solved it!'
+                : target
+                  ? `Was heading to ${target}`
+                  : ''}
             </div>
           </>
         ) : (
@@ -166,7 +185,10 @@ export function EndScreen({
                 : `${wordsPlayed} word${wordsPlayed !== 1 ? 's' : ''} · ${score} point${score !== 1 ? 's' : ''}`}
             </div>
             {deadEnd && (
-              <div className="dead-end-sub" style={{ fontSize: 13, textAlign: 'center', marginTop: 6 }}>
+              <div
+                className="dead-end-sub"
+                style={{ fontSize: 13, textAlign: 'center', marginTop: 6 }}
+              >
                 {`Hit a dead end ${cfg.shareEmoji}`}
               </div>
             )}
@@ -177,23 +199,29 @@ export function EndScreen({
             type="button"
             className="new-best-banner"
             onClick={handleParBurst}
-            aria-label={beatPar ? 'Celebrate beating the best path' : 'Celebrate matching the best path'}
+            aria-label={
+              beatPar ? 'Celebrate beating the best path' : 'Celebrate matching the best path'
+            }
           >
             {beatPar ? '🏆 Beat the best path!' : '🎯 Matched the best path!'}
-            {bursts.map(burst => (
+            {bursts.map((burst) => (
               <Fragment key={burst.id}>
                 {burst.particles.map((p, i) => (
                   <span
                     key={i}
                     className="burst-emoji"
                     aria-hidden="true"
-                    style={{
-                      '--burst-dx': `${p.dx}px`,
-                      '--burst-dy': `${p.dy}px`,
-                      '--burst-rot': `${p.rot}deg`,
-                      '--burst-dur': `${p.dur}ms`,
-                    } as CSSProperties}
-                  >{p.emoji}</span>
+                    style={
+                      {
+                        '--burst-dx': `${p.dx}px`,
+                        '--burst-dy': `${p.dy}px`,
+                        '--burst-rot': `${p.rot}deg`,
+                        '--burst-dur': `${p.dur}ms`,
+                      } as CSSProperties
+                    }
+                  >
+                    {p.emoji}
+                  </span>
                 ))}
               </Fragment>
             ))}
@@ -207,7 +235,7 @@ export function EndScreen({
             aria-label="Celebrate new personal best"
           >
             🏆 New personal best!
-            {bursts.map(burst => (
+            {bursts.map((burst) => (
               <Fragment key={burst.id}>
                 {burst.particles.map((p, i) => (
                   <span
@@ -215,13 +243,17 @@ export function EndScreen({
                     className="burst-emoji"
                     aria-hidden="true"
                     // CSS custom properties; React.CSSProperties doesn't allow arbitrary `--*` keys.
-                    style={{
-                      '--burst-dx':  `${p.dx}px`,
-                      '--burst-dy':  `${p.dy}px`,
-                      '--burst-rot': `${p.rot}deg`,
-                      '--burst-dur': `${p.dur}ms`,
-                    } as CSSProperties}
-                  >{p.emoji}</span>
+                    style={
+                      {
+                        '--burst-dx': `${p.dx}px`,
+                        '--burst-dy': `${p.dy}px`,
+                        '--burst-rot': `${p.rot}deg`,
+                        '--burst-dur': `${p.dur}ms`,
+                      } as CSSProperties
+                    }
+                  >
+                    {p.emoji}
+                  </span>
                 ))}
               </Fragment>
             ))}
@@ -229,7 +261,9 @@ export function EndScreen({
         )}
         {!debug.foreverMode && !isNewBest && currentBest > 0 && (
           <div style={{ marginTop: 12 }}>
-            <span className="best-chip">Personal best · <strong>{currentBest} pts</strong></span>
+            <span className="best-chip">
+              Personal best · <strong>{currentBest} pts</strong>
+            </span>
           </div>
         )}
       </div>
@@ -247,9 +281,19 @@ export function EndScreen({
         </button>
         {!debug.foreverMode && !isLadder && (
           <button className="btn btn-copy btn-full" onClick={handleShare}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
             {HAS_NATIVE_SHARE ? 'Share ladder' : 'Copy ladder'}
           </button>

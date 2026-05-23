@@ -17,19 +17,32 @@ export function ExperimentsPanel({ debug, setDebug }: ExperimentsPanelProps) {
   if (!experiments.length) return null;
   return (
     <>
-      <div style={{
-        marginTop: 16, paddingTop: 14,
-        borderTop: '1px solid var(--border)',
-        fontFamily: 'var(--ff-sans)', fontSize: 12, fontWeight: 700,
-        letterSpacing: '0.08em', textTransform: 'uppercase',
-        color: 'var(--muted)',
-      }}>
+      <div
+        style={{
+          marginTop: 16,
+          paddingTop: 14,
+          borderTop: '1px solid var(--border)',
+          fontFamily: 'var(--ff-sans)',
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          color: 'var(--muted)',
+        }}
+      >
         Design experiments
       </div>
       {experiments.map(({ key, label, sub }) => (
         <div key={key} className="prefs-row" style={{ marginTop: 12 }}>
-          <div><div className="prefs-label">{label}</div><div className="prefs-sub">{sub}</div></div>
-          <Toggle checked={debug[key]} onChange={v => setDebug(d => ({ ...d, [key]: v }))} label={label} />
+          <div>
+            <div className="prefs-label">{label}</div>
+            <div className="prefs-sub">{sub}</div>
+          </div>
+          <Toggle
+            checked={debug[key]}
+            onChange={(v) => setDebug((d) => ({ ...d, [key]: v }))}
+            label={label}
+          />
         </div>
       ))}
     </>
