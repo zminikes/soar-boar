@@ -23,10 +23,16 @@ export const useColoredBgActive = (): boolean => useContext(ColoredBgContext);
 // Live color-picker overrides, keyed per-mode. App reads/writes
 // colorOverrides state (persisted to localStorage); FloatingColorPicker
 // mutates via setColorOverrides; AnimatedMascot consumes via context.
+//
+// `gameplayBg` is a shared (not per-mode) override for the play/end
+// screens — those screens use a single cream across all modes, so we
+// don't need three separate gameplay-bg controls.
 export interface ModeColorOverride {
   bg?: string;
   accent?: string;
 }
-export type ColorOverrides = Partial<Record<ModeId, ModeColorOverride>>;
+export type ColorOverrides = Partial<Record<ModeId, ModeColorOverride>> & {
+  gameplayBg?: string;
+};
 export const ColorOverrideContext = createContext<ColorOverrides>({});
 export const useColorOverrides = (): ColorOverrides => useContext(ColorOverrideContext);

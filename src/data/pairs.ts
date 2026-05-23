@@ -27,12 +27,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     path: ['CAST', 'CASE', 'CAME', 'LAME'],
   },
   {
-    start: 'DOGS',
-    end: 'WILT',
-    par: 5,
-    path: ['DOGS', 'DIGS', 'WIGS', 'WISS', 'WIST', 'WILT'],
-  },
-  {
     start: 'BASS',
     end: 'MARK',
     par: 3,
@@ -63,22 +57,10 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     path: ['HEAL', 'MEAL', 'MELL', 'MILL', 'MILE'],
   },
   {
-    start: 'MAGS',
-    end: 'CAVE',
-    par: 3,
-    path: ['MAGS', 'MAGE', 'CAGE', 'CAVE'],
-  },
-  {
     start: 'GAME',
     end: 'POTS',
     par: 4,
     path: ['GAME', 'GATE', 'PATE', 'PATS', 'POTS'],
-  },
-  {
-    start: 'COOS',
-    end: 'SACS',
-    par: 4,
-    path: ['COOS', 'CONS', 'SONS', 'SANS', 'SACS'],
   },
   {
     start: 'RIME',
@@ -121,30 +103,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     end: 'RACE',
     par: 3,
     path: ['PART', 'PACT', 'PACE', 'RACE'],
-  },
-  {
-    start: 'LUGS',
-    end: 'MANA',
-    par: 4,
-    path: ['LUGS', 'MUGS', 'MAGS', 'MANS', 'MANA'],
-  },
-  {
-    start: 'WINS',
-    end: 'BUNT',
-    par: 3,
-    path: ['WINS', 'BINS', 'BUNS', 'BUNT'],
-  },
-  {
-    start: 'RUNS',
-    end: 'CANS',
-    par: 3,
-    path: ['RUNS', 'BUNS', 'BANS', 'CANS'],
-  },
-  {
-    start: 'PICS',
-    end: 'SANE',
-    par: 4,
-    path: ['PICS', 'PACS', 'SACS', 'SANS', 'SANE'],
   },
   {
     start: 'TATE',
@@ -195,22 +153,10 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     path: ['BURY', 'BURN', 'DURN', 'DARN', 'DART'],
   },
   {
-    start: 'MAGS',
-    end: 'SORE',
-    par: 4,
-    path: ['MAGS', 'MARS', 'MARE', 'MORE', 'SORE'],
-  },
-  {
     start: 'HONG',
     end: 'LOOM',
     par: 4,
     path: ['HONG', 'HONK', 'HOOK', 'LOOK', 'LOOM'],
-  },
-  {
-    start: 'REGS',
-    end: 'SOME',
-    par: 5,
-    path: ['REGS', 'RAGS', 'RAGE', 'SAGE', 'SAME', 'SOME'],
   },
   {
     start: 'TIRE',
@@ -223,12 +169,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     end: 'BARK',
     par: 3,
     path: ['SATE', 'BATE', 'BARE', 'BARK'],
-  },
-  {
-    start: 'LARS',
-    end: 'CAFE',
-    par: 3,
-    path: ['LARS', 'CARS', 'CARE', 'CAFE'],
   },
   {
     start: 'CORY',
@@ -261,12 +201,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     path: ['KICK', 'PICK', 'PICS', 'PITS'],
   },
   {
-    start: 'SAWS',
-    end: 'RIFE',
-    par: 5,
-    path: ['SAWS', 'SAPS', 'RAPS', 'RIPS', 'RIPE', 'RIFE'],
-  },
-  {
     start: 'LEST',
     end: 'CODE',
     par: 4,
@@ -283,12 +217,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     end: 'BODE',
     par: 5,
     path: ['KINK', 'DINK', 'DINE', 'DONE', 'BONE', 'BODE'],
-  },
-  {
-    start: 'HOES',
-    end: 'BEES',
-    par: 3,
-    path: ['HOES', 'FOES', 'FEES', 'BEES'],
   },
   {
     start: 'BOCK',
@@ -327,12 +255,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     path: ['LOVE', 'COVE', 'CAVE', 'CARE', 'CARS', 'JARS'],
   },
   {
-    start: 'BOBS',
-    end: 'LEGS',
-    par: 3,
-    path: ['BOBS', 'BOGS', 'LOGS', 'LEGS'],
-  },
-  {
     start: 'ROLE',
     end: 'FONS',
     par: 4,
@@ -349,18 +271,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     end: 'PASH',
     par: 4,
     path: ['CARD', 'CARE', 'CASE', 'CASH', 'PASH'],
-  },
-  {
-    start: 'PEGS',
-    end: 'CATE',
-    par: 4,
-    path: ['PEGS', 'PETS', 'PATS', 'CATS', 'CATE'],
-  },
-  {
-    start: 'MACS',
-    end: 'BOYS',
-    par: 3,
-    path: ['MACS', 'MAYS', 'BAYS', 'BOYS'],
   },
   {
     start: 'BOUT',
@@ -381,12 +291,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     path: ['MOVE', 'LOVE', 'LORE', 'LORD', 'LARD'],
   },
   {
-    start: 'CATS',
-    end: 'WELT',
-    par: 5,
-    path: ['CATS', 'MATS', 'MATT', 'MALT', 'MELT', 'WELT'],
-  },
-  {
     start: 'DUNE',
     end: 'DUST',
     par: 3,
@@ -397,12 +301,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     end: 'MOSH',
     par: 4,
     path: ['HOLD', 'MOLD', 'MOLT', 'MOST', 'MOSH'],
-  },
-  {
-    start: 'ROMS',
-    end: 'PADS',
-    par: 3,
-    path: ['ROMS', 'POMS', 'PODS', 'PADS'],
   },
   {
     start: 'MACK',
@@ -463,12 +361,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     end: 'IONS',
     par: 4,
     path: ['FOOL', 'COOL', 'COOS', 'CONS', 'IONS'],
-  },
-  {
-    start: 'JOES',
-    end: 'FEAT',
-    par: 4,
-    path: ['JOES', 'FOES', 'FEES', 'FEET', 'FEAT'],
   },
   {
     start: 'BUND',
@@ -537,28 +429,10 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     path: ['BAIL', 'PAIL', 'PALL', 'PALS'],
   },
   {
-    start: 'HUGS',
-    end: 'MUCK',
-    par: 4,
-    path: ['HUGS', 'HUNS', 'HUNK', 'HUCK', 'MUCK'],
-  },
-  {
-    start: 'DOTS',
-    end: 'SOCK',
-    par: 3,
-    path: ['DOTS', 'DOCS', 'DOCK', 'SOCK'],
-  },
-  {
     start: 'HART',
     end: 'HEED',
     par: 3,
     path: ['HART', 'HARD', 'HERD', 'HEED'],
-  },
-  {
-    start: 'MATS',
-    end: 'CONS',
-    par: 3,
-    path: ['MATS', 'CATS', 'COTS', 'CONS'],
   },
   {
     start: 'FORE',
@@ -577,12 +451,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     end: 'RAYS',
     par: 4,
     path: ['BACK', 'LACK', 'LACS', 'LAYS', 'RAYS'],
-  },
-  {
-    start: 'LADS',
-    end: 'TOTE',
-    par: 4,
-    path: ['LADS', 'LADE', 'LATE', 'TATE', 'TOTE'],
   },
   {
     start: 'FACE',
@@ -633,28 +501,10 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     path: ['LANE', 'BANE', 'BALE', 'GALE', 'GALL'],
   },
   {
-    start: 'ROTS',
-    end: 'SUCK',
-    par: 5,
-    path: ['ROTS', 'DOTS', 'DOCS', 'DOCK', 'SOCK', 'SUCK'],
-  },
-  {
-    start: 'MANS',
-    end: 'DAZE',
-    par: 3,
-    path: ['MANS', 'MANE', 'MAZE', 'DAZE'],
-  },
-  {
     start: 'LENS',
     end: 'LOSE',
     par: 3,
     path: ['LENS', 'LESS', 'LOSS', 'LOSE'],
-  },
-  {
-    start: 'PEAS',
-    end: 'LOON',
-    par: 5,
-    path: ['PEAS', 'PEGS', 'LEGS', 'LOGS', 'LOOS', 'LOON'],
   },
   {
     start: 'MARL',
@@ -687,12 +537,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     path: ['LENT', 'SENT', 'SEND', 'SEED', 'HEED'],
   },
   {
-    start: 'MARS',
-    end: 'SAND',
-    par: 3,
-    path: ['MARS', 'MANS', 'SANS', 'SAND'],
-  },
-  {
     start: 'FEAT',
     end: 'LEES',
     par: 3,
@@ -711,18 +555,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     path: ['BILE', 'RILE', 'RICE', 'RICK', 'HICK', 'HOCK'],
   },
   {
-    start: 'BAYS',
-    end: 'DALE',
-    par: 4,
-    path: ['BAYS', 'DAYS', 'DAMS', 'DAME', 'DALE'],
-  },
-  {
-    start: 'GUNS',
-    end: 'RUBE',
-    par: 3,
-    path: ['GUNS', 'RUNS', 'RUBS', 'RUBE'],
-  },
-  {
     start: 'FOSS',
     end: 'SAME',
     par: 5,
@@ -739,18 +571,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     end: 'BASH',
     par: 4,
     path: ['LICK', 'LACK', 'BACK', 'BASK', 'BASH'],
-  },
-  {
-    start: 'BANS',
-    end: 'MIND',
-    par: 3,
-    path: ['BANS', 'BINS', 'BIND', 'MIND'],
-  },
-  {
-    start: 'PUTS',
-    end: 'COME',
-    par: 4,
-    path: ['PUTS', 'CUTS', 'COTS', 'COTE', 'COME'],
   },
   {
     start: 'WARP',
@@ -793,12 +613,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     end: 'FAIN',
     par: 4,
     path: ['LOOT', 'LOON', 'LOIN', 'LAIN', 'FAIN'],
-  },
-  {
-    start: 'PIGS',
-    end: 'HOWS',
-    par: 4,
-    path: ['PIGS', 'CIGS', 'COGS', 'HOGS', 'HOWS'],
   },
   {
     start: 'GILL',
@@ -867,12 +681,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     path: ['FAZE', 'RAZE', 'RASE', 'RUSE', 'RUSK', 'TUSK'],
   },
   {
-    start: 'RAGS',
-    end: 'TANG',
-    par: 3,
-    path: ['RAGS', 'TAGS', 'TANS', 'TANG'],
-  },
-  {
     start: 'DECK',
     end: 'WORN',
     par: 4,
@@ -883,12 +691,6 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     end: 'MARE',
     par: 3,
     path: ['CORK', 'CORE', 'MORE', 'MARE'],
-  },
-  {
-    start: 'GAPS',
-    end: 'RACE',
-    par: 3,
-    path: ['GAPS', 'RAPS', 'RAPE', 'RACE'],
   },
   {
     start: 'DARE',
@@ -903,28 +705,10 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     path: ['LACE', 'DACE', 'DATE', 'DOTE'],
   },
   {
-    start: 'PADS',
-    end: 'PERT',
-    par: 3,
-    path: ['PADS', 'PARS', 'PART', 'PERT'],
-  },
-  {
     start: 'LODE',
     end: 'HONS',
     par: 3,
     path: ['LODE', 'LONE', 'HONE', 'HONS'],
-  },
-  {
-    start: 'BEGS',
-    end: 'LABS',
-    par: 3,
-    path: ['BEGS', 'LEGS', 'LAGS', 'LABS'],
-  },
-  {
-    start: 'GUTS',
-    end: 'TUCK',
-    par: 5,
-    path: ['GUTS', 'BUTS', 'BUNS', 'BUNK', 'BUCK', 'TUCK'],
   },
   {
     start: 'FEST',

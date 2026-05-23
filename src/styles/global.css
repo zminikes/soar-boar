@@ -1168,7 +1168,10 @@ body {
   height: clamp(72px, 18vw, 120px);
   border-radius: clamp(16px, 4vw, 26px);
   border: 2px solid rgba(0, 0, 0, 0.18);
-  background: var(--white);
+  /* Light grey so empty input tiles stay visible against the
+     near-white tutorial surface (which is itself var(--white) /
+     a pale peach in the colored-bg variants). */
+  background: #ececea;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1745,7 +1748,9 @@ body {
   height: 56px;
   border-radius: 16px;
   border: 1.5px solid rgba(0, 0, 0, 0.18);
-  background: var(--white);
+  /* Light grey so empty tiles stay visible against the near-white
+     tutorial surface. */
+  background: #ececea;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2091,7 +2096,7 @@ body {
   justify-content: center;
   gap: 8px;
   font-family: var(--ff-sans);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 17px;
   border: none;
   border-radius: 999px;
@@ -2123,7 +2128,7 @@ body {
   background: transparent;
   color: var(--muted);
   border: 1px solid var(--border);
-  font-weight: 600;
+  font-weight: 500;
 }
 .btn-ghost:hover {
   color: var(--dark);
@@ -2249,6 +2254,10 @@ body {
   font-weight: 800;
   color: var(--white);
   user-select: none;
+  /* Tiny ground shadow — lifts white tiles off the cream bg just enough
+     to read as cards. Kept very subtle so accent-filled tiles don't get
+     a visible halo. */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   transition:
     background 120ms,
     color 120ms,
@@ -2264,10 +2273,12 @@ body {
   background: var(--white);
   color: transparent;
 }
-/* cursor — active empty slot gets an inset accent ring */
+/* cursor — active empty slot gets an inset accent ring (plus the base ground shadow) */
 .tile.cursor:empty {
   background: var(--white);
-  box-shadow: inset 0 0 0 2px var(--accent);
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    0 1px 2px rgba(0, 0, 0, 0.06);
 }
 .tile.accept {
   animation: tileAccept 280ms var(--ease-spring) both;
@@ -2284,7 +2295,9 @@ body {
 .tile.changed-ok {
   background: var(--tutorial-accent);
   color: var(--white);
-  box-shadow: 0 0 0 3px var(--tutorial-accent-soft);
+  box-shadow:
+    0 0 0 3px var(--tutorial-accent-soft),
+    0 1px 2px rgba(0, 0, 0, 0.06);
 }
 /* Tutorial highlights inherit --accent/--accent-soft from the mode class,
        so no separate override needed here. */
@@ -2346,7 +2359,9 @@ body {
 /* "New word" CTA — friendlier than "Give up" */
 .btn-newword {
   background: none;
-  border: 1px solid var(--border);
+  /* Slightly darker than the global --border so the small score-row
+     controls read clearly against the cream bg. */
+  border: 1px solid rgba(0, 0, 0, 0.16);
   color: var(--muted);
   font-family: var(--ff-sans);
   font-size: 13px;
@@ -2376,7 +2391,7 @@ body {
 .hint-btn {
   position: relative;
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(0, 0, 0, 0.16);
   color: var(--muted);
   border-radius: 999px;
   width: 44px;
@@ -2469,7 +2484,7 @@ body {
 
 .restart-btn {
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(0, 0, 0, 0.16);
   color: var(--muted);
   border-radius: 999px;
   width: 44px;
@@ -2517,13 +2532,13 @@ body {
   width: 100%;
   background: linear-gradient(135deg, var(--orange), #f9b68a);
   color: #fff;
-  padding: 14px 20px;
+  padding: 16px 20px;
   border-radius: 999px;
   border: none;
   font-family: var(--ff-sans);
   font-weight: 800;
-  font-size: 14px;
-  letter-spacing: 0.04em;
+  font-size: 18px;
+  letter-spacing: 0.01em;
   text-align: center;
   margin-top: 14px;
   cursor: pointer;
@@ -2768,7 +2783,7 @@ body {
   font-weight: 700;
   line-height: 1;
   text-align: center;
-  letter-spacing: -0.5px;
+  letter-spacing: -2.5px;
   font-variant-numeric: tabular-nums;
 }
 .end-score-label {
@@ -3257,7 +3272,7 @@ kbd,
   font-weight: 700;
   cursor: pointer;
   touch-action: manipulation;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   transition:
     transform 30ms ease,
     background 30ms ease,
@@ -3297,19 +3312,11 @@ kbd,
   color: var(--dark);
   box-shadow: none;
 }
-/* Reserve space below content ONLY when the on-screen keyboard is mounted.
-       Also lock the viewport from scrolling while playing — on Safari mobile
-       the page would otherwise rubber-band / scroll, even though all the
-       content fits. The :has(.kb) selector keeps this scoped to playing. */
+/* Reserve space below content when the on-screen keyboard is mounted, so
+       the fixed keyboard never covers the input area. We intentionally do
+       NOT lock the viewport here — the keyboard is position:fixed, so it
+       stays put while the page scrolls underneath if content overflows. */
 @media (hover: none) and (pointer: coarse) {
-  html:has(.kb),
-  body:has(.kb) {
-    overflow: hidden;
-    overscroll-behavior: none;
-    height: 100%;
-    height: 100dvh;
-    touch-action: pan-y; /* still allow inner scroll containers */
-  }
   body:has(.kb) {
     padding-bottom: 230px;
   }

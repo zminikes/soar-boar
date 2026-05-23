@@ -134,8 +134,10 @@ export function PlayScreen({
     }
   }, [state.gameOver, state.timeLeft, isLadder, onEnd, setTimer]);
 
-  // ── Hint wiggle: after 15s idle, wiggle a useful tile letter ──
-  // Resets whenever the player types, current word changes, or hint toggles.
+  // ── Hint wiggle: after 10s idle, wiggle a useful tile letter ──
+  // Resets whenever the player types, current word changes, or hint toggles
+  // — so even mid-word the hint reappears 10s after the last keystroke,
+  // pointing at the next letter to change.
   useEffect(() => {
     setWiggleIdx(null);
     if (!hintOn || state.phase !== 'playing' || state.gameOver) return;
@@ -177,7 +179,7 @@ export function PlayScreen({
         }
       }
       if (idx != null) setWiggleIdx(idx);
-    }, 15000);
+    }, 10000);
     return () => clearTimeout(t);
   }, [
     hintOn,
@@ -368,25 +370,6 @@ export function PlayScreen({
         {debug.foreverMode && !isLadder && <span className="forever-badge">∞</span>}
       </div>
 
-      {/* Goal banner for ladder mode */}
-      {isLadder && state.targetWord && (
-        <div className="ladder-goal">
-          <span className="ladder-goal-label">Get to</span>
-          <div className="ladder-goal-tiles">
-            {state.targetWord.split('').map((l, i) => (
-              <div key={i} className="tile ladder-target-tile">
-                {l}
-              </div>
-            ))}
-          </div>
-          {hintOn && state.par != null && (
-            <div className="ladder-goal-par">
-              Best path: {state.par} move{state.par !== 1 ? 's' : ''}
-            </div>
-          )}
-        </div>
-      )}
-
       {!debug.foreverMode && !isLadder && (
         <div className="timer-wrap">
           <div className="timer-row">
@@ -491,7 +474,7 @@ export function PlayScreen({
         <div className="section-label">Current word</div>
         <div className="tile-row">
           {state.currentWord.split('').map((l, i) => {
-            const isWiggle = wiggleIdx === i && state.typed.length === 0;
+            const isWiggle = wiggleIdx === i;
             return (
               <div
                 key={`${state.acceptKey}-${i}`}
@@ -550,6 +533,26 @@ export function PlayScreen({
           </div>
         )}
       </div>
+
+      {/* Goal banner for ladder mode — placed below the typed input so the
+          ladder reads top-down: current → next → target → chain. */}
+      {isLadder && state.targetWord && (
+        <div className="ladder-goal">
+          <span className="ladder-goal-label">Get to</span>
+          <div className="ladder-goal-tiles">
+            {state.targetWord.split('').map((l, i) => (
+              <div key={i} className="tile ladder-target-tile">
+                {l}
+              </div>
+            ))}
+          </div>
+          {hintOn && state.par != null && (
+            <div className="ladder-goal-par">
+              Best path: {state.par} move{state.par !== 1 ? 's' : ''}
+            </div>
+          )}
+        </div>
+      )}
 
       {state.chain.length > 1 && (
         <div style={{ marginTop: 20 }}>
