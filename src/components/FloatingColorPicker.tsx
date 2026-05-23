@@ -142,9 +142,7 @@ Gameplay BG — ${getGameplayBg()}`;
     { label: 'Accent on BG', fg: contrastAccent, bg: contrastBg, glyph: 'Aa' },
     { label: 'Text on BG', fg: cText, bg: contrastBg, glyph: 'Aa' },
   ];
-  const modeLabel = isGameplayActive
-    ? 'Gameplay'
-    : MODE_CONFIGS[parseModeKey(activeKey)[0]].name;
+  const modeLabel = isGameplayActive ? 'Gameplay' : MODE_CONFIGS[parseModeKey(activeKey)[0]].name;
   const badgeClass = (level: WcagLevel): string =>
     level === 'AAA' ? 'aaa' : level === 'AA' ? 'aa' : level === 'AA Large' ? 'large' : 'fail';
 
