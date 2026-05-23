@@ -2254,6 +2254,10 @@ body {
   font-weight: 800;
   color: var(--white);
   user-select: none;
+  /* Tiny ground shadow — lifts white tiles off the cream bg just enough
+     to read as cards. Kept very subtle so accent-filled tiles don't get
+     a visible halo. */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   transition:
     background 120ms,
     color 120ms,
@@ -2269,10 +2273,12 @@ body {
   background: var(--white);
   color: transparent;
 }
-/* cursor — active empty slot gets an inset accent ring */
+/* cursor — active empty slot gets an inset accent ring (plus the base ground shadow) */
 .tile.cursor:empty {
   background: var(--white);
-  box-shadow: inset 0 0 0 2px var(--accent);
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    0 1px 2px rgba(0, 0, 0, 0.06);
 }
 .tile.accept {
   animation: tileAccept 280ms var(--ease-spring) both;
@@ -2289,7 +2295,9 @@ body {
 .tile.changed-ok {
   background: var(--tutorial-accent);
   color: var(--white);
-  box-shadow: 0 0 0 3px var(--tutorial-accent-soft);
+  box-shadow:
+    0 0 0 3px var(--tutorial-accent-soft),
+    0 1px 2px rgba(0, 0, 0, 0.06);
 }
 /* Tutorial highlights inherit --accent/--accent-soft from the mode class,
        so no separate override needed here. */
@@ -2351,7 +2359,9 @@ body {
 /* "New word" CTA — friendlier than "Give up" */
 .btn-newword {
   background: none;
-  border: 1px solid var(--border);
+  /* Slightly darker than the global --border so the small score-row
+     controls read clearly against the cream bg. */
+  border: 1px solid rgba(0, 0, 0, 0.16);
   color: var(--muted);
   font-family: var(--ff-sans);
   font-size: 13px;
@@ -2381,7 +2391,7 @@ body {
 .hint-btn {
   position: relative;
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(0, 0, 0, 0.16);
   color: var(--muted);
   border-radius: 999px;
   width: 44px;
@@ -2474,7 +2484,7 @@ body {
 
 .restart-btn {
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(0, 0, 0, 0.16);
   color: var(--muted);
   border-radius: 999px;
   width: 44px;
@@ -3262,7 +3272,7 @@ kbd,
   font-weight: 700;
   cursor: pointer;
   touch-action: manipulation;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   transition:
     transform 30ms ease,
     background 30ms ease,

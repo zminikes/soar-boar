@@ -1,4 +1,4 @@
-import type { ModeId } from '../lib/modes';
+import { MODE_CONFIGS, type ModeId } from '../lib/modes';
 import { diffPos } from '../lib/moves';
 import type { ChainEntry } from '../lib/types';
 
@@ -7,13 +7,13 @@ interface ChainRowsProps {
   // before iterating, so we never mutate. Documents the contract.
   chain: readonly ChainEntry[];
   maxHeight?: number;
-  // modeId is currently unused (main simplified the chain-pts label to
-  // just '+N pts' — no per-position label) but kept on the prop type
-  // so callers don't have to change. Drop on the next breaking pass.
+  // Used to suppress per-row point chips in ladder modes (This That),
+  // where each step is just a move — no score earned per letter.
   modeId?: ModeId;
 }
 
-export function ChainRows({ chain, maxHeight = 200 }: ChainRowsProps) {
+export function ChainRows({ chain, maxHeight = 200, modeId = 'classic' }: ChainRowsProps) {
+  const showPts = !MODE_CONFIGS[modeId]?.isLadder;
   return (
     <div className="chain-scroll" style={{ maxHeight }}>
       {chain
@@ -37,7 +37,9 @@ export function ChainRows({ chain, maxHeight = 200 }: ChainRowsProps) {
                   </div>
                 );
               })}
-              {entry.pts != null && <span className="chain-pts">+{entry.pts}</span>}
+              {showPts && entry.pts != null && (
+                <span className="chain-pts">+{entry.pts}</span>
+              )}
             </div>
           );
         })}

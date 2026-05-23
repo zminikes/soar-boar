@@ -107,6 +107,7 @@ export function App() {
     const cls = colorOverrides.classic ?? {};
     const soy = colorOverrides.soyboy ?? {};
     const tt = colorOverrides.thisthat ?? {};
+    const gameplayBg = colorOverrides.gameplayBg;
     styleEl.textContent = [
       cls.bg && `:root[data-exp-colored-bg="1"][data-exp-mode="classic"]  { --cream: ${cls.bg}; }`,
       cls.accent &&
@@ -117,6 +118,14 @@ export function App() {
       tt.bg && `:root[data-exp-colored-bg="1"][data-exp-mode="thisthat"] { --cream: ${tt.bg}; }`,
       tt.accent &&
         `:root[data-exp-colored-bg="1"][data-exp-mode="thisthat"] { --deep-blue: ${tt.accent}; --accent: ${tt.accent}; }`,
+      // Gameplay BG override — applies only on play/end screens (where
+      // data-screen is set and colored-bg is intentionally off). Scoped
+      // via :not([data-exp-colored-bg="1"]) so it never collides with
+      // the per-mode start-screen tints above.
+      gameplayBg &&
+        `:root[data-screen="playing"]:not([data-exp-colored-bg="1"]) { --cream: ${gameplayBg}; }`,
+      gameplayBg &&
+        `:root[data-screen="end"]:not([data-exp-colored-bg="1"]) { --cream: ${gameplayBg}; }`,
     ]
       .filter(Boolean)
       .join('\n');
@@ -143,6 +152,7 @@ export function App() {
   useEffect(() => {
     document.documentElement.dataset.expColoredBg = coloredBgActive ? '1' : '';
     document.documentElement.dataset.expMode = modeId;
+    document.documentElement.dataset.screen = screen;
     // Keep iOS status-bar color in sync with whatever bg is showing
     const tc = document.querySelector('meta[name="theme-color"]');
     if (tc) {
@@ -158,7 +168,7 @@ export function App() {
         tc.setAttribute('content', '#F8F1E5');
       }
     }
-  }, [isDark, coloredBgActive, modeId]);
+  }, [isDark, coloredBgActive, modeId, screen]);
 
   return (
     <ThemeContext.Provider value={isDark}>
@@ -220,11 +230,12 @@ export function App() {
                 onHome={() => setScreen('start')}
               />
             )}
-            {debugMode && !debug.darkMode && (screen === 'start' || screen === 'tutorial') && (
+            {debugMode && !debug.darkMode && (
               <FloatingColorPicker
                 colorOverrides={colorOverrides}
                 setColorOverrides={setColorOverrides}
                 modeId={modeId}
+                screen={screen}
               />
             )}
             {debugMode && <DebugBadge onToggle={() => setDebugMode(false)} />}
