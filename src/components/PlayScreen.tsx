@@ -418,11 +418,7 @@ export function PlayScreen({
               </div>
             ))}
           </div>
-          {hintOn && state.par != null && (
-            <span className="goal-strip-par">
-              Best: {state.par}
-            </span>
-          )}
+          {hintOn && state.par != null && <span className="goal-strip-par">Best: {state.par}</span>}
         </div>
       )}
 
