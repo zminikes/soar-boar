@@ -134,7 +134,10 @@ describe('EndScreen', () => {
       chain: [{ word: 'THIS' }, { word: 'THIN' }, { word: 'THAN' }, { word: 'THAT' }],
     });
     expect(screen.getByText(/3 moves/)).toBeInTheDocument();
-    expect(screen.getByText(/matched the best path of 3/)).toBeInTheDocument();
+    // Matched/beat par is celebrated by the .new-best-banner button rather
+    // than the end-score-label, so the label stays neutral. The button's
+    // accessible name comes from aria-label ("Celebrate matching the best path").
+    expect(screen.getByRole('button', { name: /matching the best path/i })).toBeInTheDocument();
   });
 
   it('renders ladder-mode "Gave up" text on non-win end', () => {

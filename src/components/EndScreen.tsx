@@ -165,11 +165,11 @@ export function EndScreen({
             <div className="end-score-label">
               {win
                 ? par != null
-                  ? score === par
-                    ? `🎯 You matched the best path of ${par}!`
-                    : score < par
-                      ? `🏆 Beat the best path of ${par}!`
-                      : `Best path: ${par} move${par !== 1 ? 's' : ''}`
+                  ? /* Matched/beat par → banner below carries the celebration,
+                       so the label stays neutral (or empty) to avoid duplication. */
+                    score === par || score < par
+                    ? ''
+                    : `Best path: ${par} move${par !== 1 ? 's' : ''}`
                   : 'Solved it!'
                 : target
                   ? `Was heading to ${target}`
