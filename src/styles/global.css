@@ -1181,6 +1181,7 @@ body {
   transition: all 360ms var(--ease-spring);
 }
 :root[data-theme='dark'] .big-demo-tile {
+  background: #2a2826;
   border-color: rgba(255, 255, 255, 0.18);
 }
 .big-demo-tile.changed {
@@ -2072,6 +2073,15 @@ body {
   line-height: 1;
   margin-top: 2px; /* optical alignment with mascot SVG */
 }
+/* Compact variant — used in-game so the header doesn't crowd the
+   play area on mobile. EndScreen and other surfaces keep the larger
+   default brand presence. */
+.hdr.hdr-compact .wordmark {
+  font-size: 32px;
+}
+.hdr.hdr-compact {
+  padding-top: 12px;
+}
 /* Use spans + .accent for the colored word so both halves render with
        identical font metrics (em was producing weight asymmetries via
        browser bold-synthesis on the italic glyph forms). */
@@ -2178,7 +2188,67 @@ body {
 
 /* ── Timer ───────────────────────────────────────────── */
 .timer-wrap {
-  margin-top: 20px;
+  margin-top: 16px;
+}
+
+/* Goal strip — ladder-mode counterpart to the timer.
+   Lives in the same vertical slot as .timer-wrap so the header height
+   stays consistent across modes. A single pill row keeps the target
+   word always-visible at the top, which prevents the on-screen
+   keyboard from ever covering it. */
+.goal-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 8px 14px;
+  background: var(--accent-soft);
+  border-radius: 999px;
+}
+.goal-strip-label {
+  font-family: var(--ff-sans);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.goal-strip-arrow {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.goal-strip-tiles {
+  display: flex;
+  gap: 4px;
+}
+.goal-strip-tile {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--white);
+  border: 1px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+}
+.goal-strip-par {
+  font-family: var(--ff-sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: 4px;
+}
+:root[data-theme='dark'] .goal-strip-tile {
+  /* Default --white in dark mode equals the info-card surface; lift
+     these tiles slightly so they read against the page background. */
+  background: #2a2826;
 }
 .timer-row {
   display: flex;
@@ -2507,6 +2577,22 @@ body {
 }
 .restart-btn:active {
   transform: scale(0.92);
+}
+
+/* Dark-mode borders for score-row controls — the default
+   rgba(0, 0, 0, 0.16) outline disappears against the dark page. */
+:root[data-theme='dark'] .btn-newword,
+:root[data-theme='dark'] .hint-btn,
+:root[data-theme='dark'] .restart-btn {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+:root[data-theme='dark'] .btn-newword:hover,
+:root[data-theme='dark'] .hint-btn:hover,
+:root[data-theme='dark'] .restart-btn:hover {
+  border-color: transparent;
+}
+:root[data-theme='dark'] .hint-btn.active {
+  border-color: var(--dark);
 }
 .best-chip {
   display: inline-flex;
@@ -3199,6 +3285,14 @@ kbd,
 }
 :root[data-theme='dark'] .tile {
   border-color: rgba(255, 255, 255, 0.18);
+}
+/* Empty placeholder tiles need a lifted surface in dark mode — the
+   default var(--white) flips to the same color as the info-card
+   background, making the tiles invisible. */
+:root[data-theme='dark'] .tile.next,
+:root[data-theme='dark'] .tile:empty,
+:root[data-theme='dark'] .tile.cursor:empty {
+  background: #2a2826;
 }
 :root[data-theme='dark'] .tile.wrong {
   background: #3a1a16;
