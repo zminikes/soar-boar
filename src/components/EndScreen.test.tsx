@@ -134,7 +134,9 @@ describe('EndScreen', () => {
       chain: [{ word: 'THIS' }, { word: 'THIN' }, { word: 'THAN' }, { word: 'THAT' }],
     });
     expect(screen.getByText(/3 moves/)).toBeInTheDocument();
-    expect(screen.getByText(/matched the best path of 3/)).toBeInTheDocument();
+    // Matched/beat par is celebrated by the .new-best-banner button rather
+    // than the end-score-label, so the label stays neutral.
+    expect(screen.getByRole('button', { name: /matched the best path/i })).toBeInTheDocument();
   });
 
   it('renders ladder-mode "Gave up" text on non-win end', () => {
