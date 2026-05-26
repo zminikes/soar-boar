@@ -2069,9 +2069,15 @@ body {
   font-family: var(--ff-serif);
   font-size: 40px;
   font-weight: 600;
-  letter-spacing: 0;
+  letter-spacing: -0.005em;
   line-height: 1;
   margin-top: 2px; /* optical alignment with mascot SVG */
+  /* Mobile Safari renders Instrument Serif at a lighter perceived
+     weight than desktop and adds a touch of synthetic letterspacing.
+     Enable real weight synthesis + a hair of stroke so the wordmark
+     reads consistently across breakpoints. Mirrors .simple-wordmark. */
+  font-synthesis: weight style;
+  -webkit-text-stroke: 0.3px currentColor;
 }
 /* Compact variant — used in-game so the header doesn't crowd the
    play area on mobile. EndScreen and other surfaces keep the larger
@@ -2612,33 +2618,41 @@ body {
   text-transform: none;
   font-size: 13px;
 }
+/* Celebration banner — quieter, more sophisticated than a gradient
+   pill. Sized to match .btn (48px min-height, 17px text, 15px 24px
+   padding) so it nests cleanly above the primary action below. The
+   accent-soft fill + accent border echo the .ladder-goal and
+   .best-chip language already in the app. */
 .new-best-banner {
   position: relative;
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  background: linear-gradient(135deg, var(--orange), #f9b68a);
-  color: #fff;
-  padding: 16px 20px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 15px 24px;
+  min-height: 48px;
   border-radius: 999px;
-  border: none;
+  border: 1.5px solid var(--accent);
   font-family: var(--ff-sans);
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: 0.01em;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0;
   text-align: center;
   margin-top: 14px;
   cursor: pointer;
   touch-action: manipulation;
   transition:
     transform 120ms var(--ease-out),
-    filter 150ms var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
     box-shadow 200ms var(--ease-out);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
   animation: fadeIn 400ms var(--ease-out);
 }
 .new-best-banner:hover {
-  filter: brightness(1.05);
-  box-shadow: 0 6px 18px -8px rgba(212, 98, 71, 0.55);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.25);
 }
 .new-best-banner:active {
   transform: scale(0.98);
