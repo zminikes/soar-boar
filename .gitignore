@@ -2,6 +2,7 @@
 .DS_Store
 .AppleDouble
 .LSOverride
+.venv/
 
 fonts/
 design/
@@ -28,3 +29,7 @@ coverage/
 
 # Generated word-pair difficulty data (regenerate via scripts/word_pair_difficulty.py)
 scripts/output/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
