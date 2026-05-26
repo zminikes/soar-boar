@@ -351,7 +351,7 @@ export function PlayScreen({
   return (
     <div className="stagger">
       <div
-        className="hdr"
+        className="hdr hdr-compact"
         onClick={onHome}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -363,13 +363,17 @@ export function PlayScreen({
         tabIndex={0}
         aria-label="Back to home"
       >
-        <MascotIcon size={72} modeId={cfg.id} />
+        <MascotIcon size={56} modeId={cfg.id} />
         <div className="wordmark">
           {cfg.name.split(' ')[0]} <span className="accent">{cfg.name.split(' ')[1]}</span>
         </div>
         {debug.foreverMode && !isLadder && <span className="forever-badge">∞</span>}
       </div>
 
+      {/* Context strip — sits in the same slot for every mode.
+          Timed modes show the countdown; ladder modes show the persistent
+          goal so it can't get pushed below the fold by the on-screen
+          keyboard. Shared slot keeps header height consistent across modes. */}
       {!debug.foreverMode && !isLadder && (
         <div className="timer-wrap">
           <div className="timer-row">
@@ -386,6 +390,35 @@ export function PlayScreen({
               style={{ width: `${pct}%` }}
             />
           </div>
+        </div>
+      )}
+
+      {isLadder && state.targetWord && (
+        <div className="goal-strip" aria-label={`Goal: reach ${state.targetWord}`}>
+          <span className="goal-strip-label">Goal</span>
+          <svg
+            className="goal-strip-arrow"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+          <div className="goal-strip-tiles">
+            {state.targetWord.split('').map((l, i) => (
+              <div key={i} className="goal-strip-tile">
+                {l}
+              </div>
+            ))}
+          </div>
+          {hintOn && state.par != null && <span className="goal-strip-par">Best: {state.par}</span>}
         </div>
       )}
 
@@ -534,25 +567,8 @@ export function PlayScreen({
         )}
       </div>
 
-      {/* Goal banner for ladder mode — placed below the typed input so the
-          ladder reads top-down: current → next → target → chain. */}
-      {isLadder && state.targetWord && (
-        <div className="ladder-goal">
-          <span className="ladder-goal-label">Get to</span>
-          <div className="ladder-goal-tiles">
-            {state.targetWord.split('').map((l, i) => (
-              <div key={i} className="tile ladder-target-tile">
-                {l}
-              </div>
-            ))}
-          </div>
-          {hintOn && state.par != null && (
-            <div className="ladder-goal-par">
-              Best path: {state.par} move{state.par !== 1 ? 's' : ''}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Goal is now in the header context strip above (.goal-strip), so
+          it stays visible above the on-screen keyboard. */}
 
       {state.chain.length > 1 && (
         <div style={{ marginTop: 20 }}>
