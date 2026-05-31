@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getMascotSvgsSync, loadMascotSvgs, type MascotSvgs } from '../data/svgData';
 import { useColorOverrides, useColoredBgActive, useIsDark } from '../game/appContext';
-import { DEFAULT_COLORS } from '../game/constants';
+import { BAKED_ACCENTS, MASCOT_ACCENTS } from '../game/constants';
 import { playMascotSound } from '../game/sounds';
 import { scopeSvgStyles } from '../game/svgUtils';
 import type { ModeId } from '../lib/modes';
@@ -9,6 +9,10 @@ import type { ModeId } from '../lib/modes';
 interface AnimatedMascotProps {
   size?: number;
   modeId?: ModeId;
+  /** Overrides the MASCOT_ACCENTS fill — used by the start screen so
+      Soy Boy can read as bright lime against the blue bg while the
+      game-screen header keeps its sage. */
+  colorOverride?: string;
 }
 
 // Picks the right open/closed pair from the loaded svgs for the
@@ -30,7 +34,11 @@ function pickFrames(svgs: MascotSvgs, isDark: boolean): { open: string; closed: 
    SVG payload is lazy-loaded per mode (src/data/svgSets/*) so a session
    in classic mode never downloads the bean or hair SVGs. Renders an
    empty same-size placeholder during the load to avoid a layout shift. */
-export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMascotProps) {
+export function AnimatedMascot({
+  size = 120,
+  modeId = 'classic',
+  colorOverride,
+}: AnimatedMascotProps) {
   const isDark = useIsDark();
   const coloredBgActive = useColoredBgActive();
   const overrides = useColorOverrides();
@@ -121,8 +129,13 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
   // Per-mode brand accent — single source of truth shared with the
   // FloatingColorPicker swatches (DEFAULT_COLORS) so a designer changing
   // the brand can't desync the mascot recolor from the swatch display.
-  const defaultColor = DEFAULT_COLORS[modeId].accent;
-  const accent = coloredBgActive ? overrides[modeId]?.accent : undefined;
+  const mascotColor = MASCOT_ACCENTS[modeId];
+  const bakedColor = BAKED_ACCENTS[modeId];
+  // Resolution order: explicit colorOverride (per-context tuning like
+  // START_MASCOT_ACCENTS) > color picker override (debug) > the
+  // canonical mascot color from MASCOT_ACCENTS.
+  const overrideAccent = coloredBgActive ? overrides[modeId]?.accent : undefined;
+  const targetAccent = colorOverride ?? overrideAccent ?? mascotColor;
 
   // useCallback rather than a per-render arrow so the useMemo deps below
   // can list `recolor` honestly. eslint-disable not needed — TypeScript
@@ -131,11 +144,11 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
     (raw: string): string => {
       if (!raw) return '';
       let result = raw;
-      // Accent color from picker
-      if (accent && accent.toLowerCase() !== defaultColor.toLowerCase()) {
+      // Always swap the baked accent → current target.
+      if (targetAccent.toLowerCase() !== bakedColor.toLowerCase()) {
         result = result.replace(
-          new RegExp(`fill\\s*:\\s*${defaultColor}`, 'gi'),
-          `fill: ${accent}`,
+          new RegExp(`fill\\s*:\\s*${bakedColor}`, 'gi'),
+          `fill: ${targetAccent}`,
         );
       }
       // Dark mode: all dark strokes (.cls-2 = #2e2b26) — outlines + facial
@@ -146,7 +159,7 @@ export function AnimatedMascot({ size = 120, modeId = 'classic' }: AnimatedMasco
       }
       return result;
     },
-    [accent, defaultColor, isDark],
+    [targetAccent, bakedColor, isDark],
   );
 
   const frames = svgs ? pickFrames(svgs, isDark) : null;

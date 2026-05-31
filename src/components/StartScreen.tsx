@@ -1,8 +1,10 @@
-import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { MODE_CONFIGS, type ModeId } from '../lib/modes';
 import type { DebugState } from '../lib/types';
 import { getBestScore } from '../platform/dom';
 import { prefetchOtherModeSvgs } from '../data/svgData';
+import { START_MASCOT_ACCENTS } from '../game/constants';
+import { playFlowerSound } from '../game/sounds';
 import { AnimatedMascot } from './AnimatedMascot';
 import { Toggle } from './Toggle';
 import { ExperimentsPanel } from './ExperimentsPanel';
@@ -63,8 +65,25 @@ export function StartScreen({
 
   // Hero crossfade key — re-keys on mode change so the mascot+wordmark
   // gently fade rather than swap abruptly.
+  // Ambient flower-rotation — every ~2.6s pick a random flower index
+  // and toggle its rotated state. The CSS handles the 90deg snap.
+  const [rotatedFlowerIdx, setRotatedFlowerIdx] = useState<number | null>(null);
+  const prevFlowerIdxRef = useRef<number | null>(null);
+  useEffect(() => {
+    const tick = (): void => {
+      // Avoid picking the same flower twice in a row.
+      let next = Math.floor(Math.random() * 4);
+      if (next === prevFlowerIdxRef.current) next = (next + 1) % 4;
+      prevFlowerIdxRef.current = next;
+      setRotatedFlowerIdx(next);
+    };
+    tick(); // kick off immediately so the page feels alive
+    const id = setInterval(tick, 2600);
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <div className="stagger simple-start">
+    <div className={`stagger simple-start simple-start-${modeId}`}>
       {/* Segmented pill — both modes always visible, text-only */}
       <div className="simple-segmented-wrap">
         <div className="mode-segmented" role="tablist" aria-label="Choose mode">
@@ -82,69 +101,84 @@ export function StartScreen({
         </div>
       </div>
 
-      {/* Hero — inner div is re-keyed to crossfade on mode change,
-          outer participates in the stagger entrance */}
-      <div className="simple-hero">
-        <div
-          key={modeId}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 12,
-            animation: 'fadeIn 280ms var(--ease-out)',
-          }}
-        >
-          <AnimatedMascot size={120} modeId={modeId} />
-          <div className="simple-wordmark">
-            {cfg.name
-              .split(' ')[0]
-              .split('')
-              .map((ch, i) => (
-                <span key={`a${i}`} className="letter">
-                  {ch}
+      {/* Hero — lowercase wordmark with the mascot rendered INLINE between
+          the two words (e.g. "soar 🐷 boar"). Tagline sits directly below.
+          Keyed on mode so the whole block cross-fades on switch.
+
+          Each letter gets a continuous index across both words so the
+          hover wiggle cascades smoothly through the wordmark (CSS
+          :nth-child resets per .word, so we set animation-delay inline
+          here from the global letter index). */}
+      <div className="simple-hero" key={modeId}>
+        <div className={`simple-wordmark wordmark-${modeId}`}>
+          {(() => {
+            const [first, second] = cfg.name.split(' ').map((w) => w.toLowerCase());
+            return (
+              <>
+                <span className="word">
+                  {first.split('').map((ch, i) => (
+                    <span
+                      key={`a${i}`}
+                      className="letter"
+                      style={{ animationDelay: `${i * 50}ms` }}
+                    >
+                      {ch}
+                    </span>
+                  ))}
                 </span>
-              ))}{' '}
-            <span className="accent">
-              {cfg.name
-                .split(' ')[1]
-                .split('')
-                .map((ch, i) => (
-                  <span key={`b${i}`} className="letter">
-                    {ch}
-                  </span>
-                ))}
-            </span>
-          </div>
-          <div className="simple-tag">
-            {cfg.isLadder ? <>Reach the target word.</> : <>Change one letter.</>}
-            <br />
-            <span className="simple-tag-meta">
-              {cfg.isLadder
-                ? `${cfg.wordLen}-letter words · word ladder`
-                : `${cfg.wordLen}-letter words · ${cfg.duration} seconds`}
-            </span>
-          </div>
+                <span className="wordmark-mascot" aria-hidden="true">
+                  <AnimatedMascot
+                    size={120}
+                    modeId={modeId}
+                    colorOverride={START_MASCOT_ACCENTS[modeId]}
+                  />
+                </span>
+                <span className="word">
+                  {second.split('').map((ch, i) => (
+                    <span
+                      key={`b${i}`}
+                      className="letter"
+                      style={{ animationDelay: `${(first.length + 1 + i) * 50}ms` }}
+                    >
+                      {ch}
+                    </span>
+                  ))}
+                </span>
+              </>
+            );
+          })()}
         </div>
+        <p className="simple-tagline">{cfg.tagline}</p>
       </div>
 
       <div className="simple-actions">
         <button className="btn btn-dark btn-full" onClick={onStart}>
           Play
         </button>
-      </div>
-
-      <div className="simple-footer">
-        <button className="simple-link" onClick={onTutorial}>
-          Show me how
-        </button>
-        <button
-          className="simple-link"
-          onClick={() => setShowPrefs((p) => !p)}
-          aria-expanded={showPrefs}
-        >
-          Preferences
-        </button>
+        <div className="simple-footer">
+          <button className="simple-link" onClick={onTutorial}>
+            Show me how
+          </button>
+          <span className="simple-footer-sep" aria-hidden="true">
+            •
+          </span>
+          <button
+            className="simple-link"
+            onClick={() => setShowPrefs((p) => !p)}
+            aria-expanded={showPrefs}
+          >
+            Preferences
+          </button>
+        </div>
+        {bestScore > 0 && (
+          <div className="simple-best">
+            <span className="simple-best-label">Personal best</span>
+            <span className="simple-best-sep" aria-hidden="true">
+              •
+            </span>
+            <span className="simple-best-value">{bestScore}</span>
+          </div>
+        )}
       </div>
 
       <div className={`prefs-collapse${showPrefs ? ' open' : ''}`} aria-hidden={!showPrefs}>
@@ -171,17 +205,31 @@ export function StartScreen({
         </div>
       </div>
 
-      {bestScore > 0 && (
-        <div style={{ textAlign: 'center', marginTop: 28 }}>
-          <span className="best-chip">
-            Personal best · <strong>{bestScore} pts</strong>
-          </span>
-        </div>
-      )}
-
       <DemoSection modeId={modeId} onStart={onStart} onStartForever={onStartForever} />
-      <FlyingPig />
+      {/* Big flying pig only on Soar Boar — Soy Boy + This That hide
+          it per the pilot design (their own modes don't have a pig). */}
+      {modeId === 'classic' && <FlyingPig />}
       <EmailSignup />
+
+      {/* Decorative flower row anchored to the very bottom of the page.
+          Each flower clicks for a cute tone (playFlowerSound) and the
+          ambient interval above rotates ONE of them 90° at a time, in a
+          random order, so the row feels gently alive. Shapes defined as
+          SVG mask-images in global.css so they tint by background-color
+          (currently solid black per the design). */}
+      <div className="simple-flowers" role="group" aria-label="Decorative flowers">
+        {[0, 1, 2, 3].map((i) => (
+          <button
+            key={i}
+            type="button"
+            className={`simple-flower simple-flower-${i + 1}${
+              rotatedFlowerIdx === i ? ' rotated' : ''
+            }`}
+            onClick={() => playFlowerSound(i)}
+            aria-label={`Flower ${i + 1}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }

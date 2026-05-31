@@ -1,3 +1,16 @@
+/* Sunliner Revival — display face for the Soy Boy wordmark. Self-hosted
+   from public/fonts/. Prefers woff2 (smallest) → woff → ttf. */
+@font-face {
+  font-family: 'Sunliner Revival';
+  src:
+    url('/fonts/SunlinerRevivalRegular.woff2') format('woff2'),
+    url('/fonts/SunlinerRevivalRegular.woff') format('woff'),
+    url('/fonts/SunlinerRevivalRegular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 *,
 *::before,
 *::after {
@@ -8,8 +21,11 @@
 
 :root {
   --cream: #f8f1e5;
-  --orange: #d46247;
-  --pink: rgba(212, 98, 71, 0.12);
+  /* --orange + --pink are legacy names — kept for compatibility with
+     play-screen styles (.score-badge background uses --orange). Now
+     they track the homescreen magenta brand accent. */
+  --orange: #d3437c;
+  --pink: rgba(211, 67, 124, 0.12);
   --white: #ffffff;
   --dark: #0a0a0a;
   --muted: #737373;
@@ -26,13 +42,21 @@
   /* Brand "deep" colors — pig SVG fill, bean SVG fill, and the
          wordmark accent are all driven by these tokens so they
          can't drift apart. */
-  --deep-peach: #d46247;
+  /* Per-mode UI accents — kept in sync with DEFAULT_COLORS in
+     src/game/constants.ts. These drive --accent in play / end so
+     game-screen highlights (current word, position points, tile
+     accents) match the homescreen brand accent.
+     --deep-blue is pulled toward the homescreen bg purple (#9c72de)
+     for the THIS THAT mode but kept dark enough that white text on
+     it clears WCAG AA (≈ 5.5:1). The deeper #330bab is reserved for
+     the scrolling tutorial via --mode-accent. */
+  --deep-peach: #d3437c;
   --deep-sage: #247d57;
-  --deep-blue: #2e83c5;
+  --deep-blue: #6e48b5;
   --accent: var(--deep-peach);
   /* Per-mode accent-soft — set on the mode class so tutorial highlights
          and chain pills always match the active hue, even without coloredBg. */
-  --accent-soft: rgba(212, 98, 71, 0.3);
+  --accent-soft: rgba(211, 67, 124, 0.28);
   /* Tutorial highlights inherit the mode accent so the ↓ arrow and the
          changed-ok pill stay on-brand across all modes. */
   --tutorial-accent: var(--accent);
@@ -384,19 +408,32 @@ body {
   animation: shake 240ms ease;
 }
 
+/* MascotIcon inline SVG — fills the wrapper span at any size. */
+.mascot-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 /* ── Soy Boy green theme ─────────────────────────────── */
+/* Single #247d57 sage everywhere — mascot, tiles, score pill,
+   tutorial accent, accent-soft. White text on #247d57 ≈ 4.8:1 AA. */
 .soyboy {
   --orange: #247d57;
   --accent: var(--deep-sage);
   --accent-soft: rgba(36, 125, 87, 0.22);
   --pink: rgba(36, 125, 87, 0.12);
 }
-/* ── This That blue theme ────────────────────────────── */
+/* ── This That purple theme ──────────────────────────── */
+/* All game-screen tokens track the accessible mid-purple #6e48b5
+   (pulled toward the homescreen bg #9c72de while keeping ≥4.5:1
+   contrast for white text on solid fills). --accent-soft is light
+   enough for the goal-strip pill to read as a soft transparent wash. */
 .thisthat {
-  --orange: #2e83c5;
+  --orange: #6e48b5;
   --accent: var(--deep-blue);
-  --accent-soft: rgba(46, 131, 197, 0.26);
-  --pink: rgba(46, 131, 197, 0.14);
+  --accent-soft: rgba(110, 72, 181, 0.2);
+  --pink: rgba(110, 72, 181, 0.12);
 }
 
 /* ── Design experiments — driven by data attrs on <html> ── */
@@ -1948,30 +1985,10 @@ body {
 }
 .simple-wordmark:hover .letter {
   animation: letterWiggle 600ms var(--ease-spring);
-}
-.simple-wordmark:hover .letter:nth-child(1) {
-  animation-delay: 0ms;
-}
-.simple-wordmark:hover .letter:nth-child(2) {
-  animation-delay: 40ms;
-}
-.simple-wordmark:hover .letter:nth-child(3) {
-  animation-delay: 80ms;
-}
-.simple-wordmark:hover .letter:nth-child(4) {
-  animation-delay: 120ms;
-}
-.simple-wordmark:hover .letter:nth-child(5) {
-  animation-delay: 160ms;
-}
-.simple-wordmark:hover .letter:nth-child(6) {
-  animation-delay: 200ms;
-}
-.simple-wordmark:hover .letter:nth-child(7) {
-  animation-delay: 240ms;
-}
-.simple-wordmark:hover .letter:nth-child(8) {
-  animation-delay: 280ms;
+  /* `animation-delay` is set inline per letter in StartScreen.tsx so
+     the wave cascades smoothly from "soar" → mascot → "boar" instead
+     of restarting at each .word container (which is what nth-child
+     would do — it's scoped to the immediate parent). */
 }
 @keyframes letterWiggle {
   0%,
@@ -2040,6 +2057,18 @@ body {
 @media (min-width: 640px) {
   #root {
     max-width: 520px;
+  }
+}
+/* Start screen needs a much wider container so the chunky lowercase
+   wordmark + 40px tagline (incl. Soy Boy's longer "A slightly chiller…")
+   sit on single lines. Inner action block still caps via its own
+   max-width so the Play button stays the right width. */
+:root[data-screen='start'] #root {
+  max-width: 1100px;
+}
+@media (min-width: 640px) {
+  :root[data-screen='start'] #root {
+    max-width: 1100px;
   }
 }
 
@@ -3484,4 +3513,666 @@ kbd,
   .info-card {
     padding: 16px;
   } /* reclaim horizontal space for tiles */
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   PILOT — new start-screen design (Figma · Soar-Boar-Visual-Tweaks)
+   Solid colored backdrop covers the ENTIRE start page — tutorial,
+   flying pig and email signup all sit on the mode color, in cream
+   type. A flower row anchors at the very bottom; one flower rotates
+   90° at a time, and each is clickable for a cute tone.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Cream type-on-color used everywhere on the start screen. */
+:root {
+  --pilot-cream: #fff3dd;
+}
+
+/* Body bg follows the active mode while the start screen is visible.
+   Dark mode opts out — it already has its own neutral scheme. */
+:root[data-screen='start']:not([data-theme='dark']) body {
+  background: var(--mode-bg, #a4902e);
+}
+/* Per-mode tokens — bg + UI accent + tutorial tile fill + tutorial
+   accent (deep version for borders/text/+pts pill). All values lifted
+   directly from the Figma to keep parity. */
+.simple-start-classic {
+  --mode-bg: #a4902e;
+  --mode-accent: #d3437c;
+  --mode-tile-fill: #ffddeb;
+}
+.simple-start-soyboy {
+  --mode-bg: #3290d9;
+  --mode-accent: #247d57;
+  --mode-tile-fill: #e9f7bd;
+}
+.simple-start-thisthat {
+  --mode-bg: #9c72de;
+  --mode-accent: #330bab;
+  --mode-tile-fill: #e5d4ff;
+}
+/* Mode-colored body bg on the START screen only. Play / End keep
+   their original cream surface — only the start-screen hero zone
+   carries the deep mode color. Dark mode opts out (uses its own
+   neutral palette). */
+:root:not([data-theme='dark'])[data-exp-mode='classic'][data-screen='start'] body {
+  background: #a4902e;
+}
+:root:not([data-theme='dark'])[data-exp-mode='soyboy'][data-screen='start'] body {
+  background: #3290d9;
+}
+:root:not([data-theme='dark'])[data-exp-mode='thisthat'][data-screen='start'] body {
+  background: #9c72de;
+}
+.simple-start {
+  padding-top: 24px;
+}
+
+/* ── Mode segmented pills ────────────────────────────────────────── */
+/* :root[data-screen='start'] prefix is purely for specificity — needed
+   to outrank the legacy `:root[data-exp-colored-bg='1'] .seg-tab.active`
+   rule (App still sets data-exp-colored-bg on the start screen). */
+.simple-start .simple-segmented-wrap {
+  margin-bottom: 96px;
+}
+:root[data-screen='start'] .simple-start .mode-segmented {
+  background: rgba(255, 255, 255, 0.21);
+  border-radius: 999px;
+  padding: 5px;
+  gap: 4px;
+}
+:root[data-screen='start'] .simple-start .seg-tab {
+  padding: 8px 14px;
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--pilot-cream);
+  border-radius: 14px;
+  background: transparent;
+  min-height: 0;
+}
+:root[data-screen='start'] .simple-start .seg-tab:not(.active) {
+  color: var(--pilot-cream);
+  background: transparent;
+}
+:root[data-screen='start'] .simple-start .seg-tab.active {
+  background: var(--pilot-cream);
+  color: #0a0a0a;
+  font-weight: 600;
+  border-radius: 64px;
+  box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* ── Hero (wordmark + tagline) ───────────────────────────────────── */
+.simple-start .simple-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  animation: fadeIn 280ms var(--ease-out);
+}
+.simple-start .simple-wordmark {
+  /* Grid 1fr / auto / 1fr — mascot column at exact horizontal center
+     regardless of word widths. align-items: end + per-mode line-height
+     (matching Figma `leading-`) collapses the line-box bottom onto
+     the text baseline, so end-aligned children sit on the baseline.
+     min-height locked to the TALLEST mode (This That, 145px × ~0.95
+     line-height ≈ 138px + ~12px for the ascender on wings/squiggle)
+     so switching modes doesn't shift the elements below. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: clamp(8px, 1.4vw, 18px);
+  color: var(--pilot-cream);
+  white-space: nowrap;
+  -webkit-text-stroke: 0;
+  font-synthesis: none;
+  min-height: clamp(56px, 12.5vw, 152px);
+}
+.simple-start .simple-wordmark .word {
+  display: block;
+  /* No negative margin — align-items: end on the grid already lands
+     the words on the same baseline as the mascot bottom. */
+}
+.simple-start .simple-wordmark .word:first-child {
+  text-align: right;
+  justify-self: end;
+}
+.simple-start .simple-wordmark .word:last-child {
+  text-align: left;
+  justify-self: start;
+}
+/* Mascot inline between the two words. Sized via em so it scales
+   perfectly with the wordmark; per-mode aspect-ratio + height tuned
+   to match the Figma frame for each mascot. align-self: end + tight
+   per-mode line-height puts the bottom of the mascot ≈ on the
+   lowercase baseline; the per-mode margin-bottom is the manual
+   visual nudge to land the head circle's bottom exactly on it. */
+.simple-start .simple-wordmark .wordmark-mascot {
+  justify-self: center;
+  align-self: end;
+  display: block;
+  width: auto;
+}
+.simple-start .wordmark-classic .wordmark-mascot {
+  aspect-ratio: 127 / 102;
+  height: 0.88em;
+  /* Pushed further DOWN — the negative margin-bottom drops the pig
+     past the baseline so the head sits low between "soar" and "boar"
+     with the wings up at lowercase x-height. */
+  margin-bottom: -0.1em;
+}
+.simple-start .wordmark-soyboy .wordmark-mascot {
+  aspect-ratio: 100 / 108;
+  height: 0.9em;
+  margin-bottom: 0.02em;
+}
+.simple-start .wordmark-thisthat .wordmark-mascot {
+  aspect-ratio: 114 / 107;
+  height: 0.78em;
+  /* Slightly bigger margin-bottom = scooched UP a touch from the
+     text baseline (extra space pushed below the mascot). */
+  margin-bottom: 0.08em;
+}
+/* Override AnimatedMascot's inline square size and fill the parent. */
+.simple-start .wordmark-mascot .animated-mascot {
+  width: 100% !important;
+  height: 100% !important;
+}
+/* Per-mode display font + size. Each mode has its own Figma spec:
+   Soar Boar: Belanosima 136px
+   Soy Boy:   Sunliner Revival 126px, tracking -2.52px (=-0.02em)
+   This That: Holidaze Display 145px, slight negative tracking. */
+.simple-start .wordmark-classic {
+  font-family: 'Belanosima', var(--ff-serif), serif;
+  font-weight: 400;
+  font-size: clamp(56px, 11vw, 136px);
+  /* Figma: leading-[116px] / text-[136px] = 0.853 — collapses the
+     line-box bottom toward the lowercase baseline. */
+  line-height: 0.853;
+}
+.simple-start .wordmark-soyboy {
+  font-family: 'Sunliner Revival', var(--ff-serif), serif;
+  font-weight: 400;
+  font-size: clamp(52px, 10.2vw, 126px);
+  letter-spacing: -0.02em;
+  /* Figma: leading-[116px] / text-[126px] = 0.921 */
+  line-height: 0.921;
+  /* Sunliner's baseline sits a touch higher inside the line-box than
+     Belanosima's — shift down so its baseline matches Soar Boar's
+     when toggling between modes. */
+  transform: translateY(0.08em);
+}
+.simple-start .wordmark-thisthat {
+  /* Holidaze Display is the Figma-spec face. Paid font, no Google
+     Fonts equivalent — if not installed locally / loaded via
+     @font-face, Bagel Fat One is the closest groovy round fallback. */
+  font-family: 'Holidaze Display', 'Bagel Fat One', var(--ff-serif), serif;
+  font-weight: 400;
+  font-size: clamp(56px, 11.8vw, 145px);
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+  /* Holidaze's font metrics place its baseline higher inside the
+     line-box than Belanosima / Sunliner Revival, so the visible
+     "this that" sits ≈ 0.12em above the Soar Boar / Soy Boy baseline
+     when the three modes are toggled. Shift the whole wordmark down
+     to match. */
+  transform: translateY(0.12em);
+}
+.simple-start .wordmark-mascot {
+  display: inline-flex;
+  align-items: center;
+  /* Mascot sizes scale with the wordmark — about 75% of cap height. */
+  width: clamp(56px, 9.5vw, 127px);
+  height: clamp(56px, 9.5vw, 127px);
+  flex-shrink: 0;
+}
+.simple-start .wordmark-mascot .animated-mascot {
+  width: 100%;
+  height: 100%;
+}
+.simple-start .simple-tagline {
+  font-family: var(--ff-serif);
+  font-size: clamp(18px, 3.2vw, 40px);
+  font-weight: 400;
+  color: var(--pilot-cream);
+  text-align: center;
+  line-height: 1.15;
+  /* No max-width — tagline sits at its natural width and stays on
+     one line (Soy Boy's longer "A slightly chiller…" was breaking
+     under the old 22ch cap). Mobile wraps gracefully under 640px. */
+  margin: 0;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .simple-start .simple-tagline {
+    white-space: normal;
+    max-width: 28ch;
+  }
+}
+
+/* ── Actions block (Play + secondary links + best) ──────────────── */
+.simple-start .simple-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  margin: 64px auto 0;
+  width: 100%;
+  max-width: 380px;
+  /* align-self overrides the parent flex-column's default stretch so
+     the action block stays at 380px AND sits on the centerline of the
+     wider #root container. */
+  align-self: center;
+}
+.simple-start .simple-hero {
+  align-self: center;
+}
+.simple-start .simple-segmented-wrap {
+  align-self: center;
+}
+/* Preferences card — constrain width so it doesn't stretch to the
+   wider start-screen #root (1100px). 440px keeps it compact like
+   the rest of the action block. */
+.simple-start .prefs-collapse {
+  width: 100%;
+  max-width: 440px;
+  align-self: center;
+  margin: 0 auto;
+}
+.simple-start .btn-dark {
+  background: #0a0a0a;
+  color: var(--pilot-cream);
+  border-radius: 999px;
+  padding: 15px 56px;
+  font-family: var(--ff-sans);
+  font-weight: 500;
+  font-size: 18px;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  transition:
+    filter 120ms var(--ease-out),
+    transform 120ms var(--ease-out);
+}
+.simple-start .btn-dark:hover {
+  filter: brightness(1.18);
+  transform: translateY(-1px);
+}
+.simple-start .btn-dark:active {
+  transform: scale(0.98);
+}
+.simple-start .simple-footer {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+}
+.simple-start .simple-footer .simple-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--pilot-cream);
+  cursor: pointer;
+  text-decoration: none;
+}
+.simple-start .simple-footer .simple-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.simple-start .simple-footer-sep {
+  color: var(--pilot-cream);
+  opacity: 0.75;
+  font-size: 16px;
+  line-height: 1;
+}
+.simple-start .simple-best {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--pilot-cream);
+}
+.simple-start .simple-best-label {
+  font-family: var(--ff-sans);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.simple-start .simple-best-sep {
+  font-size: 11px;
+  opacity: 0.75;
+}
+.simple-start .simple-best-value {
+  font-family: var(--ff-sans);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ── Tutorial scroll-jacked scenes (cream-on-color) ──────────────── */
+/* 180px gap to match Figma's container `gap-[180px]` between zones. */
+.simple-start ~ * .big-demo,
+.simple-start .big-demo {
+  background: transparent;
+  margin-top: 180px;
+}
+.simple-start .big-demo-eyebrow {
+  color: var(--pilot-cream);
+}
+.simple-start .big-demo-progress-dot {
+  background: rgba(255, 243, 221, 0.4);
+}
+.simple-start .big-demo-progress-dot.active {
+  background: var(--pilot-cream);
+}
+.simple-start .big-demo-tile {
+  background: var(--pilot-cream);
+  border-color: rgba(0, 0, 0, 0.5);
+  color: #0a0a0a;
+}
+.simple-start .big-demo-tile.changed {
+  /* Pre-blended pastel per mode so the mode bg doesn't muddy the
+     transparent overlay Figma uses. --mode-* tokens set per-mode above. */
+  background: var(--mode-tile-fill, #ffddeb);
+  border-color: var(--mode-accent, #d3437c);
+  color: var(--mode-accent, #d3437c);
+}
+.simple-start .big-demo-pts {
+  background: var(--mode-accent, #d3437c);
+  color: var(--pilot-cream);
+}
+.simple-start .big-demo-caption .accent,
+.simple-start .big-demo-progress-dot.active {
+  color: var(--pilot-cream);
+}
+.simple-start .big-demo-caption {
+  color: var(--pilot-cream);
+  font-family: var(--ff-serif);
+  font-style: normal;
+}
+.simple-start .big-demo-caption .accent {
+  color: var(--pilot-cream);
+  font-weight: 700;
+}
+.simple-start .big-demo-sub {
+  color: rgba(255, 243, 221, 0.82);
+}
+.simple-start .big-demo-scroll-hint {
+  color: rgba(255, 243, 221, 0.7);
+}
+.simple-start .big-demo-finale-cta {
+  background: #0a0a0a;
+  color: var(--pilot-cream);
+}
+.simple-start .big-demo-finale-ghost {
+  color: rgba(255, 243, 221, 0.78);
+}
+.simple-start .big-demo-finale-ghost:hover {
+  color: var(--pilot-cream);
+}
+
+/* ── Flying pig section (cream-on-color) ─────────────────────────── */
+.simple-start .flying-section {
+  background: transparent;
+}
+
+/* ── Email signup (cream-on-color) ───────────────────────────────── */
+.simple-start .signup-section {
+  background: transparent;
+}
+.simple-start .signup-pre {
+  color: var(--pilot-cream);
+  font-size: 26px;
+  font-family: var(--ff-serif);
+  font-weight: 400;
+}
+.simple-start .signup-sub {
+  color: rgba(255, 243, 221, 0.78);
+}
+.simple-start .signup-form {
+  border-bottom-color: var(--pilot-cream);
+}
+.simple-start .signup-form input {
+  color: var(--pilot-cream);
+}
+.simple-start .signup-form input::placeholder {
+  color: rgba(255, 243, 221, 0.62);
+}
+.simple-start .signup-form button {
+  color: var(--pilot-cream);
+}
+.simple-start .signup-success {
+  color: var(--pilot-cream);
+}
+
+/* ── Flower row (decorative full-bleed bottom band) ──────────────── */
+.simple-flowers {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-top: 72px;
+  padding: 24px 24px 0;
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  /* Tighter spacing so the flowers feel like a continuous field. */
+  gap: clamp(8px, 1.5vw, 32px);
+}
+/* Four hand-drawn flower silhouettes, defined as SVG mask-images so
+   they take their color from `background-color`. Each is a clickable
+   button (cute tone on press); one rotates 90° at a time via JS state
+   for an ambient sense of life. */
+.simple-flower {
+  /* Larger flowers per design — at 1280px viewport ~280-326px each;
+     scales down on narrower screens. */
+  --flower-width: clamp(110px, 22vw, 326px);
+  display: block;
+  width: var(--flower-width);
+  height: auto;
+  background-color: #0a0a0a;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  transform: rotate(0deg);
+  transition: transform 520ms cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.simple-flower:hover {
+  filter: brightness(0.85);
+}
+.simple-flower:active {
+  transform: scale(0.94) rotate(var(--rot, 0deg));
+}
+.simple-flower.rotated {
+  --rot: 90deg;
+  transform: rotate(90deg);
+}
+/* Flower mask shapes — the actual Figma asset SVGs (public/flowers/*.svg).
+   Each preserves its native aspect ratio so the row breathes correctly. */
+.simple-flower-1 {
+  --m: url('/flowers/flower-1.svg');
+  -webkit-mask-image: var(--m);
+  mask-image: var(--m);
+  aspect-ratio: 244.3 / 219.86;
+}
+.simple-flower-2 {
+  --m: url('/flowers/flower-2.svg');
+  -webkit-mask-image: var(--m);
+  mask-image: var(--m);
+  aspect-ratio: 218.563 / 201.889;
+}
+.simple-flower-3 {
+  --m: url('/flowers/flower-3.svg');
+  -webkit-mask-image: var(--m);
+  mask-image: var(--m);
+  aspect-ratio: 254.787 / 215.721;
+}
+.simple-flower-4 {
+  --m: url('/flowers/flower-4.svg');
+  -webkit-mask-image: var(--m);
+  mask-image: var(--m);
+  aspect-ratio: 225.555 / 216.113;
+}
+
+/* ── Hide legacy bits the new layout doesn't use ─────────────────── */
+.simple-start .simple-tag,
+.simple-start .simple-tag-meta,
+.simple-start .simple-credit {
+  display: none;
+}
+.simple-start .simple-wordmark .letter {
+  display: inline-block;
+  transition: transform 280ms var(--ease-spring);
+}
+/* Re-enable the playful per-letter wiggle on hover. */
+.simple-start .simple-wordmark:hover .letter {
+  animation: letterWiggle 600ms var(--ease-spring);
+}
+
+/* ── Dark mode — pilot start screen on a near-black surface ─────── */
+:root[data-theme='dark'] .simple-start {
+  /* body bg is already #141413 via the existing dark-mode --cream
+     override. Pilot type tokens stay cream so contrast is fine. */
+}
+:root[data-theme='dark'] .simple-start .mode-segmented {
+  background: rgba(255, 243, 221, 0.1);
+}
+:root[data-theme='dark'] .simple-start .seg-tab.active {
+  background: var(--pilot-cream);
+  color: #0a0a0a;
+}
+:root[data-theme='dark'] .simple-start .btn-dark {
+  background: var(--pilot-cream);
+  color: #0a0a0a;
+}
+:root[data-theme='dark'] .simple-start .btn-dark:hover {
+  filter: brightness(0.92);
+}
+/* Tutorial tiles in dark mode — translucent dark tile + bright pink
+   active variant. Matches the Figma dark-mode tutorial screenshot. */
+:root[data-theme='dark'] .simple-start .big-demo-tile {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--pilot-cream);
+}
+:root[data-theme='dark'] .simple-start .big-demo-tile.changed {
+  background: rgba(211, 67, 124, 0.32);
+  border-color: #d3437c;
+  color: #d3437c;
+}
+:root[data-theme='dark'] .simple-start .big-demo-finale-cta {
+  background: var(--pilot-cream);
+  color: #0a0a0a;
+}
+/* Flower color in dark mode — cream silhouettes instead of black so
+   they don't disappear against the dark page. */
+:root[data-theme='dark'] .simple-flower {
+  background-color: var(--pilot-cream);
+}
+
+/* ══ Mobile polish ═══════════════════════════════════════════════ */
+/* Tablet — tighten gaps a hair but trust the per-mode clamp() to
+   scale the wordmark naturally (no hard cap that overrode it). */
+@media (max-width: 1024px) {
+  .simple-start .simple-wordmark {
+    gap: clamp(6px, 1.2vw, 14px);
+  }
+  .simple-start .simple-tagline {
+    font-size: clamp(20px, 3vw, 32px);
+  }
+}
+/* Mobile — header layout that actually holds up at 360-640px.
+   - Mode pills allowed to wrap (cap at 2 lines via flex-wrap)
+   - Wordmark scales tighter to viewport
+   - Mascot stays proportional via the em-based sizing above
+   - Tagline wraps with a sane max-width
+   - Action block tightens up
+   - Flowers bleed edge-to-edge for the "field" feel */
+@media (max-width: 640px) {
+  :root[data-screen='start'] #root {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .simple-start {
+    padding-top: 16px;
+  }
+  .simple-start .simple-segmented-wrap {
+    margin-bottom: 36px;
+  }
+  .simple-start .mode-segmented {
+    padding: 4px;
+    gap: 2px;
+    flex-wrap: nowrap;
+    max-width: 100%;
+  }
+  .simple-start .seg-tab {
+    padding: 7px 12px;
+    font-size: 14px;
+  }
+  .simple-start .simple-wordmark {
+    gap: clamp(4px, 1.2vw, 10px);
+  }
+  /* Per-mode mobile font-sizes — tuned to match the smaller Figma
+     mobile spec (~64-72px) while staying within each mode's clamp. */
+  .simple-start .wordmark-classic {
+    font-size: clamp(40px, 14vw, 68px);
+  }
+  .simple-start .wordmark-soyboy {
+    font-size: clamp(38px, 13vw, 64px);
+  }
+  .simple-start .wordmark-thisthat {
+    font-size: clamp(42px, 15vw, 72px);
+  }
+  .simple-start .simple-tagline {
+    white-space: normal;
+    text-wrap: balance;
+    max-width: 22ch;
+    font-size: clamp(18px, 4vw, 22px);
+  }
+  .simple-start .simple-actions {
+    margin-top: 32px;
+    max-width: 320px;
+    gap: 18px;
+  }
+  .simple-start .btn-dark {
+    padding: 13px 28px;
+    font-size: 16px;
+  }
+  .simple-flowers {
+    margin-top: 40px;
+    padding: 16px 0 0;
+    gap: clamp(4px, 1.5vw, 12px);
+  }
+  .simple-start .big-demo {
+    margin-top: 56px;
+  }
+  /* Sections in the page below the fold — reduce vertical gaps so
+     mobile doesn't feel like dead space between zones. */
+  .simple-start .signup-section {
+    margin-top: 48px;
+  }
+}
+/* Very narrow phones (≤380px) — drop a touch more on the wordmarks. */
+@media (max-width: 380px) {
+  .simple-start .wordmark-classic {
+    font-size: clamp(32px, 13vw, 52px);
+  }
+  .simple-start .wordmark-soyboy {
+    font-size: clamp(30px, 12vw, 48px);
+  }
+  .simple-start .wordmark-thisthat {
+    font-size: clamp(34px, 14vw, 56px);
+  }
+  .simple-start .seg-tab {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
 }

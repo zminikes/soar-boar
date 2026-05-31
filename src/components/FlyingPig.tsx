@@ -31,9 +31,12 @@ export function FlyingPig() {
   const svgMarkup = useMemo(() => {
     if (!rawSvg) return '';
     let raw = rawSvg;
+    // Always recolor the body fill (baked peach #D46247) → soft mascot
+    // pink (#F5A8C8). The deeper UI accent (#D3437C) is reserved for
+    // toggles + tile highlights; the big pig itself stays bubblegum.
+    raw = raw.replace(/fill:\s*#D46247/gi, 'fill: #F5A8C8');
     if (isDark) {
       /* Illustrator's dark palette for the big pig:
-         - Body: peach (unchanged — the hero)
          - All linework: a warm cocoa brown (#5B453B) — reads as
            "dark brown ink" against the near-black page. Not too dark
            to disappear, not so light that it competes with the body.

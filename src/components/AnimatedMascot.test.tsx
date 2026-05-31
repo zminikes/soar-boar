@@ -83,13 +83,17 @@ describe('AnimatedMascot', () => {
     expect(container.innerHTML).not.toContain('#D46247');
   });
 
-  it('leaves the default fill untouched when no override is active', () => {
-    // coloredBgActive=false → recolor skips the accent swap entirely.
+  it('recolors the baked fill to MASCOT_ACCENTS even without a picker override', () => {
+    // Recolor now ALWAYS runs baked → MASCOT_ACCENTS (was: only when an
+    // override existed). The picker override is ignored when
+    // coloredBgActive=false, so the picker color #abcdef should NOT be
+    // present but the canonical MASCOT_ACCENTS classic (#F5A8C8) should.
     const { container } = renderMascot({
       coloredBgActive: false,
       overrides: { classic: { accent: '#abcdef' } },
     });
-    expect(container.innerHTML).toContain('#D46247');
+    expect(container.innerHTML).toContain('#F5A8C8');
+    expect(container.innerHTML).not.toContain('#D46247');
     expect(container.innerHTML).not.toContain('#abcdef');
   });
 

@@ -126,8 +126,10 @@ describe('StartScreen', () => {
   it('shows the personal best chip when there is a non-zero best score', () => {
     localStorage.setItem('bestScore:classic', '42');
     renderStartScreen();
-    expect(screen.getByText(/Personal best/)).toBeInTheDocument();
-    expect(screen.getByText(/42 pts/)).toBeInTheDocument();
+    // Personal best chip now renders "PERSONAL BEST · 42" (no "pts"
+    // suffix per the pilot redesign).
+    expect(screen.getByText(/Personal best/i)).toBeInTheDocument();
+    expect(screen.getByText('42')).toBeInTheDocument();
   });
 
   it('omits the personal best chip when there is no best score', () => {

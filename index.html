@@ -35,7 +35,19 @@
     />
     <meta name="twitter:image" content="https://soarboar.com/og-image.png" />
 
-    <!-- Fonts are self-hosted via @fontsource — see src/main.tsx -->
+    <!-- Fonts are self-hosted via @fontsource — see src/main.tsx.
+         Display fonts for the start-screen wordmarks (Belanosima for the
+         Soar Boar + Soy Boy wordmarks, Bagel Fat One for This That) are
+         loaded from Google Fonts because @fontsource versions weren't
+         added as deps for this pilot. If we keep these, run
+         `npm i @fontsource/belanosima @fontsource/bagel-fat-one` and
+         move them next to the other @fontsource imports in main.tsx. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Belanosima:wght@400;600;700&family=Bagel+Fat+One&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="root"></div>

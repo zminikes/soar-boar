@@ -12,6 +12,9 @@ export interface ModeConfig {
   id: ModeId;
   name: string;
   sub: string;
+  /** Editorial tagline shown on the start-screen hero. Sits in place of
+      the old "Nletter words · Ns" meta line in the redesigned hero. */
+  tagline: string;
   wordLen: number;
   duration: number | null;
   isLadder?: boolean;
@@ -30,6 +33,7 @@ export const MODE_CONFIGS: Record<ModeId, ModeConfig> = {
     id: 'classic',
     name: 'Soar Boar',
     sub: '4-letter words',
+    tagline: 'A brain-soothing word game',
     wordLen: 4,
     duration: 60,
     posPts: [1, 4, 3, 2],
@@ -44,6 +48,7 @@ export const MODE_CONFIGS: Record<ModeId, ModeConfig> = {
     id: 'soyboy',
     name: 'Soy Boy',
     sub: '3-letter words',
+    tagline: 'A slightly chiller brain-soothing word game',
     wordLen: 3,
     duration: 45,
     posPts: [1, 3, 2],
@@ -58,6 +63,7 @@ export const MODE_CONFIGS: Record<ModeId, ModeConfig> = {
     id: 'thisthat',
     name: 'This That',
     sub: 'Word ladder',
+    tagline: 'A brain-tickling word game',
     wordLen: 4,
     duration: null,
     isLadder: true,

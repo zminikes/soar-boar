@@ -5,6 +5,10 @@
 .venv/
 
 fonts/
+# But DO ship the self-hosted display fonts under public/ — they're
+# part of the brand and need to be served to visitors.
+!public/fonts/
+!public/fonts/**
 design/
 
 # Editor
