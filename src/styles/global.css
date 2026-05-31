@@ -4124,8 +4124,7 @@ kbd,
   /* Container — safe-area aware top/bottom, generous side padding so
      content never butts up against the screen edge. */
   :root[data-screen='start'] #root {
-    padding: max(env(safe-area-inset-top, 0px), 12px) 20px
-      max(env(safe-area-inset-bottom, 0px), 24px);
+    padding: max(env(safe-area-inset-top, 0px), 12px) 20px 0;
     max-width: 100vw;
   }
   /* Body uses dvh so iOS Safari address-bar collapse doesn't shift the
@@ -4133,17 +4132,17 @@ kbd,
   :root[data-screen='start']:not([data-theme='dark']) body {
     min-height: 100dvh;
   }
-  /* Mobile hero sits LOWER in the viewport (was hugging the top, felt
-     cramped). 10vh top padding visually centers the wordmark + actions
-     block within the first viewport. */
+  /* Mobile hero sits a touch lower than the top edge — but not too
+     low. 5vh was pushing the pills uncomfortably low. */
   .simple-start {
-    padding-top: 10vh;
+    padding-top: 5vh;
   }
 
   /* ── Mode pills — a single full-width segmented bar with equal
-       40px tap targets. Centered text, no overflow even at 320px. */
+       40px tap targets. Centered text, no overflow even at 320px.
+       Bigger margin-bottom to breathe before the wordmark. */
   .simple-start .simple-segmented-wrap {
-    margin-bottom: 32px;
+    margin-bottom: 56px;
     margin-top: 0;
   }
   .simple-start .mode-segmented {
@@ -4173,10 +4172,11 @@ kbd,
   }
   .simple-start .simple-wordmark {
     gap: 6px;
-    /* Smaller min-height for mobile — the desktop 152px was leaving
-       a huge gap above the tagline. Sized to the tallest mode (This
-       That ~88px when capped) plus a touch for the squiggle. */
-    min-height: clamp(52px, 18vw, 98px);
+    /* Locked min-height tuned so all three modes fill it (the tallest
+       per-mode line-box is This That at 20vw × 0.95 = 19vw). Stops the
+       wordmark from being a different height per mode → no jump in
+       the elements below when toggling tabs. */
+    min-height: clamp(72px, 22vw, 124px);
   }
   .simple-start .wordmark-classic {
     font-size: clamp(54px, 18.5vw, 104px);
@@ -4188,19 +4188,28 @@ kbd,
   .simple-start .wordmark-thisthat {
     font-size: clamp(60px, 20vw, 112px);
   }
+  /* This That mascot bumped on mobile so it scales with the bigger
+     wordmark instead of looking puny. */
+  .simple-start .wordmark-thisthat .wordmark-mascot {
+    height: 0.86em;
+  }
   .simple-start .simple-tagline {
     white-space: normal;
     text-wrap: balance;
-    max-width: 26ch;
-    font-size: clamp(22px, 5.6vw, 30px);
-    line-height: 1.18;
+    max-width: 30ch;
+    /* Smaller font on mobile so the longer Soy Boy tagline fits one
+     line at most viewports. (At 360px viewport it may still wrap but
+     two lines stay tight + balanced.) */
+    font-size: clamp(18px, 4.8vw, 22px);
+    line-height: 1.2;
   }
 
   /* ── Action block — Play is the hero. Big tap zone, fills available
        width (with 4px outer padding so it can't kiss the screen edges).
-       Secondary links sit close to it; personal best tiny + low. */
+       Secondary links sit close to it; personal best tiny + low.
+       Larger margin-top for breathing room above the CTA. */
   .simple-start .simple-actions {
-    margin-top: 36px;
+    margin-top: 56px;
     max-width: 100%;
     gap: 16px;
     padding: 0 4px;
@@ -4235,12 +4244,12 @@ kbd,
   }
 
   /* ── Flower row — full bleed, smaller flowers, tighter gaps so they
-       read as a continuous band of "field" not loose stickers. Bottom
-       padding includes safe-area-inset-bottom so the bottoms don't get
-       clipped by the iOS home indicator / browser chrome bar. */
+       read as a continuous band of "field" not loose stickers.
+       Just enough bottom padding for the safe-area home indicator
+       (was 24px floor, too much empty space underneath). */
   .simple-flowers {
     margin-top: 56px;
-    padding: 16px 0 max(env(safe-area-inset-bottom, 0px), 24px);
+    padding: 0 0 env(safe-area-inset-bottom, 0px);
     gap: 2px;
     overflow: visible;
   }
@@ -4275,30 +4284,33 @@ kbd,
     padding-right: 16px;
   }
   .simple-start {
-    padding-top: 8vh;
+    padding-top: 4vh;
   }
   .simple-start .simple-segmented-wrap {
-    margin-bottom: 24px;
+    margin-bottom: 44px;
   }
   .simple-start .seg-tab {
     padding: 9px 6px;
     font-size: 13px;
   }
+  .simple-start .simple-wordmark {
+    min-height: clamp(64px, 22vw, 96px);
+  }
   .simple-start .wordmark-classic {
-    font-size: clamp(44px, 16vw, 68px);
+    font-size: clamp(46px, 16vw, 72px);
   }
   .simple-start .wordmark-soyboy {
-    font-size: clamp(42px, 15vw, 64px);
+    font-size: clamp(44px, 15vw, 68px);
   }
   .simple-start .wordmark-thisthat {
-    font-size: clamp(46px, 17vw, 72px);
+    font-size: clamp(48px, 17vw, 76px);
   }
   .simple-start .simple-tagline {
-    font-size: 20px;
-    max-width: 20ch;
+    font-size: 17px;
+    max-width: 24ch;
   }
   .simple-start .simple-actions {
-    margin-top: 28px;
+    margin-top: 44px;
   }
   .simple-start .btn-dark {
     padding: 16px 24px;
@@ -4313,7 +4325,7 @@ kbd,
    Bump everything a touch since these have real estate to use. */
 @media (min-width: 438px) and (max-width: 640px) {
   .simple-start .simple-tagline {
-    font-size: 28px;
+    font-size: 22px;
   }
   .simple-start .btn-dark {
     padding: 20px 28px;
