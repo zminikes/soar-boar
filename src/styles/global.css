@@ -3791,7 +3791,9 @@ kbd,
   width: 100%;
   border: none;
   cursor: pointer;
-  transition: filter 120ms var(--ease-out), transform 120ms var(--ease-out);
+  transition:
+    filter 120ms var(--ease-out),
+    transform 120ms var(--ease-out);
 }
 .simple-start .btn-dark:hover {
   filter: brightness(1.18);

@@ -3,3 +3,5 @@ node_modules
 coverage
 scripts
 *.lock
+# Untracked scratch notes
+figma-design-file.md
