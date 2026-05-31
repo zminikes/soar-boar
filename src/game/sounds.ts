@@ -126,6 +126,132 @@ export function playMascotSound(modeId: ModeId): void {
   osc.stop(now + 0.3);
 }
 
+/* Flower click sounds — four whimsical synth voices that share the
+   character of the mascot sounds (filter sweeps, pitch arpeggios,
+   envelope dips, vibrato). Each is short and distinct so the four
+   flowers feel like a tiny instrument the user can play. */
+export function playFlowerSound(index: number): void {
+  const ctx = getCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const variant = ((index % 4) + 4) % 4;
+
+  if (variant === 0) {
+    // Bouncy "boi-oing" — triangle slides up + down + up with a soft
+    // lowpass filter that opens during the bounce. Two-bump envelope
+    // sells the bounce rhythm.
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(900, now);
+    filter.frequency.exponentialRampToValueAtTime(3200, now + 0.1);
+    filter.frequency.exponentialRampToValueAtTime(1400, now + 0.32);
+    osc.type = 'triangle';
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(520, now);
+    osc.frequency.exponentialRampToValueAtTime(820, now + 0.08);
+    osc.frequency.exponentialRampToValueAtTime(620, now + 0.18);
+    osc.frequency.exponentialRampToValueAtTime(940, now + 0.3);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.2, now + 0.014);
+    gain.gain.exponentialRampToValueAtTime(0.06, now + 0.13);
+    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.2);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.36);
+    osc.start(now);
+    osc.stop(now + 0.38);
+    return;
+  }
+
+  if (variant === 1) {
+    // Sparkle arpeggio — three quick sine notes (E5, A5, C#6) with
+    // gentle vibrato on the last note for a "twinkle" tail.
+    const notes = [659, 880, 1109];
+    notes.forEach((freq, i) => {
+      const t = now + i * 0.055;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      if (i === notes.length - 1) {
+        // Vibrato LFO on the last note
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+        lfo.frequency.value = 12;
+        lfoGain.gain.value = 14;
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+        lfo.start(t);
+        lfo.stop(t + 0.4);
+      }
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.15, t + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + (i === notes.length - 1 ? 0.4 : 0.25));
+      osc.start(t);
+      osc.stop(t + 0.42);
+    });
+    return;
+  }
+
+  if (variant === 2) {
+    // Cartoony slide-whistle — sine swooping up an octave with a slight
+    // lowpass + heavy vibrato (the squiggly mascot sound, sweeter).
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 4000;
+    osc.type = 'sine';
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(440, now);
+    osc.frequency.exponentialRampToValueAtTime(1320, now + 0.24);
+    osc.frequency.exponentialRampToValueAtTime(1100, now + 0.32);
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    lfo.frequency.value = 18;
+    lfoGain.gain.value = 22;
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc.frequency);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.17, now + 0.018);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.36);
+    osc.start(now);
+    osc.stop(now + 0.38);
+    lfo.start(now);
+    lfo.stop(now + 0.38);
+    return;
+  }
+
+  // variant 3 — Plucky two-syllable bell ("dee-doo"): triangle hits
+  // at C6 and G5 with a lowpass envelope that mimics a struck bell.
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.Q.value = 3;
+  filter.frequency.setValueAtTime(2400, now);
+  filter.frequency.exponentialRampToValueAtTime(900, now + 0.4);
+  filter.connect(ctx.destination);
+  [1046, 784].forEach((freq, i) => {
+    const t = now + i * 0.08;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.connect(gain);
+    gain.connect(filter);
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.18, t + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
+    osc.start(t);
+    osc.stop(t + 0.36);
+  });
+}
+
 /* End-screen celebration sounds — ascending fanfare for a new
    personal best, sparkle chime for ladder shortest-path solves. */
 export type CelebrationKind = 'shortest' | 'personalBest';

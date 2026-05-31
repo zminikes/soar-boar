@@ -136,7 +136,11 @@ export function App() {
   // components don't have to set up their own MutationObservers on
   // documentElement[data-theme] / [data-exp-colored-bg].
   const isDark = debug.darkMode;
-  const coloredBgActive = !isDark && (screen === 'start' || screen === 'tutorial');
+  // Legacy colored-bg experiment is superseded by the pilot start-screen
+  // design (per-mode solid backgrounds + cream type live in global.css's
+  // pilot block). Force-off so the legacy `data-exp-colored-bg`
+  // selectors don't fight the pilot styling.
+  const coloredBgActive = false;
 
   useEffect(() => {
     document.documentElement.dataset.theme = isDark ? 'dark' : '';
