@@ -4096,83 +4096,195 @@ kbd,
    - Tagline wraps with a sane max-width
    - Action block tightens up
    - Flowers bleed edge-to-edge for the "field" feel */
+/* ══ MOBILE — designed mobile-first, not shrunk-from-desktop ═══════ */
 @media (max-width: 640px) {
+  /* Container — safe-area aware top/bottom, generous side padding so
+     content never butts up against the screen edge. */
   :root[data-screen='start'] #root {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding: max(env(safe-area-inset-top, 0px), 12px) 20px
+      max(env(safe-area-inset-bottom, 0px), 24px);
+    max-width: 100vw;
+  }
+  /* Body uses dvh so iOS Safari address-bar collapse doesn't shift the
+     hero layout when the user starts scrolling. */
+  :root[data-screen='start']:not([data-theme='dark']) body {
+    min-height: 100dvh;
   }
   .simple-start {
-    padding-top: 16px;
+    padding-top: 0;
   }
+
+  /* ── Mode pills — a single full-width segmented bar with equal
+       40px tap targets. Centered text, no overflow even at 320px. */
   .simple-start .simple-segmented-wrap {
-    margin-bottom: 36px;
+    margin-bottom: 32px;
+    margin-top: 4px;
   }
   .simple-start .mode-segmented {
+    width: 100%;
+    max-width: 320px;
     padding: 4px;
     gap: 2px;
-    flex-wrap: nowrap;
-    max-width: 100%;
+    background: rgba(255, 255, 255, 0.18);
   }
   .simple-start .seg-tab {
-    padding: 7px 12px;
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    padding: 10px 8px;
     font-size: 14px;
+    min-height: 40px;
+    letter-spacing: -0.005em;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── Wordmark + tagline — tighter gap, more proportionate mascot.
+       Per-mode font caps so each mode hits a similar visual weight.
+       The mascot scales with the font (0.88em/0.9em/0.78em already)
+       so it naturally tracks. */
+  .simple-start .simple-hero {
+    gap: 14px;
   }
   .simple-start .simple-wordmark {
-    gap: clamp(4px, 1.2vw, 10px);
+    gap: 6px;
+    /* Smaller min-height for mobile — the desktop 152px was leaving
+       a huge gap above the tagline. Sized to the tallest mode (This
+       That ~88px when capped) plus a touch for the squiggle. */
+    min-height: clamp(52px, 18vw, 98px);
   }
-  /* Per-mode mobile font-sizes — tuned to match the smaller Figma
-     mobile spec (~64-72px) while staying within each mode's clamp. */
   .simple-start .wordmark-classic {
-    font-size: clamp(40px, 14vw, 68px);
+    font-size: clamp(48px, 16.5vw, 88px);
   }
   .simple-start .wordmark-soyboy {
-    font-size: clamp(38px, 13vw, 64px);
+    font-size: clamp(46px, 15.5vw, 82px);
+    letter-spacing: -0.02em;
   }
   .simple-start .wordmark-thisthat {
-    font-size: clamp(42px, 15vw, 72px);
+    font-size: clamp(52px, 18vw, 96px);
   }
   .simple-start .simple-tagline {
     white-space: normal;
     text-wrap: balance;
-    max-width: 22ch;
-    font-size: clamp(18px, 4vw, 22px);
+    max-width: 18ch;
+    font-size: clamp(20px, 5.2vw, 26px);
+    line-height: 1.2;
   }
+
+  /* ── Action block — Play is the hero. Big tap zone, fills available
+       width (with 4px outer padding so it can't kiss the screen edges).
+       Secondary links sit close to it; personal best tiny + low. */
   .simple-start .simple-actions {
-    margin-top: 32px;
-    max-width: 320px;
-    gap: 18px;
+    margin-top: 36px;
+    max-width: 100%;
+    gap: 16px;
+    padding: 0 4px;
   }
   .simple-start .btn-dark {
-    padding: 13px 28px;
-    font-size: 16px;
+    padding: 18px 28px;
+    font-size: 17px;
+    font-weight: 600;
+    border-radius: 36px;
+    box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.24);
+    -webkit-tap-highlight-color: transparent;
   }
+  .simple-start .simple-footer {
+    gap: 10px;
+    margin-top: 2px;
+  }
+  .simple-start .simple-footer .simple-link {
+    padding: 6px 8px;
+    font-size: 14px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .simple-start .simple-best {
+    margin-top: 4px;
+    opacity: 0.85;
+  }
+  .simple-start .simple-best-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+  .simple-start .simple-best-value {
+    font-size: 12px;
+  }
+
+  /* ── Flower row — full bleed, smaller flowers, tighter gaps so they
+       read as a continuous band of "field" not loose stickers. */
   .simple-flowers {
-    margin-top: 40px;
+    margin-top: 64px;
     padding: 16px 0 0;
-    gap: clamp(4px, 1.5vw, 12px);
+    gap: 2px;
+    overflow: hidden;
   }
+  .simple-flower {
+    --flower-width: clamp(78px, 24vw, 130px);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Tighter rhythm for below-the-fold sections on mobile. */
   .simple-start .big-demo {
-    margin-top: 56px;
+    margin-top: 80px;
   }
-  /* Sections in the page below the fold — reduce vertical gaps so
-     mobile doesn't feel like dead space between zones. */
   .simple-start .signup-section {
     margin-top: 48px;
   }
+
+  /* Universal mobile niceties — disable text-size adjustment on iOS
+     rotate, ensure tap zones don't show the gray flash. */
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
 }
-/* Very narrow phones (≤380px) — drop a touch more on the wordmarks. */
+
+/* ── Very narrow phones (≤380px) ─────────────────────────────────── */
 @media (max-width: 380px) {
-  .simple-start .wordmark-classic {
-    font-size: clamp(32px, 13vw, 52px);
+  :root[data-screen='start'] #root {
+    padding-left: 16px;
+    padding-right: 16px;
   }
-  .simple-start .wordmark-soyboy {
-    font-size: clamp(30px, 12vw, 48px);
-  }
-  .simple-start .wordmark-thisthat {
-    font-size: clamp(34px, 14vw, 56px);
+  .simple-start .simple-segmented-wrap {
+    margin-bottom: 24px;
   }
   .simple-start .seg-tab {
-    padding: 6px 10px;
+    padding: 9px 6px;
     font-size: 13px;
+  }
+  .simple-start .wordmark-classic {
+    font-size: clamp(40px, 14vw, 60px);
+  }
+  .simple-start .wordmark-soyboy {
+    font-size: clamp(38px, 13vw, 56px);
+  }
+  .simple-start .wordmark-thisthat {
+    font-size: clamp(42px, 15.5vw, 64px);
+  }
+  .simple-start .simple-tagline {
+    font-size: 18px;
+    max-width: 16ch;
+  }
+  .simple-start .simple-actions {
+    margin-top: 28px;
+  }
+  .simple-start .btn-dark {
+    padding: 16px 24px;
+    font-size: 16px;
+  }
+  .simple-flower {
+    --flower-width: clamp(64px, 23vw, 96px);
+  }
+}
+
+/* ── iPhone Pro Max / large phones (438-640px) ─────────────────────
+   Bump everything a touch since these have real estate to use. */
+@media (min-width: 438px) and (max-width: 640px) {
+  .simple-start .simple-tagline {
+    font-size: 24px;
+  }
+  .simple-start .btn-dark {
+    padding: 20px 28px;
   }
 }
