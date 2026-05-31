@@ -11,6 +11,29 @@
   font-display: swap;
 }
 
+/* Holidaze Display — display face for the This That wordmark. Two
+   weights/styles ship; Regular drives the wordmark itself. */
+@font-face {
+  font-family: 'Holidaze Display';
+  src:
+    url('/fonts/HolidazeDisplayRegular.woff2') format('woff2'),
+    url('/fonts/HolidazeDisplayRegular.woff') format('woff'),
+    url('/fonts/HolidazeDisplayRegular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Holidaze Display';
+  src:
+    url('/fonts/HolidazeDisplayItalic.woff2') format('woff2'),
+    url('/fonts/HolidazeDisplayItalic.woff') format('woff'),
+    url('/fonts/HolidazeDisplayItalic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
 *,
 *::before,
 *::after {
@@ -4110,15 +4133,18 @@ kbd,
   :root[data-screen='start']:not([data-theme='dark']) body {
     min-height: 100dvh;
   }
+  /* Mobile hero sits LOWER in the viewport (was hugging the top, felt
+     cramped). 10vh top padding visually centers the wordmark + actions
+     block within the first viewport. */
   .simple-start {
-    padding-top: 0;
+    padding-top: 10vh;
   }
 
   /* ── Mode pills — a single full-width segmented bar with equal
        40px tap targets. Centered text, no overflow even at 320px. */
   .simple-start .simple-segmented-wrap {
     margin-bottom: 32px;
-    margin-top: 4px;
+    margin-top: 0;
   }
   .simple-start .mode-segmented {
     width: 100%;
@@ -4153,21 +4179,21 @@ kbd,
     min-height: clamp(52px, 18vw, 98px);
   }
   .simple-start .wordmark-classic {
-    font-size: clamp(48px, 16.5vw, 88px);
+    font-size: clamp(54px, 18.5vw, 104px);
   }
   .simple-start .wordmark-soyboy {
-    font-size: clamp(46px, 15.5vw, 82px);
+    font-size: clamp(52px, 17.5vw, 96px);
     letter-spacing: -0.02em;
   }
   .simple-start .wordmark-thisthat {
-    font-size: clamp(52px, 18vw, 96px);
+    font-size: clamp(60px, 20vw, 112px);
   }
   .simple-start .simple-tagline {
     white-space: normal;
     text-wrap: balance;
-    max-width: 18ch;
-    font-size: clamp(20px, 5.2vw, 26px);
-    line-height: 1.2;
+    max-width: 26ch;
+    font-size: clamp(22px, 5.6vw, 30px);
+    line-height: 1.18;
   }
 
   /* ── Action block — Play is the hero. Big tap zone, fills available
@@ -4209,12 +4235,14 @@ kbd,
   }
 
   /* ── Flower row — full bleed, smaller flowers, tighter gaps so they
-       read as a continuous band of "field" not loose stickers. */
+       read as a continuous band of "field" not loose stickers. Bottom
+       padding includes safe-area-inset-bottom so the bottoms don't get
+       clipped by the iOS home indicator / browser chrome bar. */
   .simple-flowers {
-    margin-top: 64px;
-    padding: 16px 0 0;
+    margin-top: 56px;
+    padding: 16px 0 max(env(safe-area-inset-bottom, 0px), 24px);
     gap: 2px;
-    overflow: hidden;
+    overflow: visible;
   }
   .simple-flower {
     --flower-width: clamp(78px, 24vw, 130px);
@@ -4246,6 +4274,9 @@ kbd,
     padding-left: 16px;
     padding-right: 16px;
   }
+  .simple-start {
+    padding-top: 8vh;
+  }
   .simple-start .simple-segmented-wrap {
     margin-bottom: 24px;
   }
@@ -4254,17 +4285,17 @@ kbd,
     font-size: 13px;
   }
   .simple-start .wordmark-classic {
-    font-size: clamp(40px, 14vw, 60px);
+    font-size: clamp(44px, 16vw, 68px);
   }
   .simple-start .wordmark-soyboy {
-    font-size: clamp(38px, 13vw, 56px);
+    font-size: clamp(42px, 15vw, 64px);
   }
   .simple-start .wordmark-thisthat {
-    font-size: clamp(42px, 15.5vw, 64px);
+    font-size: clamp(46px, 17vw, 72px);
   }
   .simple-start .simple-tagline {
-    font-size: 18px;
-    max-width: 16ch;
+    font-size: 20px;
+    max-width: 20ch;
   }
   .simple-start .simple-actions {
     margin-top: 28px;
@@ -4282,7 +4313,7 @@ kbd,
    Bump everything a touch since these have real estate to use. */
 @media (min-width: 438px) and (max-width: 640px) {
   .simple-start .simple-tagline {
-    font-size: 24px;
+    font-size: 28px;
   }
   .simple-start .btn-dark {
     padding: 20px 28px;
