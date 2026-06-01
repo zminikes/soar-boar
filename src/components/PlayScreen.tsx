@@ -351,7 +351,7 @@ export function PlayScreen({
   return (
     <div className="stagger">
       <div
-        className="hdr hdr-compact"
+        className={`hdr hdr-compact play-hdr play-hdr-${cfg.id}`}
         onClick={onHome}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -363,9 +363,12 @@ export function PlayScreen({
         tabIndex={0}
         aria-label="Back to home"
       >
-        <MascotIcon size={56} modeId={cfg.id} />
-        <div className="wordmark">
-          {cfg.name.split(' ')[0]} <span className="accent">{cfg.name.split(' ')[1]}</span>
+        <div className={`play-wordmark play-wordmark-${cfg.id}`}>
+          <span className="word">{cfg.name.split(' ')[0].toLowerCase()}</span>
+          <span className="play-wordmark-mascot" aria-hidden="true">
+            <MascotIcon size={56} modeId={cfg.id} />
+          </span>
+          <span className="word">{cfg.name.split(' ')[1].toLowerCase()}</span>
         </div>
         {debug.foreverMode && !isLadder && <span className="forever-badge">∞</span>}
       </div>
@@ -393,6 +396,43 @@ export function PlayScreen({
         </div>
       )}
 
+      <div className="score-row">
+        <div className="score-display">
+          <div className="score-badge">{isLadder ? wordsPlayed : state.score}</div>
+          <div className="score-sub">
+            {isLadder
+              ? `move${wordsPlayed !== 1 ? 's' : ''}`
+              : `word${wordsPlayed !== 1 ? 's' : ''} played`}
+          </div>
+        </div>
+        <div className="score-meta">
+          {isLadder && (
+            <button
+              type="button"
+              className={`game-action-link${hintOn ? ' active' : ''}`}
+              onClick={() => setHintOn((h) => !h)}
+              aria-label={hintOn ? 'Hide hint' : 'Show hint'}
+              aria-pressed={hintOn}
+            >
+              {hintOn ? 'Hide hint' : 'Show hint'}
+            </button>
+          )}
+          <button type="button" className="game-action-link" onClick={onNewPuzzle}>
+            New game
+          </button>
+          {isLadder && (
+            <button
+              type="button"
+              className="game-action-link"
+              onClick={onRestart}
+              aria-label="Restart same puzzle"
+            >
+              Restart
+            </button>
+          )}
+        </div>
+      </div>
+
       {isLadder && state.targetWord && (
         <div className="goal-strip" aria-label={`Goal: reach ${state.targetWord}`}>
           <span className="goal-strip-label">Goal</span>
@@ -411,97 +451,10 @@ export function PlayScreen({
             <line x1="5" y1="12" x2="19" y2="12" />
             <polyline points="12 5 19 12 12 19" />
           </svg>
-          <div className="goal-strip-tiles">
-            {state.targetWord.split('').map((l, i) => (
-              <div key={i} className="goal-strip-tile">
-                {l}
-              </div>
-            ))}
-          </div>
+          <span className="goal-strip-word">{state.targetWord}</span>
           {hintOn && state.par != null && <span className="goal-strip-par">Best: {state.par}</span>}
         </div>
       )}
-
-      <div className="score-row">
-        <div className="score-display">
-          <div className="score-badge">{isLadder ? wordsPlayed : state.score}</div>
-          <div className="score-sub">
-            {isLadder
-              ? `move${wordsPlayed !== 1 ? 's' : ''}`
-              : `word${wordsPlayed !== 1 ? 's' : ''} played`}
-          </div>
-        </div>
-        <div className="score-meta">
-          <button type="button" className="btn-newword" onClick={onNewPuzzle}>
-            New word
-          </button>
-          {isLadder && (
-            <button
-              type="button"
-              className={`hint-btn${hintOn ? ' active' : ''}`}
-              onClick={() => setHintOn((h) => !h)}
-              aria-label={hintOn ? 'Hide hint' : 'Show hint'}
-              aria-pressed={hintOn}
-            >
-              {hintOn ? (
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              ) : (
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a19.78 19.78 0 0 1 5.06-5.94" />
-                  <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a19.46 19.46 0 0 1-2.16 3.19" />
-                  <path d="M14.12 14.12A3 3 0 1 1 9.88 9.88" />
-                  <line x1="1" y1="1" x2="23" y2="23" />
-                </svg>
-              )}
-              <span className="hint-tooltip">{hintOn ? 'Hide hint' : 'Show hint'}</span>
-            </button>
-          )}
-          <button
-            type="button"
-            className="restart-btn"
-            onClick={onRestart}
-            aria-label="Restart same puzzle"
-            title="Restart same puzzle"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="23 4 23 10 17 10" />
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-            </svg>
-          </button>
-        </div>
-      </div>
 
       <div style={{ marginTop: 20 }}>
         <div className="section-label">Current word</div>
