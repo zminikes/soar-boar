@@ -63,7 +63,7 @@ export const MODE_CONFIGS: Record<ModeId, ModeConfig> = {
     id: 'thisthat',
     name: 'This That',
     sub: 'Word ladder',
-    tagline: 'Find the best path',
+    tagline: 'Find the best path between two words',
     wordLen: 4,
     duration: null,
     isLadder: true,
