@@ -384,7 +384,7 @@ export const THIS_THAT_PAIRS: readonly ThisThatPair[] = [
     start: 'CAMP',
     end: 'RIPE',
     par: 4,
-    path: ['CAMP', 'CAME', 'CAPE', 'RAPE', 'RIPE'],
+    path: ['CAMP', 'CAME', 'CAPE', 'PIPE', 'RIPE'],
   },
   {
     start: 'DALE',
