@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import { MODE_CONFIGS, type ModeId } from '../lib/modes';
 import type { DebugState } from '../lib/types';
 import { getBestScore } from '../platform/dom';
@@ -65,22 +72,33 @@ export function StartScreen({
 
   // Hero crossfade key — re-keys on mode change so the mascot+wordmark
   // gently fade rather than swap abruptly.
-  // Ambient flower-rotation — every ~2.6s pick a random flower index
-  // and toggle its rotated state. The CSS handles the 90deg snap.
-  const [rotatedFlowerIdx, setRotatedFlowerIdx] = useState<number | null>(null);
+  // Per-flower rotation state. Each flower keeps an independent angle
+  // (multiples of 90deg). The ambient interval bumps a random flower
+  // every ~2.6s; clicking a flower also bumps it +90deg so the user
+  // gets immediate visual feedback alongside the sound.
+  const [flowerRotations, setFlowerRotations] = useState<[number, number, number, number]>([
+    0, 0, 0, 0,
+  ]);
   const prevFlowerIdxRef = useRef<number | null>(null);
+  const bumpFlower = useCallback((index: number): void => {
+    setFlowerRotations((rs) => {
+      const next: [number, number, number, number] = [...rs] as [number, number, number, number];
+      next[index] = (next[index] + 90) % 360;
+      return next;
+    });
+  }, []);
   useEffect(() => {
     const tick = (): void => {
       // Avoid picking the same flower twice in a row.
       let next = Math.floor(Math.random() * 4);
       if (next === prevFlowerIdxRef.current) next = (next + 1) % 4;
       prevFlowerIdxRef.current = next;
-      setRotatedFlowerIdx(next);
+      bumpFlower(next);
     };
     tick(); // kick off immediately so the page feels alive
     const id = setInterval(tick, 2600);
     return () => clearInterval(id);
-  }, []);
+  }, [bumpFlower]);
 
   return (
     <div className={`stagger simple-start simple-start-${modeId}`}>
@@ -222,10 +240,12 @@ export function StartScreen({
           <button
             key={i}
             type="button"
-            className={`simple-flower simple-flower-${i + 1}${
-              rotatedFlowerIdx === i ? ' rotated' : ''
-            }`}
-            onClick={() => playFlowerSound(i)}
+            className={`simple-flower simple-flower-${i + 1}`}
+            onClick={() => {
+              playFlowerSound(i);
+              bumpFlower(i);
+            }}
+            style={{ transform: `rotate(${flowerRotations[i]}deg)` }}
             aria-label={`Flower ${i + 1}`}
           />
         ))}

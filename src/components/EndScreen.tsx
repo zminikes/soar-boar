@@ -15,7 +15,8 @@ import { ChainRows } from './ChainRows';
 const HAS_NATIVE_SHARE = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
 interface BurstParticle {
-  emoji: string;
+  /** Index into BURST_SHAPES — vector shapes colored with the mode accent. */
+  shapeIdx: number;
   dx: number;
   dy: number;
   rot: number;
@@ -26,6 +27,20 @@ interface Burst {
   id: number;
   particles: BurstParticle[];
 }
+
+// Four small vector shapes used as confetti particles. The SVG paths
+// use `currentColor` so each shape picks up the active mode's accent
+// when rendered (the burst-emoji span inherits color from --accent).
+const BURST_SHAPES: readonly string[] = [
+  // four-point sparkle / star
+  'M12 1 C12 8 16 12 23 12 C16 12 12 16 12 23 C12 16 8 12 1 12 C8 12 12 8 12 1 Z',
+  // diamond
+  'M12 2 L22 12 L12 22 L2 12 Z',
+  // circle (full disc — drawn as a closed path for consistency)
+  'M12 2 C17.523 2 22 6.477 22 12 C22 17.523 17.523 22 12 22 C6.477 22 2 17.523 2 12 C2 6.477 6.477 2 12 2 Z',
+  // five-petal flower (echoes the homescreen flower row)
+  'M12 1 C14.5 6 19 5 20 9 C24 11 22 16 18 16 C18 21 12 22 12 17 C12 22 6 21 6 16 C2 16 0 11 4 9 C5 5 9.5 6 12 1 Z',
+];
 
 interface EndScreenProps {
   score: number;
@@ -81,12 +96,13 @@ export function EndScreen({
     else if (isParCelebration) playCelebrationSound('shortest');
   }, [isNewBest, isParCelebration]);
 
-  // Emoji burst on tapping a celebration banner. The two callsites pass
-  // their own emoji set + celebration sound so the burst feels different
-  // for PB vs ladder-par.
+  // Vector-shape confetti on tapping a celebration banner. The two
+  // callsites trigger their own celebration sound, but the burst itself
+  // now cycles through BURST_SHAPES (colored with var(--accent)) so the
+  // confetti always matches the active mode's brand color.
   const [bursts, setBursts] = useState<Burst[]>([]);
   const burstId = useRef(0);
-  const makeBurst = useCallback((emojis: readonly string[]): void => {
+  const makeBurst = useCallback((): void => {
     const id = ++burstId.current;
     const N = 14;
     const particles: BurstParticle[] = Array.from({ length: N }, (_, i) => {
@@ -94,7 +110,7 @@ export function EndScreen({
       const dist = 130 + Math.random() * 110;
       const rad = (angle * Math.PI) / 180;
       return {
-        emoji: emojis[i % emojis.length],
+        shapeIdx: i % BURST_SHAPES.length,
         dx: Math.cos(rad) * dist,
         dy: Math.sin(rad) * dist,
         rot: (Math.random() - 0.5) * 720,
@@ -106,11 +122,11 @@ export function EndScreen({
   }, []);
   const handleBurst = useCallback((): void => {
     playCelebrationSound('personalBest');
-    makeBurst(modeId === 'soyboy' ? ['🫛'] : ['🐷', '🪽']);
-  }, [modeId, makeBurst]);
+    makeBurst();
+  }, [makeBurst]);
   const handleParBurst = useCallback((): void => {
     playCelebrationSound('shortest');
-    makeBurst(['🎯', '✨', '🪽']);
+    makeBurst();
   }, [makeBurst]);
 
   const handleShare = useCallback(async (): Promise<void> => {
@@ -203,7 +219,7 @@ export function EndScreen({
               beatPar ? 'Celebrate beating the best path' : 'Celebrate matching the best path'
             }
           >
-            {beatPar ? '🏆 Beat the best path!' : '🎯 Matched the best path!'}
+            {beatPar ? 'Beat the best path!' : 'Matched the best path!'}
             {bursts.map((burst) => (
               <Fragment key={burst.id}>
                 {burst.particles.map((p, i) => (
@@ -220,7 +236,9 @@ export function EndScreen({
                       } as CSSProperties
                     }
                   >
-                    {p.emoji}
+                    <svg viewBox="0 0 24 24" width="100%" height="100%" fill="currentColor">
+                      <path d={BURST_SHAPES[p.shapeIdx]} />
+                    </svg>
                   </span>
                 ))}
               </Fragment>
@@ -234,7 +252,7 @@ export function EndScreen({
             onClick={handleBurst}
             aria-label="Celebrate new personal best"
           >
-            🏆 New personal best!
+            New personal best!
             {bursts.map((burst) => (
               <Fragment key={burst.id}>
                 {burst.particles.map((p, i) => (
@@ -252,7 +270,9 @@ export function EndScreen({
                       } as CSSProperties
                     }
                   >
-                    {p.emoji}
+                    <svg viewBox="0 0 24 24" width="100%" height="100%" fill="currentColor">
+                      <path d={BURST_SHAPES[p.shapeIdx]} />
+                    </svg>
                   </span>
                 ))}
               </Fragment>

@@ -1413,7 +1413,9 @@ body {
   color: #fff;
   border: none;
   font-family: var(--ff-sans);
-  font-weight: 700;
+  /* 500 to match the .btn-dark Play button weight at top of screen
+     (was 700 — felt heavier than the rest of the page). */
+  font-weight: 500;
   font-size: 17px;
   letter-spacing: 0.01em;
   cursor: pointer;
@@ -2731,7 +2733,12 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  font-size: 40px;
+  /* Sized for the inline SVG confetti shape (was font-size 40px when
+     it rendered emoji glyphs). Color cascades to currentColor inside
+     the SVG, so the shapes pick up the active mode's brand accent. */
+  width: 28px;
+  height: 28px;
+  color: var(--accent);
   line-height: 1;
   pointer-events: none;
   animation: emojiBurst var(--burst-dur, 900ms) var(--ease-out) both;
@@ -4110,9 +4117,11 @@ kbd,
   color: var(--pilot-cream);
 }
 :root[data-theme='dark'] .simple-start .big-demo-tile.changed {
-  background: rgba(211, 67, 124, 0.32);
-  border-color: #d3437c;
-  color: #d3437c;
+  /* Use the per-mode tokens so dark-mode tutorial tile colors follow
+     the active mode's brand accent (was hard-coded magenta). */
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--mode-accent, #d3437c);
+  color: var(--mode-accent, #d3437c);
 }
 :root[data-theme='dark'] .simple-start .big-demo-finale-cta {
   background: var(--pilot-cream);
