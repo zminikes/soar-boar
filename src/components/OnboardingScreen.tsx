@@ -295,7 +295,6 @@ export function OnboardingScreen({
           <>
             <Confetti />
             <div className="onboard-success">
-              <div className="onboard-success-emoji">🎉</div>
               <div className="onboard-success-title">You’ve got it!</div>
               <div className="onboard-success-sub">
                 {isLadder ? (
