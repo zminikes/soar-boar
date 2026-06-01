@@ -4196,12 +4196,25 @@ kbd,
   .simple-start .simple-tagline {
     white-space: normal;
     text-wrap: balance;
-    max-width: 30ch;
-    /* Smaller font on mobile so the longer Soy Boy tagline fits one
-     line at most viewports. (At 360px viewport it may still wrap but
-     two lines stay tight + balanced.) */
-    font-size: clamp(18px, 4.8vw, 22px);
+    /* Break out of #root's 20px horizontal padding so the tagline has
+       the full viewport width to work with — gives the longer Soy Boy
+       copy more room to land on one line. Tiny 8px breathing room
+       from the screen edges keeps it from feeling cramped. */
+    width: 100vw;
+    max-width: none;
+    margin-left: calc(50% - 50vw);
+    padding: 0 8px;
+    /* Bigger on mobile (was 18-22px). Per-mode override below tunes
+       Soy Boy down a touch so its longer tagline still fits. */
+    font-size: clamp(20px, 5.4vw, 26px);
     line-height: 1.2;
+  }
+  /* Soy Boy's "A slightly chiller brain-soothing word game" is the
+     longest tagline — needs a smaller font (and tighter letter-spacing)
+     to fit on a single line at iPhone widths. */
+  .simple-start.simple-start-soyboy .simple-tagline {
+    font-size: clamp(17px, 4.7vw, 22px);
+    letter-spacing: -0.005em;
   }
 
   /* ── Action block — Play is the hero. Big tap zone, fills available
@@ -4306,8 +4319,11 @@ kbd,
     font-size: clamp(48px, 17vw, 76px);
   }
   .simple-start .simple-tagline {
-    font-size: 17px;
-    max-width: 24ch;
+    font-size: 18px;
+    padding: 0 6px;
+  }
+  .simple-start.simple-start-soyboy .simple-tagline {
+    font-size: 15.5px;
   }
   .simple-start .simple-actions {
     margin-top: 44px;
@@ -4325,6 +4341,9 @@ kbd,
    Bump everything a touch since these have real estate to use. */
 @media (min-width: 438px) and (max-width: 640px) {
   .simple-start .simple-tagline {
+    font-size: 26px;
+  }
+  .simple-start.simple-start-soyboy .simple-tagline {
     font-size: 22px;
   }
   .simple-start .btn-dark {
