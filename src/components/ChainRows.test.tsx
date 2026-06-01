@@ -28,7 +28,7 @@ describe('ChainRows', () => {
     const chain: ChainEntry[] = [{ word: 'SOAR' }, { word: 'BOAR', pts: 1 }];
     render(<ChainRows chain={chain} />);
     // Annotation simplified on main to just '+N' — no per-position label.
-    expect(screen.getByText(/^\+1$/)).toBeInTheDocument();
+    expect(screen.getByText(/^1$/)).toBeInTheDocument();
   });
 
   it('omits the pts annotation when pts is null', () => {
