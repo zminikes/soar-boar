@@ -3914,7 +3914,9 @@ kbd,
 }
 .simple-start .big-demo-tile {
   background: var(--pilot-cream);
-  border-color: rgba(0, 0, 0, 0.5);
+  /* Softer outline so the tile edge blends into the mode bg color
+     instead of reading as a hard gray border. */
+  border-color: rgba(0, 0, 0, 0.18);
   color: #0a0a0a;
 }
 .simple-start .big-demo-tile.changed {

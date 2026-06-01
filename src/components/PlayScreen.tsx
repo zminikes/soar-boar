@@ -523,7 +523,6 @@ export function PlayScreen({
 
       {state.deadEnd && (
         <div className="dead-end-banner">
-          <span style={{ fontSize: 20 }}>{cfg.shareEmoji}</span>
           <div>
             <div className="dead-end-title" style={{ fontSize: 13, fontWeight: 800 }}>
               Dead end!

@@ -33,7 +33,7 @@ export function EmailSignup() {
   if (status === 'done') {
     return (
       <div className="signup-section">
-        <div className="signup-success">You’re on the list. See you Saturday. 🐷</div>
+        <div className="signup-success">You’re on the list. See you Saturday.</div>
       </div>
     );
   }

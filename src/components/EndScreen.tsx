@@ -189,7 +189,7 @@ export function EndScreen({
                 className="dead-end-sub"
                 style={{ fontSize: 13, textAlign: 'center', marginTop: 6 }}
               >
-                {`Hit a dead end ${cfg.shareEmoji}`}
+                Hit a dead end
               </div>
             )}
           </>
