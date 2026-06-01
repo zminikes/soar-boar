@@ -8,7 +8,13 @@
     url('/fonts/SunlinerRevivalRegular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  /* `block` (not `swap`) — hides the wordmark for a brief invisible
+     window while the display font loads, then renders in the correct
+     face. Avoids the visible flash where Soy Boy / This That render
+     in the fallback before swapping. The wordmark is the only place
+     these display fonts are used, so a quick FOIT is invisible to
+     most users; the swap was very noticeable. */
+  font-display: block;
 }
 
 /* Holidaze Display — display face for the This That wordmark. Two
@@ -21,7 +27,13 @@
     url('/fonts/HolidazeDisplayRegular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  /* `block` (not `swap`) — hides the wordmark for a brief invisible
+     window while the display font loads, then renders in the correct
+     face. Avoids the visible flash where Soy Boy / This That render
+     in the fallback before swapping. The wordmark is the only place
+     these display fonts are used, so a quick FOIT is invisible to
+     most users; the swap was very noticeable. */
+  font-display: block;
 }
 @font-face {
   font-family: 'Holidaze Display';
@@ -31,7 +43,13 @@
     url('/fonts/HolidazeDisplayItalic.ttf') format('truetype');
   font-weight: 400;
   font-style: italic;
-  font-display: swap;
+  /* `block` (not `swap`) — hides the wordmark for a brief invisible
+     window while the display font loads, then renders in the correct
+     face. Avoids the visible flash where Soy Boy / This That render
+     in the fallback before swapping. The wordmark is the only place
+     these display fonts are used, so a quick FOIT is invisible to
+     most users; the swap was very noticeable. */
+  font-display: block;
 }
 
 *,
@@ -4209,13 +4227,9 @@ kbd,
     font-size: clamp(20px, 5.4vw, 26px);
     line-height: 1.2;
   }
-  /* Soy Boy's "A slightly chiller brain-soothing word game" is the
-     longest tagline — needs a smaller font (and tighter letter-spacing)
-     to fit on a single line at iPhone widths. */
-  .simple-start.simple-start-soyboy .simple-tagline {
-    font-size: clamp(17px, 4.7vw, 22px);
-    letter-spacing: -0.005em;
-  }
+  /* One tagline size across all three modes — no per-mode size
+     override. Soy Boy's longer copy may wrap to two lines on the
+     narrowest viewports; accepted trade-off for visual consistency. */
 
   /* ── Action block — Play is the hero. Big tap zone, fills available
        width (with 4px outer padding so it can't kiss the screen edges).
@@ -4322,9 +4336,6 @@ kbd,
     font-size: 18px;
     padding: 0 6px;
   }
-  .simple-start.simple-start-soyboy .simple-tagline {
-    font-size: 15.5px;
-  }
   .simple-start .simple-actions {
     margin-top: 44px;
   }
@@ -4342,9 +4353,6 @@ kbd,
 @media (min-width: 438px) and (max-width: 640px) {
   .simple-start .simple-tagline {
     font-size: 26px;
-  }
-  .simple-start.simple-start-soyboy .simple-tagline {
-    font-size: 22px;
   }
   .simple-start .btn-dark {
     padding: 20px 28px;
