@@ -3661,7 +3661,15 @@ kbd,
      line-height ≈ 138px + ~12px for the ascender on wings/squiggle)
      so switching modes doesn't shift the elements below. */
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* `auto auto auto` instead of `1fr auto 1fr` — columns hug their
+     content so the wordmark's visible center matches the tagline's
+     center. With 1fr columns, both side columns sized to the WIDER
+     word, which pushed the visible content off-center when the two
+     words had different widths (most noticeable on This That where
+     "this" and "that" have different optical widths in Holidaze).
+     `justify-content: center` re-centers the packed grid in its row. */
+  grid-template-columns: auto auto auto;
+  justify-content: center;
   align-items: end;
   gap: clamp(8px, 1.4vw, 18px);
   color: var(--pilot-cream);
@@ -3675,14 +3683,9 @@ kbd,
   /* No negative margin — align-items: end on the grid already lands
      the words on the same baseline as the mascot bottom. */
 }
-.simple-start .simple-wordmark .word:first-child {
-  text-align: right;
-  justify-self: end;
-}
-.simple-start .simple-wordmark .word:last-child {
-  text-align: left;
-  justify-self: start;
-}
+/* With auto columns the words sit at their natural width — no need
+   for text-align or justify-self tweaks. The mascot column lands
+   between them automatically and the whole grid is packed tight. */
 /* Mascot inline between the two words. Sized via em so it scales
    perfectly with the wordmark; per-mode aspect-ratio + height tuned
    to match the Figma frame for each mascot. align-self: end + tight
