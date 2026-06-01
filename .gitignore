@@ -32,3 +32,4 @@ coverage/
 
 # Generated word-pair difficulty data (regenerate via scripts/word_pair_difficulty.py)
 scripts/output/
+figma-design-file.md

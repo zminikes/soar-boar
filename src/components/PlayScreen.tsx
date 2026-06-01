@@ -396,6 +396,41 @@ export function PlayScreen({
         </div>
       )}
 
+      <div className="score-row">
+        <div className="score-display">
+          <div className="score-badge">{isLadder ? wordsPlayed : state.score}</div>
+          <div className="score-sub">
+            {isLadder
+              ? `move${wordsPlayed !== 1 ? 's' : ''}`
+              : `word${wordsPlayed !== 1 ? 's' : ''} played`}
+          </div>
+        </div>
+        <div className="score-meta">
+          {isLadder && (
+            <button
+              type="button"
+              className={`game-action-link${hintOn ? ' active' : ''}`}
+              onClick={() => setHintOn((h) => !h)}
+              aria-label={hintOn ? 'Hide hint' : 'Show hint'}
+              aria-pressed={hintOn}
+            >
+              {hintOn ? 'Hide hint' : 'Show hint'}
+            </button>
+          )}
+          <button type="button" className="game-action-link" onClick={onNewPuzzle}>
+            New word
+          </button>
+          <button
+            type="button"
+            className="game-action-link"
+            onClick={onRestart}
+            aria-label="Restart same puzzle"
+          >
+            Restart
+          </button>
+        </div>
+      </div>
+
       {isLadder && state.targetWord && (
         <div className="goal-strip" aria-label={`Goal: reach ${state.targetWord}`}>
           <span className="goal-strip-label">Goal</span>
@@ -424,41 +459,6 @@ export function PlayScreen({
           {hintOn && state.par != null && <span className="goal-strip-par">Best: {state.par}</span>}
         </div>
       )}
-
-      <div className="score-row">
-        <div className="score-display">
-          <div className="score-badge">{isLadder ? wordsPlayed : state.score}</div>
-          <div className="score-sub">
-            {isLadder
-              ? `move${wordsPlayed !== 1 ? 's' : ''}`
-              : `word${wordsPlayed !== 1 ? 's' : ''} played`}
-          </div>
-        </div>
-        <div className="score-meta">
-          {isLadder && (
-            <button
-              type="button"
-              className={`hint-link${hintOn ? ' active' : ''}`}
-              onClick={() => setHintOn((h) => !h)}
-              aria-label={hintOn ? 'Hide hint' : 'Show hint'}
-              aria-pressed={hintOn}
-            >
-              {hintOn ? 'Hide hint' : 'Show hint'}
-            </button>
-          )}
-          <button type="button" className="game-action-link" onClick={onNewPuzzle}>
-            New word
-          </button>
-          <button
-            type="button"
-            className="game-action-link"
-            onClick={onRestart}
-            aria-label="Restart same puzzle"
-          >
-            Restart
-          </button>
-        </div>
-      </div>
 
       <div style={{ marginTop: 20 }}>
         <div className="section-label">Current word</div>
