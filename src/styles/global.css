@@ -2182,11 +2182,13 @@ body {
 .play-wordmark-mascot {
   display: inline-flex;
   align-items: end;
-  /* Drop the mascot well below the line-box bottom so its head circle
-     bottom touches the baseline of the surrounding text. Display fonts
-     like Holidaze position the baseline higher inside the line-box
-     than typical text, so a larger negative margin is needed here. */
-  margin-bottom: -0.18em;
+  /* Proper bezier path tracing shows content extends to Y≈671-679/800 in
+     every mascot SVG — only ~8-9px of empty space at the bottom at 56px.
+     Text descenders are also ~8-9px below the baseline at these font sizes.
+     The two values cancel out, so no margin adjustment is needed.
+     Previous values (-0.18em, -0.13em) were based on a bad path scan that
+     thought content ended at Y=540 and was overcorrecting by ~10px. */
+  margin-bottom: 0;
 }
 .play-wordmark-mascot .mascot-icon {
   display: block;
@@ -2227,7 +2229,11 @@ body {
   }
   .play-wordmark-mascot .mascot-icon {
     transform: scale(0.78);
-    transform-origin: center;
+    /* bottom-center keeps the pig's visual base pinned at the layout
+       bottom so the drawing sits on the text baseline. center-origin
+       would add equal transparent gap above AND below, floating the
+       pig ~6px above where it should be. */
+    transform-origin: bottom center;
   }
 }
 
@@ -2417,57 +2423,39 @@ body {
    keyboard from ever covering it. */
 .goal-strip {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  flex-wrap: wrap;
   gap: 8px;
   margin-top: 16px;
-  padding: 8px 14px;
-  background: var(--accent-soft);
-  border-radius: 999px;
+  padding-bottom: 16px;
+  /* Hairline beneath the whole goal section — separates it from the
+     current/next word zone below without adding any visual weight. */
+  border-bottom: 1px solid var(--border);
 }
 .goal-strip-label {
   font-family: var(--ff-sans);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--muted);
 }
 .goal-strip-arrow {
-  color: var(--accent);
+  color: var(--muted);
   flex-shrink: 0;
 }
-.goal-strip-tiles {
-  display: flex;
-  gap: 4px;
-}
-.goal-strip-tile {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: var(--white);
-  border: 1px solid var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.goal-strip-word {
   font-family: var(--ff-sans);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   color: var(--accent);
-  line-height: 1;
 }
 .goal-strip-par {
   font-family: var(--ff-sans);
   font-size: 11px;
   font-weight: 600;
   color: var(--muted);
-  margin-left: 4px;
-}
-:root[data-theme='dark'] .goal-strip-tile {
-  /* Default --white in dark mode equals the info-card surface; lift
-     these tiles slightly so they read against the page background. */
-  background: #2a2826;
 }
 .timer-row {
   display: flex;
@@ -2649,10 +2637,19 @@ body {
   align-items: center;
   gap: 0;
 }
+/* Strip horizontal padding from every button in this row so the only
+   horizontal spacing comes from the bullet's margin (4px each side).
+   Vertical padding is kept for touch target height. */
+.score-meta > button {
+  padding-left: 0;
+  padding-right: 0;
+}
 .score-meta > button + button::before {
   content: '•';
   display: inline-block;
-  margin: 0 4px 0 0;
+  /* 4px left + 4px right = exactly 4px between each action label and
+     its adjacent separator dot. No button padding interferes. */
+  margin: 0 4px;
   color: var(--muted);
   font-weight: 700;
   opacity: 0.6;
@@ -2927,7 +2924,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: var(--cream);
+  background: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2940,28 +2937,12 @@ body {
   background: var(--accent-soft);
   color: var(--accent);
 }
+/* Points — just a bare muted number, no pill, no dot, no '+' */
 .chain-pts {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px 3px 7px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-/* Small filled dot before the number — gives the chip the polished
-   "•+N" pill shape from the Figma. */
-.chain-pts::before {
-  content: '';
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-  margin-bottom: 1px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  opacity: 0.7;
 }
 
 /* countdown integrated into timer row — no separate overlay */
@@ -3245,10 +3226,9 @@ body {
   margin-top: 10px;
 }
 kbd {
-  background: var(--cream);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 1px 5px;
+  background: none;
+  border: none;
+  padding: 0;
   font-family: var(--ff);
   font-size: 11px;
   font-weight: 700;

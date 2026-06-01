@@ -418,16 +418,18 @@ export function PlayScreen({
             </button>
           )}
           <button type="button" className="game-action-link" onClick={onNewPuzzle}>
-            New word
+            New game
           </button>
-          <button
-            type="button"
-            className="game-action-link"
-            onClick={onRestart}
-            aria-label="Restart same puzzle"
-          >
-            Restart
-          </button>
+          {isLadder && (
+            <button
+              type="button"
+              className="game-action-link"
+              onClick={onRestart}
+              aria-label="Restart same puzzle"
+            >
+              Restart
+            </button>
+          )}
         </div>
       </div>
 
@@ -449,13 +451,7 @@ export function PlayScreen({
             <line x1="5" y1="12" x2="19" y2="12" />
             <polyline points="12 5 19 12 12 19" />
           </svg>
-          <div className="goal-strip-tiles">
-            {state.targetWord.split('').map((l, i) => (
-              <div key={i} className="goal-strip-tile">
-                {l}
-              </div>
-            ))}
-          </div>
+          <span className="goal-strip-word">{state.targetWord}</span>
           {hintOn && state.par != null && <span className="goal-strip-par">Best: {state.par}</span>}
         </div>
       )}
