@@ -27,14 +27,14 @@ describe('ChainRows', () => {
   it('renders the pts annotation when pts is set', () => {
     const chain: ChainEntry[] = [{ word: 'SOAR' }, { word: 'BOAR', pts: 1 }];
     render(<ChainRows chain={chain} />);
-    // Annotation simplified on main to just '+N' — no per-position label.
-    expect(screen.getByText(/^\+1$/)).toBeInTheDocument();
+    // Annotation is a bare number (no '+' prefix) — intentionally subtle.
+    expect(screen.getByText(/^1$/)).toBeInTheDocument();
   });
 
   it('omits the pts annotation when pts is null', () => {
     const chain: ChainEntry[] = [{ word: 'SOAR' }, { word: 'BOAR', pts: null }];
     render(<ChainRows chain={chain} />);
-    // No "+N" text anywhere → annotation was skipped.
-    expect(screen.queryByText(/\+\d/)).toBeNull();
+    // No pts text → annotation was skipped entirely.
+    expect(screen.queryByText(/chain-pts/)).toBeNull();
   });
 });
