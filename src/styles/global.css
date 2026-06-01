@@ -2160,6 +2160,153 @@ body {
 .hdr.hdr-compact {
   padding-top: 12px;
 }
+
+/* ── Play / End screen header wordmark ────────────────────────────
+   Lowercase wordmark with mascot rendered INLINE between the two
+   words. SINGLE-color title (both words in --dark) so the title
+   reads as a unit — no accent on the second word. */
+.play-wordmark {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  justify-content: center;
+  align-items: end;
+  gap: 10px;
+  line-height: 0.9;
+  white-space: nowrap;
+  color: var(--dark);
+}
+.play-wordmark .word {
+  font-weight: 400;
+  color: var(--dark);
+}
+.play-wordmark-mascot {
+  display: inline-flex;
+  align-items: end;
+  /* Proper bezier path tracing shows content extends to Y≈671-679/800 in
+     every mascot SVG — only ~8-9px of empty space at the bottom at 56px.
+     Text descenders are also ~8-9px below the baseline at these font sizes.
+     The two values cancel out, so no margin adjustment is needed.
+     Previous values (-0.18em, -0.13em) were based on a bad path scan that
+     thought content ended at Y=540 and was overcorrecting by ~10px. */
+  margin-bottom: 0;
+}
+.play-wordmark-mascot .mascot-icon {
+  display: block;
+}
+/* Per-mode display fonts + sizes — substantially bigger than the
+   first pass (the user said the title felt small). */
+.play-wordmark-classic {
+  font-family: 'Belanosima', var(--ff-serif), serif;
+  font-size: 64px;
+}
+.play-wordmark-soyboy {
+  font-family: 'Sunliner Revival', var(--ff-serif), serif;
+  font-size: 60px;
+  letter-spacing: -0.02em;
+}
+.play-wordmark-thisthat {
+  font-family: 'Holidaze Display', 'Bagel Fat One', var(--ff-serif), serif;
+  font-size: 68px;
+  letter-spacing: -0.01em;
+  /* Holidaze sits higher inside its line-box than Belanosima/Sunliner —
+     nudge the whole wordmark down to match the others' baseline. */
+  transform: translateY(0.08em);
+}
+/* Hide the legacy .wordmark span in play/end headers so we don't ship
+   two side-by-side. */
+.hdr-compact .wordmark {
+  display: none;
+}
+@media (max-width: 480px) {
+  .play-wordmark-classic {
+    font-size: 48px;
+  }
+  .play-wordmark-soyboy {
+    font-size: 44px;
+  }
+  .play-wordmark-thisthat {
+    font-size: 52px;
+  }
+  .play-wordmark-mascot .mascot-icon {
+    transform: scale(0.78);
+    /* bottom-center keeps the pig's visual base pinned at the layout
+       bottom so the drawing sits on the text baseline. center-origin
+       would add equal transparent gap above AND below, floating the
+       pig ~6px above where it should be. */
+    transform-origin: bottom center;
+  }
+}
+
+/* Play + End body background — warm cream #FFF3DD per design ask
+   (was the body's default --cream #f8f1e5). Dark mode keeps its
+   own near-black surface. */
+:root[data-screen='playing']:not([data-theme='dark']) body,
+:root[data-screen='end']:not([data-theme='dark']) body {
+  background: #fff3dd;
+}
+
+/* ── Play screen action links (Restart + New word + hint toggle) ──
+   Colocated as text strings in the mode accent color (was: button
+   pill + icon pill). Reads as a quiet utility row, lets the action
+   names breathe. */
+.game-action-link,
+.hint-link {
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  font-family: var(--ff-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 120ms var(--ease-out);
+}
+.game-action-link:hover,
+.hint-link:hover {
+  opacity: 0.75;
+}
+.game-action-link:active,
+.hint-link:active {
+  transform: scale(0.97);
+}
+.hint-link.active {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Goal strip cleanup ──────────────────────────────────────────
+   No more pill background. Just "Goal:" label + an arrow + the
+   target word as inline tiles (cream bg + accent border + accent
+   text). Reads more like "here's where you're heading" than
+   "here's a chip." */
+.goal-strip {
+  background: transparent;
+  padding: 8px 0 4px;
+  gap: 10px;
+}
+.goal-strip-label {
+  font-family: var(--ff-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.goal-strip-tile {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1.5px solid var(--accent);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--accent);
+}
+:root[data-theme='dark'] .goal-strip-tile {
+  background: transparent;
+}
 /* Use spans + .accent for the colored word so both halves render with
        identical font metrics (em was producing weight asymmetries via
        browser bold-synthesis on the italic glyph forms). */
@@ -2276,57 +2423,39 @@ body {
    keyboard from ever covering it. */
 .goal-strip {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  flex-wrap: wrap;
   gap: 8px;
   margin-top: 16px;
-  padding: 8px 14px;
-  background: var(--accent-soft);
-  border-radius: 999px;
+  padding-bottom: 16px;
+  /* Hairline beneath the whole goal section — separates it from the
+     current/next word zone below without adding any visual weight. */
+  border-bottom: 1px solid var(--border);
 }
 .goal-strip-label {
   font-family: var(--ff-sans);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--muted);
 }
 .goal-strip-arrow {
-  color: var(--accent);
+  color: var(--muted);
   flex-shrink: 0;
 }
-.goal-strip-tiles {
-  display: flex;
-  gap: 4px;
-}
-.goal-strip-tile {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: var(--white);
-  border: 1px solid var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.goal-strip-word {
   font-family: var(--ff-sans);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   color: var(--accent);
-  line-height: 1;
 }
 .goal-strip-par {
   font-family: var(--ff-sans);
   font-size: 11px;
   font-weight: 600;
   color: var(--muted);
-  margin-left: 4px;
-}
-:root[data-theme='dark'] .goal-strip-tile {
-  /* Default --white in dark mode equals the info-card surface; lift
-     these tiles slightly so they read against the page background. */
-  background: #2a2826;
 }
 .timer-row {
   display: flex;
@@ -2405,7 +2534,7 @@ body {
   /* Tiny ground shadow — lifts white tiles off the cream bg just enough
      to read as cards. Kept very subtle so accent-filled tiles don't get
      a visible halo. */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   transition:
     background 120ms,
     color 120ms,
@@ -2426,7 +2555,7 @@ body {
   background: var(--white);
   box-shadow:
     inset 0 0 0 2px var(--accent),
-    0 1px 2px rgba(0, 0, 0, 0.06);
+    0 1px 2px rgba(0, 0, 0, 0.11);
 }
 .tile.accept {
   animation: tileAccept 280ms var(--ease-spring) both;
@@ -2481,27 +2610,49 @@ body {
   align-items: center;
   gap: 10px;
 }
+/* Score badge — small + subtle so it doesn't dominate the top of the
+   gameplay screen (was solid orange pill with 24px bold number). Now
+   a tinted accent-soft pill with the number in accent. */
 .score-badge {
-  background: var(--orange);
-  color: #fff;
-  font-weight: 800;
-  font-size: 24px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 14px;
   border-radius: 999px;
-  padding: 10px 18px;
+  padding: 4px 12px;
   line-height: 1;
-  min-width: 60px;
+  min-width: 0;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
 .score-sub {
   font-size: 13px;
   color: var(--muted);
-  font-weight: 600;
+  font-weight: 500;
 }
+/* Action links sit in a tight row with `•` separators between them.
+   The separators come from CSS (no JSX changes needed). */
 .score-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0;
+}
+/* Strip horizontal padding from every button in this row so the only
+   horizontal spacing comes from the bullet's margin (4px each side).
+   Vertical padding is kept for touch target height. */
+.score-meta > button {
+  padding-left: 0;
+  padding-right: 0;
+}
+.score-meta > button + button::before {
+  content: '•';
+  display: inline-block;
+  /* 4px left + 4px right = exactly 4px between each action label and
+     its adjacent separator dot. No button padding interferes. */
+  margin: 0 4px;
+  color: var(--muted);
+  font-weight: 700;
+  opacity: 0.6;
 }
 
 /* "New word" CTA — friendlier than "Give up" */
@@ -2773,7 +2924,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: var(--cream);
+  background: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2786,11 +2937,12 @@ body {
   background: var(--accent-soft);
   color: var(--accent);
 }
+/* Points — just a bare muted number, no pill, no dot, no '+' */
 .chain-pts {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--muted);
-  letter-spacing: 0.01em;
+  opacity: 0.7;
 }
 
 /* countdown integrated into timer row — no separate overlay */
@@ -3074,10 +3226,9 @@ body {
   margin-top: 10px;
 }
 kbd {
-  background: var(--cream);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 1px 5px;
+  background: none;
+  border: none;
+  padding: 0;
   font-family: var(--ff);
   font-size: 11px;
   font-weight: 700;

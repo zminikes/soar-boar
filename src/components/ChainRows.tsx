@@ -37,7 +37,7 @@ export function ChainRows({ chain, maxHeight = 200, modeId = 'classic' }: ChainR
                   </div>
                 );
               })}
-              {showPts && entry.pts != null && <span className="chain-pts">+{entry.pts}</span>}
+              {showPts && entry.pts != null && <span className="chain-pts">{entry.pts}</span>}
             </div>
           );
         })}

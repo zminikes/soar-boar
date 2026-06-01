@@ -21,12 +21,12 @@ export const DEFAULT_COLORS = {
 } as const;
 
 // Mascot fill colors used in-game (header icon, big flying pig).
-// Default sage for Soy Boy so it visually unifies with the UI accent
-// on cream backgrounds.
+// This That uses a saturated purple in-game (the yellow homescreen
+// variant lives in START_MASCOT_ACCENTS).
 export const MASCOT_ACCENTS = {
   classic: '#F5A8C8',
   soyboy: '#247D57',
-  thisthat: '#F5D63A',
+  thisthat: '#9C72DE',
 } as const;
 
 // Start-screen mascot fill colors — used on the homescreen hero
