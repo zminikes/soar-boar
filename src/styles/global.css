@@ -2160,6 +2160,74 @@ body {
 .hdr.hdr-compact {
   padding-top: 12px;
 }
+
+/* ── Play / End screen header wordmark ────────────────────────────
+   Lowercase wordmark with mascot rendered INLINE between the two
+   words (mirrors the homescreen). Compact size so it sits in the
+   header alongside the timer/score, not as a hero block. */
+.play-wordmark {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  justify-content: center;
+  align-items: end;
+  gap: 6px;
+  line-height: 0.95;
+  white-space: nowrap;
+  color: var(--dark);
+}
+.play-wordmark .word {
+  font-weight: 400;
+}
+.play-wordmark .word.accent {
+  color: var(--accent);
+}
+.play-wordmark-mascot {
+  display: inline-flex;
+  align-items: end;
+  margin-bottom: -0.06em;
+}
+.play-wordmark-mascot .mascot-icon {
+  display: block;
+}
+/* Per-mode display fonts + slight per-mode size + baseline tweaks
+   (echoes the homescreen wordmark recipe, at compact play-screen size). */
+.play-wordmark-classic {
+  font-family: 'Belanosima', var(--ff-serif), serif;
+  font-size: 40px;
+}
+.play-wordmark-soyboy {
+  font-family: 'Sunliner Revival', var(--ff-serif), serif;
+  font-size: 38px;
+  letter-spacing: -0.02em;
+}
+.play-wordmark-thisthat {
+  font-family: 'Holidaze Display', 'Bagel Fat One', var(--ff-serif), serif;
+  font-size: 44px;
+  letter-spacing: -0.01em;
+  /* Holidaze sits higher inside its line-box than Belanosima/Sunliner —
+     nudge the whole wordmark down to match the others' baseline. */
+  transform: translateY(0.08em);
+}
+/* Hide the legacy .wordmark span in play/end headers so we don't ship
+   two side-by-side. */
+.hdr-compact .wordmark {
+  display: none;
+}
+@media (max-width: 480px) {
+  .play-wordmark-classic {
+    font-size: 32px;
+  }
+  .play-wordmark-soyboy {
+    font-size: 30px;
+  }
+  .play-wordmark-thisthat {
+    font-size: 36px;
+  }
+  .play-wordmark-mascot .mascot-icon {
+    transform: scale(0.85);
+    transform-origin: center;
+  }
+}
 /* Use spans + .accent for the colored word so both halves render with
        identical font metrics (em was producing weight asymmetries via
        browser bold-synthesis on the italic glyph forms). */
@@ -2787,10 +2855,27 @@ body {
   color: var(--accent);
 }
 .chain-pts {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
   font-size: 12px;
   font-weight: 700;
-  color: var(--muted);
   letter-spacing: 0.01em;
+}
+/* Small filled dot before the number — gives the chip the polished
+   "•+N" pill shape from the Figma. */
+.chain-pts::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-bottom: 1px;
 }
 
 /* countdown integrated into timer row — no separate overlay */

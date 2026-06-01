@@ -351,7 +351,7 @@ export function PlayScreen({
   return (
     <div className="stagger">
       <div
-        className="hdr hdr-compact"
+        className={`hdr hdr-compact play-hdr play-hdr-${cfg.id}`}
         onClick={onHome}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -363,9 +363,12 @@ export function PlayScreen({
         tabIndex={0}
         aria-label="Back to home"
       >
-        <MascotIcon size={56} modeId={cfg.id} />
-        <div className="wordmark">
-          {cfg.name.split(' ')[0]} <span className="accent">{cfg.name.split(' ')[1]}</span>
+        <div className={`play-wordmark play-wordmark-${cfg.id}`}>
+          <span className="word">{cfg.name.split(' ')[0].toLowerCase()}</span>
+          <span className="play-wordmark-mascot" aria-hidden="true">
+            <MascotIcon size={36} modeId={cfg.id} />
+          </span>
+          <span className="word accent">{cfg.name.split(' ')[1].toLowerCase()}</span>
         </div>
         {debug.foreverMode && !isLadder && <span className="forever-badge">∞</span>}
       </div>

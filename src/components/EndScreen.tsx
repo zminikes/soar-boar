@@ -165,9 +165,12 @@ export function EndScreen({
         tabIndex={0}
         aria-label="Back to home"
       >
-        <MascotIcon size={72} modeId={cfg.id} />
-        <div className="wordmark">
-          {cfg.name.split(' ')[0]} <span className="accent">{cfg.name.split(' ')[1]}</span>
+        <div className={`play-wordmark play-wordmark-${cfg.id}`}>
+          <span className="word">{cfg.name.split(' ')[0].toLowerCase()}</span>
+          <span className="play-wordmark-mascot" aria-hidden="true">
+            <MascotIcon size={40} modeId={cfg.id} />
+          </span>
+          <span className="word accent">{cfg.name.split(' ')[1].toLowerCase()}</span>
         </div>
       </div>
 
