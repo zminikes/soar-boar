@@ -38,3 +38,6 @@ figma-design-file.md
 # Python bytecode cache
 __pycache__/
 *.pyc
+
+# Local git credentials (do NOT commit)
+.git-credentials
