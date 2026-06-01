@@ -366,9 +366,9 @@ export function PlayScreen({
         <div className={`play-wordmark play-wordmark-${cfg.id}`}>
           <span className="word">{cfg.name.split(' ')[0].toLowerCase()}</span>
           <span className="play-wordmark-mascot" aria-hidden="true">
-            <MascotIcon size={36} modeId={cfg.id} />
+            <MascotIcon size={56} modeId={cfg.id} />
           </span>
-          <span className="word accent">{cfg.name.split(' ')[1].toLowerCase()}</span>
+          <span className="word">{cfg.name.split(' ')[1].toLowerCase()}</span>
         </div>
         {debug.foreverMode && !isLadder && <span className="forever-badge">∞</span>}
       </div>
@@ -435,73 +435,27 @@ export function PlayScreen({
           </div>
         </div>
         <div className="score-meta">
-          <button type="button" className="btn-newword" onClick={onNewPuzzle}>
-            New word
-          </button>
           {isLadder && (
             <button
               type="button"
-              className={`hint-btn${hintOn ? ' active' : ''}`}
+              className={`hint-link${hintOn ? ' active' : ''}`}
               onClick={() => setHintOn((h) => !h)}
               aria-label={hintOn ? 'Hide hint' : 'Show hint'}
               aria-pressed={hintOn}
             >
-              {hintOn ? (
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              ) : (
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a19.78 19.78 0 0 1 5.06-5.94" />
-                  <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a19.46 19.46 0 0 1-2.16 3.19" />
-                  <path d="M14.12 14.12A3 3 0 1 1 9.88 9.88" />
-                  <line x1="1" y1="1" x2="23" y2="23" />
-                </svg>
-              )}
-              <span className="hint-tooltip">{hintOn ? 'Hide hint' : 'Show hint'}</span>
+              {hintOn ? 'Hide hint' : 'Show hint'}
             </button>
           )}
+          <button type="button" className="game-action-link" onClick={onNewPuzzle}>
+            New word
+          </button>
           <button
             type="button"
-            className="restart-btn"
+            className="game-action-link"
             onClick={onRestart}
             aria-label="Restart same puzzle"
-            title="Restart same puzzle"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="23 4 23 10 17 10" />
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-            </svg>
+            Restart
           </button>
         </div>
       </div>

@@ -2163,46 +2163,46 @@ body {
 
 /* ── Play / End screen header wordmark ────────────────────────────
    Lowercase wordmark with mascot rendered INLINE between the two
-   words (mirrors the homescreen). Compact size so it sits in the
-   header alongside the timer/score, not as a hero block. */
+   words. SINGLE-color title (both words in --dark) so the title
+   reads as a unit — no accent on the second word. */
 .play-wordmark {
   display: grid;
   grid-template-columns: auto auto auto;
   justify-content: center;
   align-items: end;
-  gap: 6px;
-  line-height: 0.95;
+  gap: 10px;
+  line-height: 0.9;
   white-space: nowrap;
   color: var(--dark);
 }
 .play-wordmark .word {
   font-weight: 400;
-}
-.play-wordmark .word.accent {
-  color: var(--accent);
+  color: var(--dark);
 }
 .play-wordmark-mascot {
   display: inline-flex;
   align-items: end;
-  margin-bottom: -0.06em;
+  /* Drop the mascot down so its bottom sits on the lowercase baseline
+     of the surrounding text (mirrors the homescreen recipe). */
+  margin-bottom: -0.08em;
 }
 .play-wordmark-mascot .mascot-icon {
   display: block;
 }
-/* Per-mode display fonts + slight per-mode size + baseline tweaks
-   (echoes the homescreen wordmark recipe, at compact play-screen size). */
+/* Per-mode display fonts + sizes — substantially bigger than the
+   first pass (the user said the title felt small). */
 .play-wordmark-classic {
   font-family: 'Belanosima', var(--ff-serif), serif;
-  font-size: 40px;
+  font-size: 64px;
 }
 .play-wordmark-soyboy {
   font-family: 'Sunliner Revival', var(--ff-serif), serif;
-  font-size: 38px;
+  font-size: 60px;
   letter-spacing: -0.02em;
 }
 .play-wordmark-thisthat {
   font-family: 'Holidaze Display', 'Bagel Fat One', var(--ff-serif), serif;
-  font-size: 44px;
+  font-size: 68px;
   letter-spacing: -0.01em;
   /* Holidaze sits higher inside its line-box than Belanosima/Sunliner —
      nudge the whole wordmark down to match the others' baseline. */
@@ -2215,18 +2215,89 @@ body {
 }
 @media (max-width: 480px) {
   .play-wordmark-classic {
-    font-size: 32px;
+    font-size: 48px;
   }
   .play-wordmark-soyboy {
-    font-size: 30px;
+    font-size: 44px;
   }
   .play-wordmark-thisthat {
-    font-size: 36px;
+    font-size: 52px;
   }
   .play-wordmark-mascot .mascot-icon {
-    transform: scale(0.85);
+    transform: scale(0.78);
     transform-origin: center;
   }
+}
+
+/* Play + End body background — warm cream #FFF3DD per design ask
+   (was the body's default --cream #f8f1e5). Dark mode keeps its
+   own near-black surface. */
+:root[data-screen='playing']:not([data-theme='dark']) body,
+:root[data-screen='end']:not([data-theme='dark']) body {
+  background: #fff3dd;
+}
+
+/* ── Play screen action links (Restart + New word + hint toggle) ──
+   Colocated as text strings in the mode accent color (was: button
+   pill + icon pill). Reads as a quiet utility row, lets the action
+   names breathe. */
+.game-action-link,
+.hint-link {
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  font-family: var(--ff-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 120ms var(--ease-out);
+}
+.game-action-link:hover,
+.hint-link:hover {
+  opacity: 0.75;
+}
+.game-action-link:active,
+.hint-link:active {
+  transform: scale(0.97);
+}
+.hint-link.active {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Goal strip cleanup ──────────────────────────────────────────
+   No more pill background. Just "Goal:" label + an arrow + the
+   target word as inline tiles (cream bg + accent border + accent
+   text). Reads more like "here's where you're heading" than
+   "here's a chip." */
+.goal-strip {
+  background: transparent;
+  padding: 8px 0 4px;
+  gap: 10px;
+}
+.goal-strip-label {
+  font-family: var(--ff-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.goal-strip-tile {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1.5px solid var(--accent);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--accent);
+}
+:root[data-theme='dark'] .goal-strip-tile {
+  background: transparent;
 }
 /* Use spans + .accent for the colored word so both halves render with
        identical font metrics (em was producing weight asymmetries via
