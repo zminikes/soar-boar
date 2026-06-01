@@ -170,7 +170,6 @@ export const STARTER_WORDS: readonly string[] = [
   'dent',
   'dibs',
   'dice',
-  'dike',
   'dill',
   'dime',
   'dine',
